@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Principia AI — We know exactly what we don't know.</title>
+<meta name="description" content="Agentic frameworks, formal verification, and an alignment paradigm that enforces verified reasoning: fault investigations that are exhaustive, deterministic, and checkable.">
+<style>
+  :root{
+    --bg:#0a0a14;--violet:#8a2be2;--blue:#1e90ff;--teal:#3fd0c9;
+    --line:rgba(255,255,255,.10);--glass:rgba(255,255,255,.05);
+    --text:rgba(255,255,255,.90);--muted:rgba(255,255,255,.60);--faint:rgba(255,255,255,.35);
+    --ok:#7fe0a8;--warn:#ffb86b;
+    --serif:Georgia,"Times New Roman",Times,serif;
+    --sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+    box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *,*::before,*::after{box-sizing:inherit}
+  html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  body::before{content:"";position:fixed;z-index:-1;left:50%;top:45%;width:70vmax;height:70vmax;transform:translate(-50%,-50%);border-radius:50%;
+    background:radial-gradient(circle,rgba(138,43,226,.22),rgba(30,144,255,.06) 45%,transparent 70%);filter:blur(40px);pointer-events:none}
+  a{color:inherit}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:8px}
+
+  header{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:10;display:flex;justify-content:space-between;align-items:center;padding:22px 28px}
+  .brand{font-family:var(--serif);font-size:21px;text-decoration:none}
+  .brand span{color:var(--violet)}
+  header a.contact{text-decoration:none;color:var(--muted);font-size:15px}
+  header a.contact:hover{color:var(--text)}
+
+  .screen{min-height:100vh;min-height:100svh;display:flex;align-items:center;justify-content:center;padding:80px 28px 40px}
+  .screen.one{position:relative}
+  .hero{text-align:center;max-width:760px}
+  h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,5.2vw,64px);line-height:1.06;letter-spacing:-.012em;margin:0 0 18px}
+  .lede{color:var(--muted);font-size:18px;max-width:62ch;margin:0 auto;opacity:0;transform:translateY(10px);transition:opacity .8s ease,transform .8s ease}
+  .lede.in{opacity:1;transform:none}
+  .cta{margin-top:34px;opacity:0;transform:translateY(10px);transition:opacity .8s ease .25s,transform .8s ease .25s}
+  .cta.in{opacity:1;transform:none}
+  .btn{display:inline-block;padding:13px 22px;border-radius:12px;text-decoration:none;font-size:16px;border:1px solid rgba(138,43,226,.5);
+    background:linear-gradient(135deg,rgba(138,43,226,.85),rgba(30,144,255,.55));box-shadow:0 10px 40px rgba(138,43,226,.25);transition:box-shadow .2s}
+  .btn:hover{box-shadow:0 12px 48px rgba(138,43,226,.4)}
+  .hint{position:absolute;bottom:28px;left:0;right:0;text-align:center;color:var(--faint);font-size:13px;transition:opacity .5s}
+  .hint.gone{opacity:0}
+
+  .screen.two{align-items:flex-start;padding-top:96px}
+  .demo{width:100%;max-width:1180px;margin:0 auto;background:var(--glass);border:1px solid var(--line);border-radius:22px;
+    backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 30px 80px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08);padding:20px}
+  .demo-head{display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap;padding:2px 4px 14px;border-bottom:1px solid var(--line);margin-bottom:16px}
+  .demo-head h2{font-family:var(--serif);font-weight:400;font-size:20px;margin:0}
+  .demo-head .sub{color:var(--faint);font-size:13px}
+  .demo-head button{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:6px 10px;font:inherit;font-size:13px;cursor:pointer}
+  .demo-head button:hover{color:var(--text);border-color:rgba(255,255,255,.3)}
+  .cols{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:16px;min-height:440px}
+  @media (max-width:900px){.cols{grid-template-columns:1fr}}
+  .col h3{font-size:12.5px;font-weight:600;color:var(--faint);margin:0 0 8px}
+  .col h3 + .list{margin-bottom:14px}
+  .list{display:flex;flex-direction:column;gap:5px}
+  .ev{font-size:12.5px;padding:6px 9px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--muted);
+    display:flex;gap:8px;align-items:baseline;transition:border-color .3s,background .3s,color .3s}
+  .ev .id{font-family:var(--mono);font-size:11px;color:var(--faint);white-space:nowrap}
+  .ev.used{color:var(--text);background:rgba(30,144,255,.12);border-color:rgba(30,144,255,.55)}
+  .ev.rule.used{background:rgba(138,43,226,.16);border-color:rgba(138,43,226,.6)}
+  .ev.spec.used{background:rgba(63,208,201,.12);border-color:rgba(63,208,201,.55)}
+  .ev.missing{border-style:dashed;color:var(--faint)}
+  .ev.missing.used{border-color:var(--warn);color:var(--warn);background:rgba(255,184,107,.08)}
+
+  .work{border:1px solid var(--line);border-radius:14px;padding:14px;background:rgba(0,0,0,.25);display:flex;flex-direction:column;gap:10px;min-height:400px}
+  .work .cand{font-family:var(--serif);font-size:17px;margin:0 0 2px}
+  .work .why{color:var(--faint);font-size:12.5px;margin:0 0 6px}
+  .step{display:flex;flex-wrap:wrap;gap:6px;align-items:center;opacity:0;transform:translateY(6px);transition:opacity .35s,transform .35s}
+  .step.on{opacity:1;transform:none}
+  .chip{font-size:12px;padding:4px 8px;border-radius:7px;border:1px solid var(--line);background:rgba(255,255,255,.04)}
+  .chip.sensor{border-color:rgba(30,144,255,.55);background:rgba(30,144,255,.12)}
+  .chip.rule{border-color:rgba(138,43,226,.6);background:rgba(138,43,226,.16)}
+  .chip.spec{border-color:rgba(63,208,201,.55);background:rgba(63,208,201,.12)}
+  .chip.derived{border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.08);color:#fff}
+  .chip.missing{border-style:dashed;border-color:var(--warn);color:var(--warn);background:rgba(255,184,107,.08)}
+  .op{color:var(--faint);font-size:13px}
+  .think{display:flex;align-items:center;gap:9px;color:var(--faint);font-size:12.5px;margin-top:4px;opacity:0;transition:opacity .3s}
+  .think.on{opacity:1}
+  .spin{width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(255,255,255,.18);border-top-color:var(--violet);animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){.spin{animation:none;border-top-color:rgba(255,255,255,.18)}}
+  .verdict{margin-top:auto;padding-top:10px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;opacity:0;transition:opacity .4s}
+  .verdict.on{opacity:1}
+  .verdict b{font-weight:600}
+  .verdict .check{font-family:var(--mono);font-size:12px;color:var(--ok)}
+  .verdict .check.warn{color:var(--warn)}
+
+  .cands{display:flex;flex-direction:column;gap:6px}
+  .cd{font-size:13px;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:rgba(255,255,255,.03);display:flex;justify-content:space-between;gap:8px;cursor:pointer;transition:border-color .3s,background .3s}
+  .cd:hover{border-color:rgba(255,255,255,.3)}
+  .cd.now{border-color:var(--blue);background:rgba(30,144,255,.12)}
+  .cd .tag{font-family:var(--mono);font-size:11px;color:var(--faint)}
+  .cd.cause{border-color:rgba(138,43,226,.7);background:rgba(138,43,226,.18)}
+  .cd.cause .tag{color:#d9b8ff}
+  .cd.clear .tag{color:var(--ok)}
+  .cd.open{border-color:rgba(255,184,107,.5)}
+  .cd.open .tag{color:var(--warn)}
+  .cd.confirmed .tag{color:var(--ok)}
+  .tally{margin-top:12px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}
+
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.lede,.cta,.step,.verdict{transition:none}}
+  footer{padding:24px 28px 30px;color:var(--faint);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="brand" href="#top">Principia AI<span>.</span></a>
+  <a class="contact" href="mailto:hello@principiaai.co?subject=Pilot%20inquiry">Contact</a>
+</header>
+
+<section class="screen one" id="top">
+  <div class="hero">
+    <h1>We know exactly what we don’t know.</h1>
+    <p class="lede" id="lede">We pair agentic frameworks with formal verification and a novel alignment paradigm that enforces verified reasoning. The result is a fault investigation that is exhaustive, deterministic, and checkable: every cause the evidence licenses, everything ruled out, and an honest “inconclusive” where the evidence is insufficient.</p>
+    <div class="cta" id="cta"><a class="btn" href="mailto:hello@principiaai.co?subject=Pilot%20inquiry">Request a pilot</a></div>
+  </div>
+  <div class="hint" id="hint">Scroll to see how a diagnosis is built</div>
+</section>
+
+<section class="screen two" id="demo">
+  <div class="demo">
+    <div class="demo-head">
+      <div><h2>Compressor C-201 tripped on high vibration, 03:12</h2><div class="sub">Sample incident, simulated data. Each candidate cause is evaluated against the evidence, the rulebook, and the rig itself.</div></div>
+      <button id="replay" type="button">Replay</button>
+    </div>
+    <div class="cols">
+      <div class="col">
+        <h3>Sensor evidence</h3><div class="list" id="sensors"></div>
+        <h3>Process specs and the rig</h3><div class="list" id="specs"></div>
+        <h3>Plant rulebook</h3><div class="list" id="rules"></div>
+      </div>
+      <div class="col"><div class="work" id="work"></div></div>
+      <div class="col">
+        <h3>Candidate causes</h3><div class="cands" id="cands"></div>
+        <div class="tally" id="tally">Evaluating…</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>© 2026 Principia AI</span>
+  <span>Checkable fault diagnosis for heavy industry.</span>
+</footer>
+
+<script>
+(function(){
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const cta=document.getElementById('cta'),lede=document.getElementById('lede'),hint=document.getElementById('hint');
+  const reveal=()=>{if(scrollY>40||reduce){lede.classList.add('in');cta.classList.add('in');hint.classList.add('gone')}};
+  addEventListener('scroll',reveal,{passive:true});reveal();
+
+  const E={
+    sensors:[['LT-104','Level 62%, flat for 47 min'],['FI-101','Feed varied ±12%'],['TE-108','Drum boot temp −8 °C'],['VT-2013','Vibration spike, broadband'],
+             ['XE-2014','Rod position shift, co-timed'],['VT-2013B','Backup probe agrees, 0.2 mil'],['TE-2015','Bearing #3 temp flat'],['PT-2019','Oil pressure in range'],['UV-210','Anti-surge valve nominal'],['FT-201','Discharge flow steady'],['CD','Coast-down signature nominal'],['SIS','Trip 220 ms after 2oo3 vote']],
+    specs:[['P&ID','D-104 boot drains to C-201 suction'],['Spec','Boot condensate forms below 4 °C'],['SRS','Trip logic: 2oo3 on vibration'],['Cal','LT-104 calibration record — missing','missing']],
+    rules:[['R-03','Trip within 250 ms of 2oo3 → protection OK'],['R-09','Level flat under varying feed → transmitter stuck'],['R-12','Oil pressure in range → lube OK'],['R-17','Stuck level ∧ falling boot temp → liquid accumulating'],
+           ['R-22','Liquid ingestion → broadband spike ∧ rod shift'],['R-28','Bearing wear → ΔT ≥ 5 °C'],['R-31','Probe fault ⊬ co-occurring rod shift'],['R-44','Valve inside envelope → surge control OK']]
+  };
+  const C=[
+    {name:'Vibration probe VT-2013',why:'Flagged by the monitoring system; every tool says replace it.',
+     steps:[{use:['VT-2013','XE-2014','R-22'],d:'spike co-occurs with rod shift'},{use:['spike co-occurs with rod shift','VT-2013B','R-31'],d:'probe healthy; signal is real'}],
+     verdict:'clear',text:'Exonerated',check:'proof of ¬cause · kernel: pass'},
+    {name:'Bearing #3',why:'Adjacent to the vibration reading.',
+     steps:[{use:['TE-2015','R-28'],d:'no thermal signature of wear'},{use:['no thermal signature of wear','CD'],d:'bearing not implicated'}],
+     verdict:'clear',text:'Exonerated',check:'proof of ¬cause · kernel: pass'},
+    {name:'Lube oil system',why:'Common cause of bearing-side vibration.',
+     steps:[{use:['PT-2019','R-12'],d:'lube pressure nominal'},{use:['lube pressure nominal','TE-2015'],d:'no lubrication failure'}],
+     verdict:'clear',text:'Exonerated',check:'proof of ¬cause · kernel: pass'},
+    {name:'Anti-surge valve UV-210',why:'Surge produces the same broadband signature.',
+     steps:[{use:['UV-210','R-44'],d:'valve inside envelope'},{use:['valve inside envelope','FT-201'],d:'no surge event'}],
+     verdict:'clear',text:'Exonerated',check:'proof of ¬cause · kernel: pass'},
+    {name:'Liquid carryover from Drum D-104',why:'Upstream of the compressor; needs the rig to connect.',
+     steps:[{use:['LT-104','FI-101','R-09'],d:'LT-104 stuck'},{use:['LT-104 stuck','TE-108','Spec','R-17'],d:'liquid accumulating in D-104'},
+            {use:['liquid accumulating in D-104','P&ID','VT-2013','XE-2014','R-22'],d:'liquid ingested at C-201 → trip'}],
+     verdict:'cause',text:'Cause licensed',check:'chain of 3 steps · kernel: pass'},
+    {name:'Protection system',why:'Did the trip itself work as designed?',
+     steps:[{use:['SIS','R-03'],d:'trip timing within spec'},{use:['trip timing within spec','SRS'],d:'acted per design'}],
+     verdict:'confirmed',text:'Confirmed',check:'kernel: pass'},
+    {name:'Root cause of LT-104 failure',why:'Why did the transmitter stick?',
+     steps:[{use:['LT-104 stuck','Cal'],d:'cause of sticking needs calibration history'},{use:['cause of sticking needs calibration history'],d:'not determinable from supplied evidence'}],
+     verdict:'open',text:'Honest null — evidence gap logged, work order raised',check:'no licensed conclusion'}
+  ];
+
+  const $=id=>document.getElementById(id),mk=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+  const evEl={};
+  const fill=(id,arr,cls)=>{const box=$(id);arr.forEach(([k,v,flag])=>{const e=mk('div','ev '+cls+(flag==='missing'?' missing':''),`<span class="id">${k}</span><span>${v}</span>`);box.appendChild(e);evEl[k]=e})};
+  fill('sensors',E.sensors,'sensor');fill('specs',E.specs,'spec');fill('rules',E.rules,'rule');
+  const kind=k=>evEl[k]?(evEl[k].classList.contains('rule')?'rule':evEl[k].classList.contains('missing')?'missing':evEl[k].classList.contains('spec')?'spec':'sensor'):'derived';
+
+  const cands=$('cands'),work=$('work'),tally=$('tally');
+  const cdEls=C.map((c,i)=>{const e=mk('div','cd',`<span>${c.name}</span><span class="tag">pending</span>`);e.addEventListener('click',()=>play(i,true));cands.appendChild(e);return e});
+  const setTag=(i,t)=>cdEls[i].querySelector('.tag').textContent=t;
+
+  let timers=[],auto=true;
+  const later=(f,ms)=>timers.push(setTimeout(f,reduce?0:ms));
+  const clearAll=()=>{timers.forEach(clearTimeout);timers=[];Object.values(evEl).forEach(e=>e.classList.remove('used'))};
+
+  const PH=['consulting background knowledge…','reading supporting documents…','checking the chain in Lean…'];
+  function play(i,manual){
+    clearAll();if(manual)auto=false;const c=C[i];
+    cdEls.forEach(e=>e.classList.remove('now'));cdEls[i].classList.add('now');
+    work.innerHTML='';work.appendChild(mk('p','cand',c.name));work.appendChild(mk('p','why',c.why));
+    let t=200;
+    c.steps.forEach(st=>{
+      const row=mk('div','step');
+      st.use.forEach((u,j)=>{if(j)row.appendChild(mk('span','op','+'));row.appendChild(mk('span','chip '+kind(u),u))});
+      row.appendChild(mk('span','op','⇒'));row.appendChild(mk('span','chip derived',st.d));
+      work.appendChild(row);
+      later(()=>{st.use.forEach(u=>evEl[u]&&evEl[u].classList.add('used'));row.classList.add('on')},t);t+=900;
+    });
+    const th=mk('div','think','<span class="spin"></span><span class="ph"></span>');work.appendChild(th);
+    const phases=c.verdict==='open'?[PH[0],PH[1],'searching for a proof in Lean…']:PH;
+    phases.forEach((p,k)=>later(()=>{th.classList.add('on');th.querySelector('.ph').textContent=p},t+k*650));
+    t+=phases.length*650+250;
+    const v=mk('div','verdict',`<b>${c.text}</b><span class="check ${c.verdict==='open'?'warn':''}">${c.check}</span>`);work.appendChild(v);
+    later(()=>{th.classList.remove('on');v.classList.add('on');cdEls[i].classList.add(c.verdict);setTag(i,c.verdict==='cause'?'licensed':c.verdict==='clear'?'ruled out':c.verdict==='open'?'unresolved':'confirmed');updateTally()},t);
+    if(auto)later(()=>{if(i+1<C.length)play(i+1);else finish()},t+1300);
+  }
+  function updateTally(){const n=cdEls.filter(e=>!e.querySelector('.tag').textContent.includes('pending')).length;
+    const lic=cdEls.filter(e=>e.classList.contains('cause')).length,cl=cdEls.filter(e=>e.classList.contains('clear')).length,op=cdEls.filter(e=>e.classList.contains('open')).length;
+    tally.textContent=`${n} of ${C.length} evaluated · ${lic} licensed · ${cl} exonerated · ${op} unresolved`}
+  function finish(){tally.textContent=`All ${C.length} candidates evaluated · 1 licensed · 4 exonerated · 1 confirmed · 1 unresolved · every chain kernel-checked`}
+  function reset(){clearAll();auto=true;cdEls.forEach((e,i)=>{e.className='cd';setTag(i,'pending')});tally.textContent='Evaluating…';play(0)}
+  $('replay').addEventListener('click',reset);
+
+  let started=false;
+  const io=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting&&!started){started=true;reset()}})},{threshold:.35});
+  io.observe($('demo'));
+})();
+</script>
+</body>
+</html>
