@@ -38,9 +38,35 @@
   .lede.in{opacity:1;transform:none}
   .cta{margin-top:34px;opacity:0;transform:translateY(10px);transition:opacity .8s ease .25s,transform .8s ease .25s}
   .cta.in{opacity:1;transform:none}
-  .btn{display:inline-block;padding:13px 22px;border-radius:12px;text-decoration:none;font-size:16px;border:1px solid rgba(138,43,226,.5);
+  .btn{display:inline-block;padding:13px 22px;border-radius:12px;text-decoration:none;font:inherit;font-size:16px;color:var(--text);cursor:pointer;border:1px solid rgba(138,43,226,.5);
     background:linear-gradient(135deg,rgba(138,43,226,.85),rgba(30,144,255,.55));box-shadow:0 10px 40px rgba(138,43,226,.25);transition:box-shadow .2s}
   .btn:hover{box-shadow:0 12px 48px rgba(138,43,226,.4)}
+  .btn[disabled]{opacity:.6;cursor:default}
+
+  dialog.pilot{border:1px solid var(--line);border-radius:22px;padding:0;background:rgba(18,18,32,.92);color:var(--text);width:min(520px,calc(100% - 32px));
+    box-shadow:0 30px 80px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+  dialog.pilot::backdrop{background:rgba(6,6,14,.7);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+  .pilot form{padding:26px 26px 24px;display:flex;flex-direction:column;gap:14px}
+  .pilot .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:2px}
+  .pilot h2{font-family:var(--serif);font-weight:400;font-size:24px;margin:0 0 4px}
+  .pilot .top p{color:var(--muted);font-size:14px;margin:0}
+  .pilot .x{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;width:32px;height:32px;font:inherit;font-size:16px;cursor:pointer;flex:none}
+  .pilot .x:hover{color:var(--text);border-color:rgba(255,255,255,.3)}
+  .pilot label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted)}
+  .pilot input,.pilot textarea{font:inherit;font-size:15px;color:var(--text);background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+  .pilot input:focus,.pilot textarea:focus{outline:none;border-color:rgba(30,144,255,.7);background:rgba(30,144,255,.06)}
+  .pilot textarea{resize:vertical;min-height:88px}
+  .pilot .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:480px){.pilot .row{grid-template-columns:1fr}}
+  .pilot .actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:4px;flex-wrap:wrap}
+  .pilot .note{font-size:12.5px;color:var(--faint)}
+  .pilot .err{color:var(--warn);font-size:13px;display:none}
+  .pilot .err.on{display:block}
+  .pilot .done{padding:40px 26px;text-align:center;display:none}
+  .pilot .done.on{display:block}
+  .pilot .done h2{margin-bottom:8px}
+  .pilot .done p{color:var(--muted);margin:0 0 20px}
+  .pilot .gotcha{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
   .hint{position:absolute;bottom:28px;left:0;right:0;text-align:center;color:var(--faint);font-size:13px;transition:opacity .5s}
   .hint.gone{opacity:0}
 
@@ -117,7 +143,7 @@
   <div class="hero">
     <h1>We know exactly what we don’t know.</h1>
     <p class="lede" id="lede">We pair agentic frameworks with formal verification and a novel alignment paradigm that enforces verified reasoning. The result is a fault investigation that is exhaustive, deterministic, and checkable: every cause the evidence licenses, everything ruled out, and an honest “inconclusive” where the evidence is insufficient.</p>
-    <div class="cta" id="cta"><a class="btn" href="mailto:support@principiaai.org?subject=Pilot%20inquiry">Request a pilot</a></div>
+    <div class="cta" id="cta"><button class="btn" type="button" id="open-pilot">Request a pilot</button></div>
   </div>
   <div class="hint" id="hint">Scroll to see how a diagnosis is built</div>
 </section>
@@ -148,12 +174,62 @@
   <span>Checkable fault diagnosis for heavy industry.</span>
 </footer>
 
+<dialog class="pilot" id="pilot" aria-labelledby="pilot-title">
+  <form id="pilot-form" action="https://formspree.io/f/xbglbjgk" method="POST" novalidate>
+    <div class="top">
+      <div><h2 id="pilot-title">Request a pilot</h2><p>Tell us about your plant and what you'd want to investigate. We reply within two business days.</p></div>
+      <button class="x" type="button" id="close-pilot" aria-label="Close">×</button>
+    </div>
+    <div class="row">
+      <label>Name<input name="name" type="text" autocomplete="name" required></label>
+      <label>Work email<input name="email" type="email" autocomplete="email" required></label>
+    </div>
+    <div class="row">
+      <label>Company<input name="company" type="text" autocomplete="organization" required></label>
+      <label>Role<input name="role" type="text" autocomplete="organization-title" placeholder="Reliability lead, plant manager…"></label>
+    </div>
+    <label>What would you want to pilot?<textarea name="message" placeholder="The equipment, the process, the kinds of trips or faults you investigate today."></textarea></label>
+    <input type="hidden" name="_subject" value="Pilot request from principiaai.co">
+    <input class="gotcha" type="text" name="_gotcha" tabindex="-1" autocomplete="off">
+    <div class="err" id="pilot-err" role="alert"></div>
+    <div class="actions">
+      <span class="note">Or write to <a href="mailto:support@principiaai.org?subject=Pilot%20inquiry">support@principiaai.org</a></span>
+      <button class="btn" type="submit" id="pilot-submit">Send request</button>
+    </div>
+  </form>
+  <div class="done" id="pilot-done">
+    <h2>Thanks, we’ve got it.</h2>
+    <p>We’ll be in touch at the address you gave us.</p>
+    <button class="btn" type="button" id="close-pilot-done">Close</button>
+  </div>
+</dialog>
+
 <script>
 (function(){
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const cta=document.getElementById('cta'),lede=document.getElementById('lede'),hint=document.getElementById('hint');
   const reveal=()=>{if(scrollY>40||reduce){lede.classList.add('in');cta.classList.add('in');hint.classList.add('gone')}};
   addEventListener('scroll',reveal,{passive:true});reveal();
+
+  const dlg=document.getElementById('pilot'),form=document.getElementById('pilot-form'),done=document.getElementById('pilot-done'),
+        err=document.getElementById('pilot-err'),submit=document.getElementById('pilot-submit');
+  const openPilot=()=>{form.style.display='';done.classList.remove('on');err.classList.remove('on');dlg.showModal();form.querySelector('input[name=name]').focus()};
+  document.getElementById('open-pilot').addEventListener('click',openPilot);
+  document.getElementById('close-pilot').addEventListener('click',()=>dlg.close());
+  document.getElementById('close-pilot-done').addEventListener('click',()=>dlg.close());
+  dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
+  form.addEventListener('submit',async e=>{
+    e.preventDefault();err.classList.remove('on');
+    if(!form.checkValidity()){form.reportValidity();return}
+    submit.disabled=true;submit.textContent='Sending…';
+    try{
+      const r=await fetch(form.action,{method:'POST',body:new FormData(form),headers:{Accept:'application/json'}});
+      if(!r.ok)throw new Error('bad status');
+      form.reset();form.style.display='none';done.classList.add('on');
+    }catch(_){
+      err.textContent='Something went wrong sending that. Please try again, or email support@principiaai.org.';err.classList.add('on');
+    }finally{submit.disabled=false;submit.textContent='Send request'}
+  });
 
   const E={
     sensors:[['LT-104','Level 62%, flat for 47 min'],['FI-101','Feed varied ±12%'],['TE-108','Drum boot temp −8 °C'],['VT-2013','Vibration spike, broadband'],
