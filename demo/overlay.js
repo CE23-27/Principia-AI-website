@@ -183,7 +183,7 @@ function prov(p){
   if (p.sheet) return `sheet ${p.sheet}${p.zone?' zone '+p.zone:''}${p.text_layer===false?' · drawing, no text layer':''}`;
   if (p.doc==='tundra_pdf' || p.page) return `hazop p.${p.page}${p.row?' row '+p.row:''}${p.verified==='literal'?' · span verified':''}`;
   if (String(p.doc||'').startsWith('synthetic')) return `${p.doc} row ${p.row}` + (p.span?` (${p.span})`:'');
-  if (p.doc==='solver') return `decided by ${p.solver||'cvc5'}`;
+  if (p.doc==='solver') return 'decided by the solver';
   return [p.doc, p.clause||p.row].filter(Boolean).join(' ');
 }
 function claimLine(id){ const c = (S.data.claims||[]).find(c=>c.id===id); if (!c) return `<div class="prov">${id}</div>`;
@@ -193,8 +193,7 @@ function card(f){
   const sup = (f.core && f.core.length ? f.core : (f.support||[])).slice(0,6).map(claimLine).join('');
   const model = f.model && Object.keys(f.model).length ? `<div class="prov">counterexample: ${Object.entries(f.model).map(([k,v])=>k+'='+v).join(', ')}</div>` : '';
   const q = f.question ? `<div class="prov">→ question to <b>${f.question.to_role}</b>: ${f.question.text}</div>` : '';
-  const smt = f.smtlib ? `<details><summary>SMT-LIB sent to cvc5</summary><pre>${esc(f.smtlib)}</pre></details>` : '';
-  return `<div class="card" data-f="${f.id||''}"><div class="head"><span class="st ${st}">${f.status}</span><span class="tag">${f.rule} · ${esc(f.subject||'')}</span></div><div class="body">${f.body||f.subgoal||''}</div>${sup}${model}${q}${smt}</div>`;
+  return `<div class="card" data-f="${f.id||''}"><div class="head"><span class="st ${st}">${f.status}</span><span class="tag">${f.rule} · ${esc(f.subject||'')}</span></div><div class="body">${f.body||f.subgoal||''}</div>${sup}${model}${q}</div>`;
 }
 function esc(s){ return String(s).replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
 function renderPanelBeam(n, subj){ $('#panel').innerHTML = `<h2>Committing MOC-001</h2><div class="empty">Propagating along “rests on” edges… ${n} subjects obligated so far.</div><div class="card"><div class="head"><span class="st obligated">obligated</span><span class="tag">${esc(subj)}</span></div><div class="body">Every claim that rests on ${esc(subj)} is now an obligation to re-derive.</div></div>`; }

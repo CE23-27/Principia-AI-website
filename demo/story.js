@@ -27,7 +27,7 @@ const CAUGHT = [
   ['PIC-1001 override setpoint blank on the drawing', 'Open question to the process engineer of record', 'Blank stays blank; nothing downstream is flagged', 'sheet MM0012 zone B9'],
   ['PSV-1002 set pressure blank on the drawing', 'Open question to the process engineer of record', 'Not in LOPA scope', 'sheet MM0013 zone B5'],
   ['MOC-001: operator window between alarm and trip shrinks to 4.2 min at 12 psi/min', 'R9 refuted after the transition, with the rate basis in the core', 'The MOC form does not link to the LOPA; the credit is not re-derived', 'moc, madb, srs, site procedure §2'],
-  ['SIF-101 trip plus overshoot within 1,800 psig', 'RMAWP holds before and after, decided by cvc5', 'Assumed from the design pressure', 'srs, moc, sheet MM0011 skid note'],
+  ['SIF-101 trip plus overshoot within 1,800 psig', 'RMAWP holds before and after, decided by the solver', 'Assumed from the design pressure', 'srs, moc, sheet MM0011 skid note'],
 ];
 
 const $ = s => document.querySelector(s);
@@ -57,7 +57,11 @@ async function buildCarousels() {
   docs.push({src: 'story/recs_p11.png', title: 'Recommendations 12–21', text: 'Rec 14: assure overpressure protection set at proper setpoints. Rec 16: consider a PSLL to close the valve upstream of the meter station.', badge: R});
   docs.push({src: 'story/matrix_p41.png', title: '5×5 risk matrix', text: 'Severity A to E, likelihood 1 to 5. The matrix has no tolerable line; the site procedure we wrote sets it at 6.', badge: R});
   docs.push({doc: true, html: `<div style="padding:26px;font-size:14px;color:var(--muted);max-width:720px"><div class="tag">MOC-001 · ${esc(moc.title)}</div><p style="color:var(--text);font-size:17px;line-height:1.5">${esc(moc.description)}</p><table class="t"><tr><td>Touches</td><td class="mono">${moc.touches.map(esc).join(', ')}</td></tr><tr><td>Before</td><td class="mono">${esc(JSON.stringify(moc.before))}</td></tr><tr><td>After</td><td class="mono">${esc(JSON.stringify(moc.after))}</td></tr><tr><td>Sign-offs</td><td>${moc.sign_offs.map(esc).join(' · ')}</td></tr></table></div>`, title: 'The change request', text: 'A transition on the ledger: every claim whose support reaches a touched subject becomes obligated and is re-decided.', badge: S});
-  docs.push({doc: true, html: `<div style="padding:26px;font-size:14px;color:var(--muted);max-width:720px"><div class="tag">What the engineer is asked</div><p style="color:var(--text);font-size:17px;line-height:1.5">“Review MOC-001 against the HAZOP, the LOPA, the SRS and the alarm databases. Sign off, or say what has to change and who has to answer.”</p><p>Principia's contract back: every edge in the answer carries a solver result, an engineer's answer, or an open question with a name on it. Nothing else discharges anything.</p></div>`, title: 'The engineer’s prompt', text: 'The same question in both halves of this page. One side answers it document by document; the other re-derives it.', badge: ''});
+  docs.push({doc: true, html: `<div class="brief"><div class="tag">What the engineer asks</div>
+<p>I am the process safety engineer for the Project Tundra CO<sub>2</sub> meter station. Dense-phase CO<sub>2</sub> arrives from the CCS facility at the main meter station MS-1001 and goes on to the well-pad stations. The station is 16-inch ANSI 900 piping, design pressure 1,800 psig, 12,980 ton/day. The HAZOP is the February 2021 study: three nodes, 35 recommendations, a 5×5 matrix. Our site procedure sets the tolerable line at a matrix score of 6. Anything at or above it carries a LOPA, and severity A scenarios have a target of 1e-4 per year. Operator response to an alarm counts as a layer only if it is independent of the initiating cause and the operator has at least ten minutes.</p>
+<p>CCS has submitted MOC-001: raise the normal discharge pressure delivered to the station from 1,500 to 1,650 psig to meet injection targets. Their compressor curve at the new operating point moves the blocked-outlet pressure-rise basis from 5 to 12 psi/min.</p>
+<p>Before this goes to the sign-off meeting, run a consistency check on MOC-001 against the HAZOP, the LOPA, the SRS for SIF-101 and SIF-104, the master alarm database and the DCS alarm export, the historian excursions and the site procedure. For every claim the change touches, tell me whether it still holds, what it rests on, and where the documents run out. I will take it from there.</p>
+<p class="note">What comes back is not a verdict. Every finding is a proof, a refutation with the rows it rests on, or an open question with a role on it. The engineer then works the results: asks what each one rests on, pushes on the ones that look wrong, and signs off themselves.</p></div>`, title: 'The engineer’s prompt', text: 'The same request in both halves of this page. One side reads the documents one at a time; the other re-derives every claim the change touches, and the engineer reasons over what comes back.', badge: ''});
   carousel($('#carDocs'), docs);
 
   let lopa = await getJSON('/api/doc?name=lopa').catch(() => []); if (!Array.isArray(lopa)) lopa = [];
@@ -140,7 +144,7 @@ async function renderContrast() {
   if (baseline === undefined) baseline = await fetch('out/llm_baseline.json').then(r => r.ok ? r.json() : null).catch(() => null);
   if (!mocDef) mocDef = await getJSON('/api/moc').catch(() => null);
   const b = baseline;
-  $('#llmModel').textContent = b ? `${b.model}, no tools` : '';
+  $('#llmModel').textContent = b ? 'no ledger, no solver' : '';
   const d = P.state.data; if (!d || !d.findings) return;
   const F = d.findings, after = P.state.phase === 'moc';
   const n = st => F.filter(f => f.status === st).length;
@@ -153,7 +157,7 @@ async function renderContrast() {
 
   const plain = b ? `<div class="llm">${esc(b.answer).replace(/\*\*(.+?)\*\*/g, '<b style="color:var(--text)">$1</b>')}</div>` : '<div class="empty">llm_baseline.json not present (run tools/llm_baseline.py).</div>';
   const ours1 = `<div class="kpi"><div class="r"><b>${n('refuted')}</b><span>refuted</span></div><div class="a"><b>${n('open')}</b><span>open, with a name</span></div><div class="g"><b>${n('holds')}</b><span>proved</span></div></div>
-    <div class="tag">ledger totals, all ${F.length} findings, ${after ? 'after' : 'before'} MOC-001</div>
+    <div class="tag">ledger totals, all ${F.length} findings, ${after ? 'after' : 'before'} MOC-001 · no verdict; the sign-off stays with the engineer</div>
     ${r9 ? `<div class="card"><div class="head"><span class="st ${r9.status}">${r9.status}</span><span class="tag">R9 · PAH-1001</span></div><div class="body">${esc(r9.body)}</div>${r9.model && Object.keys(r9.model).length ? `<div class="prov">counterexample: ${Object.entries(r9.model).map(([k, v]) => k + '=' + v).join(', ')}</div>` : ''}</div>` : ''}`;
 
   const rests = r9 ? (r9.core && r9.core.length ? r9.core : r9.support || []).slice(0, 5) : [];
