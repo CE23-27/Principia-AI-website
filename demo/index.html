@@ -43,6 +43,7 @@ nav .links a{text-decoration:none}
 /* sections (panels, like the site) */
 section.panel{padding:64px 28px;border-bottom:1px solid var(--line);max-width:1500px;margin:0 auto}
 .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:18px}
+#what .cols{grid-template-columns:repeat(2,1fr)}
 .card{border:1px solid var(--line);background:var(--glass);border-radius:14px;padding:14px 16px;font-size:14px}
 .card h4{margin:0 0 8px;font-family:var(--serif);font-weight:400;font-size:20px}
 .card ul{margin:0;padding-left:18px;color:var(--muted)}
@@ -216,9 +217,6 @@ footer{padding:22px 28px;font-size:11.5px;color:var(--faint)}
       <p class="tag" style="margin-top:10px">Source: Project Tundra NEPA record, DOE/NETL, Appendices D–E.</p></div>
     <div class="card synth"><h4>Filled in <span class="synth-badge">SYNTHETIC, LABELLED</span></h4>
       <ul><li>LOPA rows for the scenarios the matrix rates at 6 or above, CCPS default frequencies</li><li>SRS and cause-and-effect for the two shutdown functions the HAZOP names</li><li>Master alarm database and the DCS copy, one tag drifted on purpose</li><li>Historian excursions bracketing the design rate</li><li>MOC-001: raised compressor discharge pressure</li><li>A one-page site procedure; IEC 61511 and CCPS clauses paraphrased with clause ids</li></ul></div>
-    <div class="card runs"><h4>What runs</h4>
-      <div class="pipe">documents → formalizer (Claude, cached) → search tool (literal spans) → LEDGER (SQLite, support graph) → cvc5 (models, unsat cores) → beam / cascade on the sheets → engineer answers → axiom → re-derive</div>
-      <ul style="margin-top:10px"><li id="statFormalizer">Formalizer: … claims</li><li>Every finding carries its claim ids and locations</li><li>Deferred and said so: Lean certificates, Alloy, the hypothesis-generator loop</li></ul></div>
   </div>
 </section>
 

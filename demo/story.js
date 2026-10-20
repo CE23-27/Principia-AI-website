@@ -130,7 +130,6 @@ function renderAcross() {
   const d = P.state.data; if (!d || !d.findings) return;
   const picks = d.findings.filter(f => f.status !== 'holds').slice(0, 9);
   $('#acrossCards').innerHTML = picks.map(f => `<div class="card"><div class="head"><span class="st ${f.status==='holds'?'derived':f.status}">${f.status}</span> <span class="tag">${f.rule} · ${esc(f.subject||'')}</span></div><div class="body" style="margin-top:6px">${esc(f.body||f.subgoal)}</div><div class="prov">${(f.core&&f.core.length?f.core:f.support||[]).slice(0,4).map(id => { const c = d.claims.find(x => x.id===id); return c ? `<b>${esc(c.subject)}</b> ${esc(P.prov(c.provenance))}` : esc(id); }).join('<br>')}</div></div>`).join('');
-  $('#statFormalizer').textContent = `Formalizer: ${d.claims.filter(c => String(c.producer||'').startsWith('formalizer')).length} claims from the model, cached; tag recall 70/72 on the four sheets`;
 }
 function renderCaught() {
   const tb = $('#caughtTable tbody');
