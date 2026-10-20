@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Principia — Project Tundra</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<meta name="theme-color" content="#0a0a14">
+<style>
+:root{
+  --bg:#0a0a14;--violet:#8a2be2;--blue:#1e90ff;--teal:#3fd0c9;
+  --line:rgba(255,255,255,.10);--glass:rgba(255,255,255,.05);
+  --text:rgba(255,255,255,.90);--muted:rgba(255,255,255,.60);--faint:rgba(255,255,255,.35);
+  --ok:#7fe0a8;--warn:#ffb86b;--bad:#ff6b7a;
+  --serif:Georgia,"Times New Roman",Times,serif;
+  --sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  box-sizing:border-box;
+}
+*{box-sizing:inherit}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,5.2vw,64px);line-height:1.06;letter-spacing:-.012em;margin:0 0 18px}
+h2{font-family:var(--serif);font-weight:400;font-size:30px;margin:0 0 6px}
+h3{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:22px 0 8px;font-weight:600}
+p.lead{font-size:18px;color:var(--muted);max-width:900px;margin:0 0 14px}
+.tag{font-family:var(--mono);font-size:11px;color:var(--faint)}
+button{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:6px 10px;font:inherit;font-size:13px;cursor:pointer}
+button:hover{color:var(--text);border-color:rgba(255,255,255,.25)}
+button.primary{color:var(--text);border:1px solid rgba(138,43,226,.5);background:linear-gradient(135deg,rgba(138,43,226,.85),rgba(30,144,255,.55));box-shadow:0 10px 40px rgba(138,43,226,.25);border-radius:12px;padding:9px 16px}
+button.primary:disabled{opacity:.45;cursor:default}
+/* top nav */
+nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:18px;padding:12px 28px;border-bottom:1px solid var(--line);background:rgba(10,10,20,.85);backdrop-filter:blur(10px)}
+nav .brand{font-family:var(--serif);font-size:22px;text-decoration:none}
+nav .brand i{color:var(--violet);font-style:normal}
+nav .links a.home{color:var(--faint)}
+nav .brand span{color:var(--faint);font-family:var(--sans);font-size:13px;margin-left:10px}
+nav .links{margin-left:auto;display:flex;gap:16px;font-size:13px;color:var(--muted)}
+nav .links a{text-decoration:none}
+/* sections (panels, like the site) */
+section.panel{padding:64px 28px;border-bottom:1px solid var(--line);max-width:1500px;margin:0 auto}
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:18px}
+.card{border:1px solid var(--line);background:var(--glass);border-radius:14px;padding:14px 16px;font-size:14px}
+.card h4{margin:0 0 8px;font-family:var(--serif);font-weight:400;font-size:20px}
+.card ul{margin:0;padding-left:18px;color:var(--muted)}
+.card li{margin:3px 0}
+.card.real{border-color:rgba(63,208,201,.45);box-shadow:inset 0 0 0 1px rgba(63,208,201,.15)}
+.card.real h4{color:var(--teal)}
+.card.synth h4{color:var(--warn)}
+.card.runs h4{color:#c9a8ff}
+.pipe{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:10px;line-height:1.8}
+/* carousel */
+.carousel{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#07070f;margin-top:18px}
+.carousel .slides{display:block}
+.carousel .slide{display:none;width:100%;grid-template-columns:1fr 360px;gap:0}
+.carousel .slide.cur{display:grid;animation:fadein .35s ease}
+@keyframes fadein{from{opacity:.3}to{opacity:1}}
+.carousel .slide .img{background:#fff;display:flex;align-items:center;justify-content:center;max-height:560px;overflow:hidden}
+.carousel .slide .img img{width:100%;height:auto;display:block}
+.carousel .slide .img.doc{background:#0f0f1a}
+.carousel .cap{padding:18px 20px;border-left:1px solid var(--line);font-size:14px;color:var(--muted)}
+.carousel .cap h4{margin:0 0 8px;font-family:var(--serif);font-weight:400;font-size:20px;color:var(--text)}
+.carousel .cap .tag{display:block;margin-bottom:8px}
+.carousel .ctl{position:absolute;bottom:12px;left:14px;display:flex;gap:8px;align-items:center;z-index:3}
+.carousel .arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:4;width:44px;height:44px;border-radius:50%;background:rgba(10,10,20,.8);border:1px solid rgba(255,255,255,.25);color:var(--text);font-size:24px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(6px)}
+.carousel .arrow:hover{border-color:var(--teal);color:var(--teal)}
+.carousel .arrow.l{left:12px}.carousel .arrow.r{right:372px}
+.carousel .thumbs{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--line);background:rgba(0,0,0,.25);overflow-x:auto}
+.carousel .thumbs div{flex:0 0 auto;width:92px;height:60px;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:#fff;cursor:pointer;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:#222}
+.carousel .thumbs div img{width:100%;height:100%;object-fit:cover}
+.carousel .thumbs div.cur{opacity:1;border-color:var(--teal);box-shadow:0 0 0 1px var(--teal)}
+.carousel .thumbs div.doc{background:#1a1a2a;color:var(--muted)}
+.carousel .counter{position:absolute;top:10px;left:14px;z-index:4;font-family:var(--mono);font-size:11px;color:var(--text);background:rgba(10,10,20,.8);border:1px solid var(--line);border-radius:999px;padding:3px 9px}
+@media (max-width:1100px){.carousel .arrow.r{right:12px}}
+.carousel .ctl .dots{display:flex;gap:5px;margin-left:6px}
+.carousel .ctl .dots i{width:7px;height:7px;border-radius:50%;background:var(--faint);display:block}
+.carousel .ctl .dots i.cur{background:var(--teal)}
+.real-badge{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;padding:2px 7px;border-radius:999px;border:1px solid rgba(63,208,201,.5);color:var(--teal);margin-left:8px;vertical-align:middle}
+.synth-badge{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,184,107,.5);color:var(--warn);margin-left:8px;vertical-align:middle}
+table.t{width:100%;border-collapse:collapse;font-size:13px}
+table.t th{text-align:left;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line)}
+table.t td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--muted)}
+table.t td:first-child{color:var(--text)}
+table.t td.mono{font-family:var(--mono);font-size:12px}
+.good{color:#bff3d6}.badc{color:#ffb3bb}.warnc{color:#ffd9a8}
+.lopa{font-family:var(--mono);font-size:12px}
+/* demo stage */
+#demo{padding:0;max-width:none;border-bottom:1px solid var(--line)}
+#demo .bar{display:flex;align-items:center;gap:12px;padding:12px 28px;border-bottom:1px solid var(--line)}
+#demo .bar h2{font-size:22px;margin:0}
+#demo .bar .spacer{flex:1}
+main{display:grid;grid-template-columns:1fr 400px;height:88vh;min-height:640px}
+#stage{position:relative;overflow:hidden;background:#07070f}
+#strip{position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:18px;align-content:start;overflow:auto}
+.thumb{position:relative;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff;cursor:pointer;aspect-ratio:2600/1682}
+.thumb img{width:100%;height:100%;display:block;filter:saturate(.9)}
+.thumb .lbl{position:absolute;left:8px;bottom:6px;font-family:var(--mono);font-size:11px;color:#111;background:rgba(255,255,255,.85);padding:2px 6px;border-radius:6px}
+.thumb .dot{position:absolute;right:8px;top:8px;width:10px;height:10px;border-radius:50%;background:var(--faint)}
+.thumb.red .dot{background:var(--bad);box-shadow:0 0 12px var(--bad)}
+.thumb.amber .dot{background:var(--warn);box-shadow:0 0 12px var(--warn)}
+.thumb.green .dot{background:var(--ok);box-shadow:0 0 12px var(--ok)}
+#sheet{position:absolute;inset:0;display:none}
+#sheet.on{display:block}
+#canvas{position:absolute;left:0;top:0;transform-origin:0 0}
+#canvas img{display:block;width:2600px;height:1682px}
+#overlay{position:absolute;left:0;top:0;width:2600px;height:1682px}
+.box{fill:none;stroke-width:5;rx:10;ry:10;opacity:.95}
+.box.asserted{stroke:rgba(30,144,255,.55);stroke-width:3}
+.box.obligated{stroke:var(--warn);filter:drop-shadow(0 0 10px var(--warn))}
+.box.derived{stroke:var(--ok);filter:drop-shadow(0 0 10px var(--ok))}
+.box.refuted{stroke:var(--bad);filter:drop-shadow(0 0 12px var(--bad))}
+.box.open{stroke:var(--warn);stroke-dasharray:10 8;filter:drop-shadow(0 0 10px var(--warn))}
+.box.hl{stroke:var(--teal);stroke-width:8;filter:drop-shadow(0 0 16px var(--teal))}
+.box.focus{stroke-width:10;filter:drop-shadow(0 0 22px currentColor)}
+.callout{font-family:var(--mono);font-size:22px;paint-order:stroke;stroke:#0a0a14;stroke-width:7px;stroke-linejoin:round}
+.callout.refuted{fill:#ffb3bb}.callout.derived{fill:#bff3d6}.callout.open{fill:#ffd9a8}.callout.obligated{fill:#ffd9a8}
+.trace{fill:none;stroke-width:11;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
+.trace.red{stroke:var(--bad);filter:drop-shadow(0 0 14px var(--bad))}
+.trace.amber{stroke:var(--warn);filter:drop-shadow(0 0 14px var(--warn))}
+.trace.green{stroke:var(--ok);filter:drop-shadow(0 0 14px var(--ok))}
+.trace.signal{stroke-width:5;stroke-dasharray:12 10;opacity:.95}
+.stop{fill:none;stroke:var(--warn);stroke-width:7;stroke-dasharray:14 10}
+.stoplbl{font-family:var(--serif);font-size:30px;fill:#ffd9a8;paint-order:stroke;stroke:#0a0a14;stroke-width:8px}
+#sheetbar{position:absolute;left:14px;top:12px;display:flex;gap:8px;align-items:center;z-index:5}
+#sheetbar .pill{background:rgba(10,10,20,.85);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-family:var(--mono);font-size:12px;color:var(--muted);backdrop-filter:blur(8px);cursor:pointer}
+#sheetbar .pill.cur{color:var(--text);border-color:rgba(255,255,255,.35)}
+#hint{position:absolute;right:14px;top:12px;z-index:5;font-size:12px;color:var(--faint);background:rgba(10,10,20,.8);border:1px solid var(--line);border-radius:8px;padding:5px 10px}
+/* engineer dialog, bottom right of the stage */
+#dialog{position:absolute;right:16px;bottom:16px;width:500px;max-height:46%;display:flex;flex-direction:column;z-index:6;background:rgba(10,10,20,.92);border:1px solid rgba(255,255,255,.16);border-radius:14px;backdrop-filter:blur(12px);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+#dialog .dh{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted)}
+#dialog .dh b{color:var(--text);font-weight:500}
+#dialog .dh .spacer{flex:1}
+#dialog .dh button{padding:1px 8px;font-size:13px;line-height:1.2;margin-left:8px}
+#dialog.collapsed{max-height:none}
+#dialog.collapsed #dlog{display:none}
+#dlog{overflow:auto;padding:10px 12px;font-size:13px;display:flex;flex-direction:column;gap:8px}
+.msg{padding:8px 11px;border-radius:12px;max-width:94%;white-space:pre-wrap;line-height:1.45}
+.msg.eng{align-self:flex-end;background:linear-gradient(135deg,rgba(138,43,226,.55),rgba(30,144,255,.35));border:1px solid rgba(138,43,226,.4)}
+.msg.sys{align-self:flex-start;background:rgba(255,255,255,.05);border:1px solid var(--line)}
+.msg .st{font-family:var(--mono);font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid;margin-right:6px}
+.msg .pv{display:block;font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:4px}
+.cursor::after{content:"▍";color:var(--teal);animation:bl .8s steps(1) infinite}
+@keyframes bl{50%{opacity:0}}
+aside{position:relative;border-left:1px solid var(--line);overflow:auto;padding:16px 18px 40px;background:linear-gradient(180deg,rgba(255,255,255,.03),transparent 30%)}
+aside h2{font-size:22px;margin:0 0 4px}
+aside .card{border-radius:12px;padding:10px 12px;margin:8px 0;font-size:13px}
+.card .head{display:flex;gap:8px;align-items:baseline}
+.card .st{font-family:var(--mono);font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid}
+.st.refuted{color:#ffb3bb;border-color:rgba(255,107,122,.5)}.st.derived{color:#bff3d6;border-color:rgba(127,224,168,.5)}.st.open{color:#ffd9a8;border-color:rgba(255,184,107,.5)}.st.obligated{color:#ffd9a8;border-color:rgba(255,184,107,.5)}.st.holds{color:#bff3d6;border-color:rgba(127,224,168,.5)}
+.card .body{margin:4px 0 6px;color:var(--text)}
+.prov{font-family:var(--mono);font-size:11px;color:var(--faint);line-height:1.5}
+.prov b{color:var(--muted);font-weight:500}
+details summary{cursor:pointer;color:var(--muted);font-size:12px}
+pre{font-family:var(--mono);font-size:10.5px;color:var(--muted);white-space:pre-wrap;background:rgba(0,0,0,.35);padding:8px;border-radius:8px;max-height:220px;overflow:auto}
+.q{display:flex;gap:6px;margin-top:8px}
+.q input{flex:1;background:rgba(0,0,0,.35);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 9px;font:inherit;font-size:13px}
+.limits{font-family:var(--mono);font-size:11px;color:var(--faint);border-top:1px dashed var(--line);padding-top:10px;margin-top:18px;line-height:1.6}
+table.h{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px;color:var(--muted)}
+table.h td,table.h th{padding:3px 6px;border-bottom:1px solid var(--line);text-align:left}
+.empty{color:var(--faint);font-size:13px}
+.kpi{display:flex;gap:10px;margin:8px 0}
+.kpi div{flex:1;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--glass)}
+.kpi b{display:block;font-family:var(--serif);font-size:24px;font-weight:400}
+.kpi span{font-size:11px;color:var(--faint);letter-spacing:.08em;text-transform:uppercase}
+.kpi .r b{color:#ffb3bb}.kpi .g b{color:#bff3d6}.kpi .a b{color:#ffd9a8}
+#legend{display:none;margin:6px 0 10px}
+#legend.on{display:block}
+#legend table.h tr{cursor:pointer}
+#legend table.h tr:hover td{color:var(--text)}
+#legend td.k{color:var(--teal)}
+/* contrast */
+.contrast{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.contrast .card{min-height:200px}
+.contrast .llm{white-space:pre-wrap;color:var(--muted);font-size:14px;line-height:1.55}
+footer{padding:22px 28px;font-size:11.5px;color:var(--faint)}
+/* laptop-only gate: phones and tablets get a placeholder instead of the demo */
+#small{display:none;position:fixed;inset:0;z-index:100;overflow:auto;background:var(--bg);color:var(--text);align-items:center;justify-content:center;text-align:center;padding:32px 24px}
+#small .in{width:100%;max-width:420px}
+#small .in *{max-width:100%;overflow-wrap:anywhere}
+#small .glyph{font-size:44px;margin-bottom:14px}
+#small h1{font-size:30px;margin-bottom:12px}
+#small p{color:var(--muted);font-size:16px;margin:0 0 22px}
+#small a{display:inline-block;text-decoration:none;color:var(--text);border:1px solid rgba(138,43,226,.5);background:linear-gradient(135deg,rgba(138,43,226,.85),rgba(30,144,255,.55));border-radius:12px;padding:11px 18px}
+@media (max-width:1100px), (hover:none) and (pointer:coarse){#small{display:flex}body{overflow:hidden}nav,section,main,footer{display:none}}
+@media (max-width:1100px){.cols{grid-template-columns:1fr}main{grid-template-columns:1fr}aside{display:none}.carousel .slide{grid-template-columns:1fr}.contrast{grid-template-columns:1fr}#dialog{width:min(520px,92%)}}
+</style>
+</head>
+<body>
+<div id="small"><div class="in"><div class="glyph">💻</div><h1>Open this on a laptop</h1><p>The demo is a full-size P&amp;ID workspace with seven drawings, a live ledger and a solver trace. It needs a desktop-sized screen and a mouse.</p><a href="../">← Back to Principia AI</a></div></div>
+<nav>
+  <a class="brand" href="../">Principia AI<i>.</i> <span>Project Tundra meter stations</span></a>
+  <div class="links"><a href="#what">What this is</a><a href="#docs">The documents</a><a href="#today">Today</a><a href="#demo">The demo</a><a href="#across">Across documents</a><a href="#caught">Caught vs missed</a><a href="#contrast">Without the structure</a><a class="home" href="../">← Back to site</a></div>
+</nav>
+
+<section class="panel" id="what">
+  <h1>We know exactly what we don't know.</h1>
+  <p class="lead">A dependency ledger under a real HAZOP and real P&amp;IDs. The engineer proposes a change; every claim that rested on what changed is re-derived by a solver and comes back as a proof, a refutation with the rows it rests on, or a question addressed to a person.</p>
+  <div class="cols">
+    <div class="card real"><h4>Real <span class="real-badge">PUBLIC RECORD</span></h4>
+      <ul><li>Seven P&amp;ID sheets MM0011–MM0017 (Burns &amp; McDonnell, Rev A, 2021)</li><li>HAZOP worksheets, three nodes, eight pages (Hoglin Engineering, Feb 2021)</li><li>All 35 recommendations and the 5×5 risk matrix</li><li>Design pressure 1,800 psig, ANSI 900 piping, 12,980 ton/day</li><li>The blanks on the drawings: "SET @ XXX PSIG" on both override controllers, blank set pressures on four relief valves</li></ul>
+      <p class="tag" style="margin-top:10px">Source: Project Tundra NEPA record, DOE/NETL, Appendices D–E.</p></div>
+    <div class="card synth"><h4>Filled in <span class="synth-badge">SYNTHETIC, LABELLED</span></h4>
+      <ul><li>LOPA rows for the scenarios the matrix rates at 6 or above, CCPS default frequencies</li><li>SRS and cause-and-effect for the two shutdown functions the HAZOP names</li><li>Master alarm database and the DCS copy, one tag drifted on purpose</li><li>Historian excursions bracketing the design rate</li><li>MOC-001: raised compressor discharge pressure</li><li>A one-page site procedure; IEC 61511 and CCPS clauses paraphrased with clause ids</li></ul></div>
+    <div class="card runs"><h4>What runs</h4>
+      <div class="pipe">documents → formalizer (Claude, cached) → search tool (literal spans) → LEDGER (SQLite, support graph) → cvc5 (models, unsat cores) → beam / cascade on the sheets → engineer answers → axiom → re-derive</div>
+      <ul style="margin-top:10px"><li id="statFormalizer">Formalizer: … claims</li><li>Every finding carries its claim ids and locations</li><li>Deferred and said so: Lean certificates, Alloy, the hypothesis-generator loop</li></ul></div>
+  </div>
+</section>
+
+<section class="panel" id="docs">
+  <h2>The documents, as the engineer receives them</h2>
+  <p class="lead">Seven sheets, eight worksheet pages, a recommendations list, a matrix, and a change request. The arrows between them live in people's heads.</p>
+  <div class="carousel" id="carDocs"></div>
+</section>
+
+<section class="panel" id="today">
+  <h2>What the engineer sees today</h2>
+  <p class="lead">One document at a time. The LOPA credit is a cell in a worksheet; whether the layer it credits shares a transmitter with the control loop is a different drawing, and nobody re-opens it when a setpoint moves.</p>
+  <div class="carousel" id="carToday"></div>
+</section>
+
+<section class="panel" id="demo">
+  <div class="bar">
+    <h2>The demo</h2><span id="phase" class="tag">phase: first pass</span>
+    <div class="spacer"></div>
+    <button id="btnLegend">Legend</button>
+    <button id="btnReset" title="rebuild the ledger from the documents">Reset</button>
+    <button id="btnStrip">All sheets</button>
+    <button id="btnDialog">Ask as the engineer</button>
+    <button id="btnFollow" disabled>Follow the line</button>
+    <button id="btnCommit" class="primary">Commit MOC-001</button>
+  </div>
+  <main>
+    <section id="stage">
+      <div id="strip"></div>
+      <div id="sheet">
+        <div id="sheetbar"></div>
+        <div id="hint">drag to pan · wheel to zoom · click a sheet pill to jump</div>
+        <div id="canvas"><img id="img" alt=""><svg id="overlay" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2600 1682"></svg></div>
+      </div>
+      <div id="dialog">
+        <div class="dh"><b>Engineer</b> · asks the ledger <div class="spacer"></div><span class="tag" id="dstate">idle</span><button id="dtoggle" title="collapse">—</button></div>
+        <div id="dlog"><div class="empty">Press “Ask as the engineer”. Each answer below is the solver's result for that question, with the rows it rests on.</div></div>
+      </div>
+    </section>
+    <aside id="panel"><div class="empty">Loading the ledger…</div></aside>
+  </main>
+</section>
+
+<section class="panel" id="across">
+  <h2>What we found across the documents, before the MOC</h2>
+  <p class="lead">Each finding below rests on rows from at least two documents. The incumbent review reads them one at a time.</p>
+  <div id="acrossCards" class="cols"></div>
+</section>
+
+<section class="panel" id="caught">
+  <h2>What we caught, what the incumbent missed</h2>
+  <table class="t" id="caughtTable"><thead><tr><th>Finding</th><th>Principia</th><th>Document-by-document review</th><th>Rests on</th></tr></thead><tbody></tbody></table>
+</section>
+
+<section class="panel" id="contrast">
+  <h2>The same model, without the structure</h2>
+  <p class="lead">We gave the same model the same HAZOP, SRS, alarm databases and LOPA, and asked whether MOC-001 is acceptable. No ledger, no solver, no search tool.</p>
+  <div class="contrast">
+    <div class="card"><h4>Plain answer <span class="tag" id="llmModel"></span></h4><div class="llm" id="llmText">…</div></div>
+    <div class="card"><h4>Principia</h4><div id="contrastOurs"></div></div>
+  </div>
+</section>
+
+<footer>P&amp;IDs and HAZOP from the Project Tundra NEPA record (Minnkota Power; Burns &amp; McDonnell; Hoglin Engineering, 2021). LOPA, SRS, alarm databases, historian and MOC-001 are synthetic and labelled as such. Questions are addressed to roles, not to the people named in the title blocks.</footer>
+<script>
+(function(){
+  if (matchMedia('(max-width:1100px), (hover:none) and (pointer:coarse)').matches) return;
+  for (const src of ['overlay.js','story.js']) { const t = document.createElement('script'); t.src = src; t.async = false; document.body.appendChild(t); }
+})();
+</script>
+</body>
+</html>
