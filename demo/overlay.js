@@ -206,8 +206,10 @@ function renderPanel(){
   const F = d.findings||[]; const refuted = F.filter(f=>f.status==='refuted'); const open = F.filter(f=>f.status==='open'); const ok = F.filter(f=>f.status==='holds'||f.status==='derived');
   const qs = d.questions||[];
   let h = `<h2>${S.phase==='moc' ? 'After MOC-001' : 'First pass, before the MOC'}</h2>
-  <div class="kpi"><div class="r"><b>${refuted.length}</b><span>refuted</span></div><div class="a"><b>${open.length||qs.length}</b><span>open</span></div><div class="g"><b>${ok.length}</b><span>re-derived</span></div></div>` + legendHtml();
-  if (S.phase==='moc' && d.diff) h += `<div class="prov">obligated ${ (d.obligated||[]).length } claims · re-derived ${ (d.diff.re_derived||[]).length } · refuted ${ (d.diff.refuted||[]).length } · opened ${ (d.diff.opened||[]).length }</div>`;
+  <div class="tag">ledger totals · all ${F.length} findings ${S.phase==='moc' ? 'after' : 'before'} MOC-001</div>
+  <div class="kpi"><div class="r"><b>${refuted.length}</b><span>refuted</span></div><div class="a"><b>${open.length||qs.length}</b><span>open</span></div><div class="g"><b>${ok.length}</b><span>proved</span></div></div>` + legendHtml();
+  if (S.phase==='moc' && d.diff) { const df = d.diff; const re = ['refuted','re_derived','opened','unchanged'].reduce((a,k)=>a+(df[k]||[]).length,0);
+    h += `<div class="prov"><b>This transition (MOC-001)</b> · ${(d.obligated||[]).length} claims obligated · ${re} findings re-decided: ${(df.refuted||[]).length} newly refuted · ${(df.re_derived||[]).length} newly proved · ${(df.opened||[]).length} newly opened · ${(df.unchanged||[]).length} unchanged</div>`; }
   h += `<h3>Refuted</h3>` + (refuted.length ? refuted.map(card).join('') : `<div class="empty">nothing refuted</div>`);
   h += `<h3>Open · to whom</h3>`;
   const openCards = open.map(card).join('');
@@ -222,7 +224,7 @@ function renderPanel(){
       h += `<tr><td>${r.excursion_id}</td><td>${r.tag}</td><td>${v}</td><td style="color:${v>basis?'#ffb3bb':'var(--faint)'}">${v>basis?'exceeds':'within'} ${basis}</td></tr>`; }
     h += `</table><div class="prov">data refutes a rate basis; it never proves one.</div>`;
   }
-  h += `<h3>Re-derived</h3>` + (ok.length ? ok.slice(0,8).map(card).join('') : `<div class="empty">none yet</div>`);
+  h += `<h3>Proved</h3>` + (ok.length ? ok.slice(0,8).map(card).join('') : `<div class="empty">none yet</div>`);
   h += `<div class="limits"><b>Limits.</b> ${esc(d.limits||'')}</div>`;
   $('#panel').innerHTML = h;
   $('#panel').querySelectorAll('#legend tr[data-k]').forEach(tr=>tr.onclick=()=>{ S.hlKind = S.hlKind===tr.dataset.k ? null : tr.dataset.k; if (S.sheet) renderSheet(S.sheet); });

@@ -136,16 +136,47 @@ function renderCaught() {
   const tb = $('#caughtTable tbody');
   tb.innerHTML = CAUGHT.map(r => `<tr><td>${esc(r[0])}</td><td class="good">${esc(r[1])}</td><td class="badc">${esc(r[2])}</td><td class="mono">${esc(r[3])}</td></tr>`).join('');
 }
+let baseline, mocDef;
 async function renderContrast() {
-  const b = await fetch('out/llm_baseline.json').then(r => r.ok ? r.json() : null).catch(() => null);
-  $('#llmText').innerHTML = b ? esc(b.answer).replace(/\*\*(.+?)\*\*/g, '<b style="color:var(--text)">$1</b>') : 'llm_baseline.json not present (run tools/llm_baseline.py).';
+  if (baseline === undefined) baseline = await fetch('out/llm_baseline.json').then(r => r.ok ? r.json() : null).catch(() => null);
+  if (!mocDef) mocDef = await getJSON('/api/moc').catch(() => null);
+  const b = baseline;
   $('#llmModel').textContent = b ? `${b.model}, no tools` : '';
-  const d = P.state.data; if (!d) return;
-  const refuted = d.findings.filter(f => f.status === 'refuted').length, open = d.findings.filter(f => f.status === 'open').length;
-  const r9 = d.findings.find(f => f.rule === 'R9' && f.subject === 'PAH-1001');
-  $('#contrastOurs').innerHTML = `<div class="kpi"><div class="r"><b>${refuted}</b><span>refuted</span></div><div class="a"><b>${open}</b><span>open, with a name</span></div><div class="g"><b>${d.findings.filter(f=>f.status==='holds').length}</b><span>proved</span></div></div>
-    ${r9 ? `<div class="card"><div class="head"><span class="st ${r9.status}">${r9.status}</span><span class="tag">R9 · PAH-1001</span></div><div class="body">${esc(r9.body)}</div><div class="prov">${(r9.core||r9.support||[]).slice(0,3).map(id=>{const c=d.claims.find(x=>x.id===id);return c?`<b>${esc(c.subject)}</b> ${esc(P.prov(c.provenance))}`:esc(id)}).join('<br>')}</div></div>` : ''}
-    <div class="limits"><b>Limits.</b> ${esc(d.limits||'')}</div>`;
+  const d = P.state.data; if (!d || !d.findings) return;
+  const F = d.findings, after = P.state.phase === 'moc';
+  const n = st => F.filter(f => f.status === st).length;
+  const r9 = F.find(f => f.rule === 'R9' && f.subject === 'PAH-1001');
+  const r16 = F.find(f => f.rule === 'R16' && f.subject === 'PAH-1001');
+  const claim = id => d.claims.find(x => x.id === id);
+  const claimRow = id => { const c = claim(id); return c ? `<b>${esc(c.subject)}</b> ${esc(c.body||'')}<br><span class="id">${esc(id)} · ${esc(P.prov(c.provenance))}</span>` : esc(id); };
+  const none = why => `<span class="st open">no answer</span><div class="why">${why}</div>`;
+  const row = (q, plain, ours) => `<tr><td>${q}</td><td>${plain}</td><td>${ours}</td></tr>`;
+
+  const plain = b ? `<div class="llm">${esc(b.answer).replace(/\*\*(.+?)\*\*/g, '<b style="color:var(--text)">$1</b>')}</div>` : '<div class="empty">llm_baseline.json not present (run tools/llm_baseline.py).</div>';
+  const ours1 = `<div class="kpi"><div class="r"><b>${n('refuted')}</b><span>refuted</span></div><div class="a"><b>${n('open')}</b><span>open, with a name</span></div><div class="g"><b>${n('holds')}</b><span>proved</span></div></div>
+    <div class="tag">ledger totals, all ${F.length} findings, ${after ? 'after' : 'before'} MOC-001</div>
+    ${r9 ? `<div class="card"><div class="head"><span class="st ${r9.status}">${r9.status}</span><span class="tag">R9 · PAH-1001</span></div><div class="body">${esc(r9.body)}</div>${r9.model && Object.keys(r9.model).length ? `<div class="prov">counterexample: ${Object.entries(r9.model).map(([k, v]) => k + '=' + v).join(', ')}</div>` : ''}</div>` : ''}`;
+
+  const rests = r9 ? (r9.core && r9.core.length ? r9.core : r9.support || []).slice(0, 5) : [];
+  const ours2 = rests.length ? `<div class="prov">${rests.map(claimRow).join('<br>')}</div>` + (r16 ? `<div class="prov" style="margin-top:8px">The MADB-vs-DCS split is a finding of its own, R16: ${esc(r16.body)}</div>` : '') : '<div class="empty">no R9 finding in this state</div>';
+  const plain2 = none(`None are named. The text gives setpoints and rates with no row, page or sheet behind them, so any line could be wrong and nothing in the answer would show it. One already is: it puts PAH-1001 at <b>1,750 psig in the MADB</b>. The MADB row says 1,700; it is the DCS copy that reads 1,750.`);
+
+  const plain3 = none(`The answer is a one-time reading. Ask again after the next change and you get a new text with no relation to this one. Nothing marks which of these lines rested on the 12 psi/min figure.`);
+  const diff = d.diff || {};
+  const touched = (mocDef && mocDef.touches || []).map(esc).join(', ');
+  const ours3 = after && d.diff
+    ? `<div class="prov">MOC-001 is a transition on the ledger. <b>${(d.obligated||[]).length}</b> claims rested on what it touched${touched ? ` (${touched})` : ''} and were obligated. Of the ${['refuted','re_derived','opened','unchanged'].reduce((a, k) => a + (diff[k]||[]).length, 0)} findings re-decided: <b>${(diff.refuted||[]).length}</b> newly refuted · <b>${(diff.re_derived||[]).length}</b> newly proved · <b>${(diff.opened||[]).length}</b> newly opened · <b>${(diff.unchanged||[]).length}</b> unchanged. Change the rate basis again and the same walk runs over the same edges.</div>`
+    : `<div class="prov">Commit MOC-001 above. Every claim whose support reaches ${touched || 'a touched subject'} becomes an obligation and is re-decided, and the counts appear here.</div>`;
+
+  const plain4 = none(`It lists items the engineer should still look at, which is useful. It cannot say what it read, which rules it applied, or where its own reading stopped.`);
+  const ours4 = `<div class="limits">${esc(d.limits||'')}</div>`;
+
+  $('#cmpTable tbody').innerHTML = [
+    row('Is MOC-001 acceptable?', plain, ours1),
+    row('Which rows does this rest on?', plain2, ours2),
+    row('What happens when the rate changes again?', plain3, ours3),
+    row('What did it not check?', plain4, ours4),
+  ].join('');
 }
 
 /* ---------- wiring ---------- */

@@ -20,7 +20,7 @@
   box-sizing:border-box;
 }
 *{box-sizing:inherit}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
 body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased}
 a{color:inherit}
 h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,5.2vw,64px);line-height:1.06;letter-spacing:-.012em;margin:0 0 18px}
@@ -58,8 +58,8 @@ section.panel{padding:64px 28px;border-bottom:1px solid var(--line);max-width:15
 .carousel .slide{display:none;width:100%;grid-template-columns:1fr 360px;gap:0}
 .carousel .slide.cur{display:grid;animation:fadein .35s ease}
 @keyframes fadein{from{opacity:.3}to{opacity:1}}
-.carousel .slide .img{background:#fff;display:flex;align-items:center;justify-content:center;max-height:560px;overflow:hidden}
-.carousel .slide .img img{width:100%;height:auto;display:block}
+.carousel .slide .img{background:#fff;display:flex;align-items:center;justify-content:center;height:640px;overflow:hidden}
+.carousel .slide .img img{width:100%;height:100%;object-fit:contain;display:block}
 .carousel .slide .img.doc{background:#0f0f1a}
 .carousel .cap{padding:18px 20px;border-left:1px solid var(--line);font-size:14px;color:var(--muted)}
 .carousel .cap h4{margin:0 0 8px;font-family:var(--serif);font-weight:400;font-size:20px;color:var(--text)}
@@ -171,10 +171,22 @@ table.h td,table.h th{padding:3px 6px;border-bottom:1px solid var(--line);text-a
 #legend table.h tr{cursor:pointer}
 #legend table.h tr:hover td{color:var(--text)}
 #legend td.k{color:var(--teal)}
-/* contrast */
-.contrast{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
-.contrast .card{min-height:200px}
-.contrast .llm{white-space:pre-wrap;color:var(--muted);font-size:14px;line-height:1.55}
+/* contrast: one question per row, both answers side by side */
+table.cmp{table-layout:fixed;margin-top:18px}
+table.cmp th:first-child,table.cmp td:first-child{width:21%}
+table.cmp td{padding:14px 12px;font-size:13.5px}
+table.cmp td:first-child{font-family:var(--serif);font-size:19px;line-height:1.3}
+table.cmp .llm{white-space:pre-wrap;color:var(--muted);font-size:13px;line-height:1.5;max-height:340px;overflow:auto;padding-right:6px}
+table.cmp .why{color:var(--muted);margin-top:7px;line-height:1.5}
+table.cmp .why b{color:var(--text);font-weight:500}
+table.cmp .prov{font-size:12px;line-height:1.55;color:var(--muted)}
+table.cmp .prov b{color:var(--text)}
+table.cmp .prov .id{color:var(--faint)}
+table.cmp .kpi{margin:0 0 6px}
+table.cmp .kpi b{font-size:22px}
+table.cmp .card{margin:10px 0 0;padding:10px 12px}
+table.cmp .limits{border:0;margin:0;padding:0;font-size:12px;color:var(--muted);line-height:1.55}
+table.cmp .st{font-family:var(--mono);font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid}
 footer{padding:22px 28px;font-size:11.5px;color:var(--faint)}
 /* laptop-only gate: phones and tablets get a placeholder instead of the demo */
 #small{display:none;position:fixed;inset:0;z-index:100;overflow:auto;background:var(--bg);color:var(--text);align-items:center;justify-content:center;text-align:center;padding:32px 24px}
@@ -185,14 +197,14 @@ footer{padding:22px 28px;font-size:11.5px;color:var(--faint)}
 #small p{color:var(--muted);font-size:16px;margin:0 0 22px}
 #small a{display:inline-block;text-decoration:none;color:var(--text);border:1px solid rgba(138,43,226,.5);background:linear-gradient(135deg,rgba(138,43,226,.85),rgba(30,144,255,.55));border-radius:12px;padding:11px 18px}
 @media (max-width:1100px), (hover:none) and (pointer:coarse){#small{display:flex}body{overflow:hidden}nav,section,main,footer{display:none}}
-@media (max-width:1100px){.cols{grid-template-columns:1fr}main{grid-template-columns:1fr}aside{display:none}.carousel .slide{grid-template-columns:1fr}.contrast{grid-template-columns:1fr}#dialog{width:min(520px,92%)}}
+@media (max-width:1100px){.cols{grid-template-columns:1fr}main{grid-template-columns:1fr}aside{display:none}.carousel .slide{grid-template-columns:1fr}#dialog{width:min(520px,92%)}}
 </style>
 </head>
 <body>
 <div id="small"><div class="in"><div class="glyph">💻</div><h1>Open this on a laptop</h1><p>The demo is a full-size P&amp;ID workspace with seven drawings, a live ledger and a solver trace. It needs a desktop-sized screen and a mouse.</p><a href="../">← Back to Principia AI</a></div></div>
 <nav>
   <a class="brand" href="../">Principia AI<i>.</i> <span>Project Tundra meter stations</span></a>
-  <div class="links"><a href="#what">What this is</a><a href="#docs">The documents</a><a href="#today">Today</a><a href="#demo">The demo</a><a href="#across">Across documents</a><a href="#caught">Caught vs missed</a><a href="#contrast">Without the structure</a><a class="home" href="../">← Back to site</a></div>
+  <div class="links"><a href="#what">What this is</a><a href="#docs">The documents</a><a href="#today">Today</a><a href="#demo">The demo</a><a href="#across">Across documents</a><a href="#caught">Caught vs missed</a><a href="#contrast">Without verified reasoning</a><a class="home" href="../">← Back to site</a></div>
 </nav>
 
 <section class="panel" id="what">
@@ -262,12 +274,9 @@ footer{padding:22px 28px;font-size:11.5px;color:var(--faint)}
 </section>
 
 <section class="panel" id="contrast">
-  <h2>The same model, without the structure</h2>
-  <p class="lead">We gave the same model the same HAZOP, SRS, alarm databases and LOPA, and asked whether MOC-001 is acceptable. No ledger, no solver, no search tool.</p>
-  <div class="contrast">
-    <div class="card"><h4>Plain answer <span class="tag" id="llmModel"></span></h4><div class="llm" id="llmText">…</div></div>
-    <div class="card"><h4>Principia</h4><div id="contrastOurs"></div></div>
-  </div>
+  <h2>The same model, without formally verified reasoning</h2>
+  <p class="lead">We gave the same model the same HAZOP, SRS, alarm databases and LOPA, and asked whether MOC-001 is acceptable. No ledger, no solver, no search tool. Then we put three more questions to both answers. On the first question a plain reading looks as good. The other three are the product.</p>
+  <table class="t cmp" id="cmpTable"><thead><tr><th>Question</th><th>Plain answer <span class="tag" id="llmModel"></span></th><th>Principia</th></tr></thead><tbody></tbody></table>
 </section>
 
 <footer>P&amp;IDs and HAZOP from the Project Tundra NEPA record (Minnkota Power; Burns &amp; McDonnell; Hoglin Engineering, 2021). LOPA, SRS, alarm databases, historian and MOC-001 are synthetic and labelled as such. Questions are addressed to roles, not to the people named in the title blocks.</footer>
