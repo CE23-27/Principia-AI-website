@@ -6,8 +6,6 @@ const EXTRA_ANCHORS = {
   '16"-E4B-CO-1004': {MM0011:[2230,760,230,48], MM0012:[380,745,260,48]},
   '16"-E4B-CO-1005': {MM0012:[760,460,250,48], MM0013:[380,700,250,48]},
   '16"-E4B-CO-1006': {MM0012:[760,1035,250,48], MM0013:[380,1275,250,48]},
-  'MS-1001': {MM0011:[1180,55,290,95]},
-  'rate_basis': {MM0011:[2230,820,230,48]},
 };
 const ALIAS = { 'SIF-101':['PS-1001','MOV-1001'], 'SIF-104':['PS-1004','MOV-1004'], 'PAH-1001':['PIT-1001'],
   'PAL-1004':['PIT-1005'], 'S-1.5.2':['PS-1001'], 'S-1.5.1':['PS-1001'], 'S-1.2.2':['PSV-1001'], 'S-1.7.1':['TP-01'],
@@ -115,25 +113,26 @@ function renderSheet(name, overrides){
   const findingsFor = subj => (S.data?.findings||[]).filter(f => f.subject===subj || (f.subgoal||'').includes(subj));
   const draw = (subj, box, labelTag) => {
     const st = subjectStatus(subj, bySubj, overrides);
-    const [x,y,w,h] = box.map(Number);
+    const [x0,y0,w0,h0] = box.map(Number); const inset = (w0<=60 && h0<=60) ? 6 : 2;
+    const x = x0+inset, y = y0+inset, w = w0-2*inset, h = h0-2*inset;
     const extra = (S.focus.includes(subj) ? ' focus' : '') + (S.hlKind && kindPrefix(subj)===S.hlKind ? ' hl' : '');
-    out += `<rect class="box ${st}${extra}" data-subj="${esc(subj)}" x="${x-8}" y="${y-8}" width="${w+16}" height="${h+16}" style="color:${st==='refuted'?'var(--bad)':st==='derived'?'var(--ok)':'var(--warn)'}"><title>${subj}: ${st} · click for dependencies</title></rect>`;
+    out += `<rect class="box ${st}${extra}" data-subj="${esc(subj)}" x="${x}" y="${y}" width="${w}" height="${h}" style="color:${st==='refuted'?'var(--bad)':st==='derived'?'var(--ok)':'var(--warn)'}"><title>${subj}: ${st} · click for dependencies</title></rect>`;
     if (st!=='asserted') {
       const fs = findingsFor(subj); const rules = [...new Set(fs.map(f=>f.rule))].join(' ');
       const txt = st==='refuted' ? `✕ ${labelTag} ${rules}` : st==='open' ? `? ${labelTag} ${rules||'question'}` : st==='obligated' ? `… ${labelTag}` : `✓ ${labelTag} ${rules}`;
-      out += `<text class="callout ${st}" x="${x+w+14}" y="${y-10}">${txt}</text>`;
+      out += `<text class="callout ${st}" x="${x+w+10}" y="${y-6}">${txt}</text>`;
     }
   };
-  // trace on the pipes (e): only after the MOC; pipes thick, instrument signals dashed
+  for (const t of S.index.filter(t=>t.sheet===name)) draw(t.tag, [t.x,t.y,t.w,t.h], t.tag);
+  for (const [subj, per] of Object.entries(EXTRA_ANCHORS)) if (per[name]) draw(subj, per[name], subj);
+  if (S.phase==='moc') for (const [tag] of (STOPS[name]||[])) if (subjectStatus(tag,bySubj,overrides)==='open') {
+    const t = S.index.find(t=>t.tag===tag && t.sheet===name); if (!t) continue; const x = +t.x, y = +t.y, w = +t.w, h = +t.h;
+    out += `<text class="stoplbl" x="${x+w+4}" y="${y+h+16}">documents run out here</text>`;
+  }
+  // trace on the pipes (e): only after the MOC, drawn last so it always sits on top of the boxes
   if (S.phase==='moc' && PIPES[name]) {
     const sc = sheetColor(name, bySubj); const col = sc==='red'?'red':sc==='green'?'green':'amber';
     for (const r of PIPES[name]) out += `<polyline class="trace ${col}" points="${r.map(p=>p.join(',')).join(' ')}"/>`;
-    for (const r of (SIGNALS[name]||[])) out += `<polyline class="trace signal ${col}" points="${r.map(p=>p.join(',')).join(' ')}"/>`;
-  }
-  for (const t of S.index.filter(t=>t.sheet===name)) draw(t.tag, [t.x,t.y,t.w,t.h], t.tag);
-  for (const [subj, per] of Object.entries(EXTRA_ANCHORS)) if (per[name]) draw(subj, per[name], subj);
-  if (S.phase==='moc') for (const [tag,[x,y]] of (STOPS[name]||[])) if (subjectStatus(tag,bySubj,overrides)==='open') {
-    out += `<circle class="stop" cx="${x+25}" cy="${y+25}" r="48"/><text class="stoplbl" x="${x+90}" y="${y+70}">documents run out here</text>`;
   }
   svg.innerHTML = out;
   svg.querySelectorAll('rect.box').forEach(r=>r.onclick=e=>{ e.stopPropagation(); const c = claimForSubject(r.dataset.subj); if (c) deps(c.id); });

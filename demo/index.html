@@ -127,8 +127,8 @@ main{display:grid;grid-template-columns:1fr 400px;height:88vh;min-height:640px}
 #canvas{position:absolute;left:0;top:0;transform-origin:0 0}
 #canvas img{display:block;width:2600px;height:1682px}
 #overlay{position:absolute;left:0;top:0;width:2600px;height:1682px}
-.box{fill:none;stroke-width:5;rx:10;ry:10;opacity:.95}
-.box.asserted{stroke:rgba(30,144,255,.55);stroke-width:3}
+.box{fill:none;stroke-width:5;rx:8;ry:8;opacity:.95}
+.box.asserted{stroke:rgba(30,144,255,.4);stroke-width:2}
 .box.obligated{stroke:var(--warn);filter:drop-shadow(0 0 10px var(--warn))}
 .box.derived{stroke:var(--ok);filter:drop-shadow(0 0 10px var(--ok))}
 .box.refuted{stroke:var(--bad);filter:drop-shadow(0 0 12px var(--bad))}
@@ -143,7 +143,7 @@ main{display:grid;grid-template-columns:1fr 400px;height:88vh;min-height:640px}
 .trace.green{stroke:var(--ok);filter:drop-shadow(0 0 14px var(--ok))}
 .trace.signal{stroke-width:5;stroke-dasharray:12 10;opacity:.95}
 .stop{fill:none;stroke:var(--warn);stroke-width:7;stroke-dasharray:14 10}
-.stoplbl{font-family:var(--serif);font-size:30px;fill:#ffd9a8;paint-order:stroke;stroke:#0a0a14;stroke-width:8px}
+.stoplbl{font-family:var(--serif);font-size:22px;fill:#ffd9a8;paint-order:stroke;stroke:#0a0a14;stroke-width:7px}
 #sheetbar{position:absolute;left:14px;top:12px;display:flex;gap:8px;align-items:center;z-index:5}
 #sheetbar .pill{background:rgba(10,10,20,.85);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-family:var(--mono);font-size:12px;color:var(--muted);backdrop-filter:blur(8px);cursor:pointer}
 #sheetbar .pill.cur{color:var(--text);border-color:rgba(255,255,255,.35)}
