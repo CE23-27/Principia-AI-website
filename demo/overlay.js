@@ -66,6 +66,7 @@ async function load(phase){
   $('#phase').textContent = 'phase: ' + (phase==='moc' ? 'after MOC-001' : 'first pass (before the MOC)');
   renderStrip(); renderPanel(); if (S.sheet) renderSheet(S.sheet);
   emit('loaded');
+  if (!S.booted) { S.booted = true; openGrid('lopa'); }
 }
 
 /* ---------- status per subject ---------- */
@@ -94,10 +95,10 @@ function renderStrip(){
 }
 
 /* ---------- sheet (b, d, e) ---------- */
-const FEAT = { pid:'Interactive P&IDs', grid:'The ledger as a spreadsheet', qra:'From SIL to QRA scoping' };
+const FEAT = { qra:'From an open LOPA row to a scoped QRA', pid:'Interactive P&IDs', grid:'Smart saves that mitigate PHA fatigue' };
 function setMode(m){ S.mode = m; $('#demoTitle').innerHTML = FEAT[m]; $$('#demo .feat').forEach(f=>f.classList.toggle('cur', f.dataset.f===m)); }
 function openSheet(name){
-  if (S.mode!=='qra') setMode('pid');
+  closeQra(); setMode('pid');
   S.sheet = name; $('#sheet').classList.add('on'); $('#strip').style.display='none'; closeGrid();
   $('#img').src = `sheets/${name}.png`;
   fit(); renderSheet(name);
@@ -186,18 +187,21 @@ function prov(p){
   if (p.doc==='engineer') return `engineer answer (${p.by_role||'engineer'})`;
   if (p.sheet) return `sheet ${p.sheet}${p.zone?' zone '+p.zone:''}${p.text_layer===false?' · drawing, no text layer':''}`;
   if (p.doc==='tundra_pdf' || p.page) return `hazop p.${p.page}${p.row?' row '+p.row:''}${p.verified==='literal'?' · span verified':''}`;
-  if (String(p.doc||'').startsWith('synthetic')) return `${p.doc} row ${p.row}` + (p.span?` (${p.span})`:'');
+  if (String(p.doc||'').startsWith('synthetic')) return `${String(p.doc).replace(/^synthetic /,'')} row ${p.row}` + (p.span?` (${p.span})`:'');
   if (p.doc==='solver') return 'decided by the solver';
   return [p.doc, p.clause||p.row].filter(Boolean).join(' ');
 }
 function claimLine(id){ const c = (S.data.claims||[]).find(c=>c.id===id); if (!c) return `<div class="prov">${id}</div>`;
   return `<div class="prov"><b>${c.subject}</b> ${c.body||''}<br>${prov(c.provenance)}${c.provenance?.span?` — “${String(c.provenance.span).slice(0,140)}”`:''}</div>`; }
+function diffCount(d){ const byIdF = Object.fromEntries((d.findings||[]).map(f=>[f.id,f])); return k => dedupe(((d.diff||{})[k]||[]).map(i=>byIdF[i]).filter(Boolean)).length; }
+function dedupe(list){ const seen = new Map(); for (const f of list) { const k = (f.body||f.subgoal||'')+'|'+f.status; if (seen.has(k)) seen.get(k).also.push(f.scenario_id||f.subject); else seen.set(k, Object.assign({}, f, {also: []})); } return [...seen.values()]; }
 function card(f){
   const st = f.status==='holds'?'derived':f.status;
   const sup = (f.core && f.core.length ? f.core : (f.support||[])).slice(0,6).map(claimLine).join('');
   const model = f.model && Object.keys(f.model).length ? `<div class="prov">counterexample: ${Object.entries(f.model).map(([k,v])=>k+'='+v).join(', ')}</div>` : '';
   const q = f.question ? `<div class="prov">→ question to <b>${f.question.to_role}</b>: ${f.question.text}</div>` : '';
-  return `<div class="card" data-f="${f.id||''}"><div class="head"><span class="st ${st}">${f.status}</span><span class="tag">${f.rule} · ${esc(f.subject||'')}</span></div><div class="body">${f.body||f.subgoal||''}</div>${sup}${model}${q}</div>`;
+  const also = f.also && f.also.length ? `<div class="prov">same result for ${f.also.map(esc).join(', ')}</div>` : '';
+  return `<div class="card" data-f="${f.id||''}"><div class="head"><span class="st ${st}">${f.status}</span><span class="tag">${f.rule} · ${esc(f.subject||'')}${f.scenario_id?' · '+esc(f.scenario_id):''}</span></div><div class="body">${f.body||f.subgoal||''}</div>${sup}${model}${q}${also}</div>`;
 }
 function esc(s){ return String(s).replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
 function renderPanelBeam(n, subj){ $('#panel').innerHTML = `<h2>Committing MOC-001</h2><div class="empty">Propagating along “rests on” edges… ${n} subjects obligated so far.</div><div class="card"><div class="head"><span class="st obligated">obligated</span><span class="tag">${esc(subj)}</span></div><div class="body">Every claim that rests on ${esc(subj)} is now an obligation to re-derive.</div></div>`; }
@@ -207,13 +211,13 @@ function legendHtml(){
 function renderPanel(){
   buildGraph(); GRID.tables = null; GRID.edits = {};
   const d = S.data; if (!d || d.error) { $('#panel').innerHTML = `<div class="empty">${d?.error||'no data'}</div>`; return; }
-  const F = d.findings||[]; const refuted = F.filter(f=>f.status==='refuted'); const open = F.filter(f=>f.status==='open'); const ok = F.filter(f=>f.status==='holds'||f.status==='derived');
+  const F = dedupe(d.findings||[]); const refuted = F.filter(f=>f.status==='refuted'); const open = F.filter(f=>f.status==='open'); const ok = F.filter(f=>f.status==='holds'||f.status==='derived');
   const qs = d.questions||[];
   let h = `<h2>${S.phase==='moc' ? 'After MOC-001' : 'First pass, before the MOC'}</h2>
   <div class="tag">ledger totals · all ${F.length} findings ${S.phase==='moc' ? 'after' : 'before'} MOC-001</div>
   <div class="kpi"><div class="r" data-st="refuted" title="list them"><b>${refuted.length}</b><span>refuted</span></div><div class="a" data-st="open" title="list them"><b>${open.length||qs.length}</b><span>open</span></div><div class="g" data-st="holds" title="list them"><b>${ok.length}</b><span>re-derived</span></div></div>` + legendHtml();
-  if (S.phase==='moc' && d.diff) { const df = d.diff; const re = ['refuted','re_derived','opened','unchanged'].reduce((a,k)=>a+(df[k]||[]).length,0);
-    h += `<div class="prov"><b>This transition (MOC-001)</b> · ${(d.obligated||[]).length} claims obligated · ${re} findings re-decided: ${(df.refuted||[]).length} newly refuted · ${(df.re_derived||[]).length} newly re-derived · ${(df.opened||[]).length} newly opened · ${(df.unchanged||[]).length} unchanged</div>`; }
+  if (S.phase==='moc' && d.diff) { const df = d.diff; const cnt = diffCount(d); const re = ['refuted','re_derived','opened','unchanged'].reduce((a,k)=>a+cnt(k),0);
+    h += `<div class="prov"><b>This transition (MOC-001)</b> · ${(d.obligated||[]).length} claims obligated · ${re} findings re-decided: ${cnt('refuted')} newly refuted · ${cnt('re_derived')} newly re-derived · ${cnt('opened')} newly opened · ${cnt('unchanged')} unchanged</div>`; }
   h += `<h3>Refuted</h3>` + (refuted.length ? refuted.map(card).join('') : `<div class="empty">nothing refuted</div>`);
   h += `<h3>Open · to whom</h3>`;
   const openCards = open.map(card).join('');
@@ -222,13 +226,13 @@ function renderPanel(){
   const answered = qs.filter(q=>q.status==='answered').map(q=>`<div class="card" data-c="${q.claim_id}"><div class="head"><span class="st derived">answered</span><span class="tag">${q.id}</span></div><div class="body">${q.text}</div><div class="prov">axiom entered by <b>${q.by_role||q.to_role}</b>: ${q.answer||''}</div></div>`).join('');
   h += (openCards+qCards+answered) || `<div class="empty">no open questions</div>`;
   if (d.historian && d.historian.length) {
-    h += `<h3>Historian evidence (synthetic)</h3><table class="h"><tr><th>excursion</th><th>tag</th><th>rise psi/min</th><th>basis</th></tr>`;
+    h += `<h3>Historian evidence</h3><table class="h"><tr><th>excursion</th><th>tag</th><th>rise psi/min</th><th>basis</th></tr>`;
     const seen = new Set(); for (const r of d.historian) { if (seen.has(r.excursion_id)) continue; seen.add(r.excursion_id);
       const basis = S.phase==='moc' ? 12 : 5; const v = +r.rise_rate_psi_min;
       h += `<tr><td>${r.excursion_id}</td><td>${r.tag}</td><td>${v}</td><td style="color:${v>basis?'#ffb3bb':'var(--faint)'}">${v>basis?'exceeds':'within'} ${basis}</td></tr>`; }
     h += `</table><div class="prov">data refutes a rate basis; it never proves one.</div>`;
   }
-  h += `<h3>Re-derived</h3>` + (ok.length ? ok.slice(0,8).map(card).join('') : `<div class="empty">none yet</div>`);
+  h += `<h3>Re-derived</h3>` + (ok.length ? ok.map(card).join('') : `<div class="empty">none yet</div>`);
   h += `<div class="limits"><b>Limits.</b> ${esc(d.limits||'')}</div>`;
   $('#panel').innerHTML = h;
   $('#panel').querySelectorAll('.kpi [data-st]').forEach(t=>t.onclick=()=>depsList(t.dataset.st));
@@ -322,12 +326,12 @@ function renderDeps(){
   el.querySelectorAll('.dgo').forEach(a=>a.onclick=()=>goTo(a.dataset.id));
 }
 function depsList(status){
-  const el = $('#deps'); const F = (S.data.findings||[]).filter(f => status==='holds' ? (f.status==='holds'||f.status==='derived') : f.status===status);
+  const el = $('#deps'); const F = dedupe(S.data.findings||[]).filter(f => status==='holds' ? (f.status==='holds'||f.status==='derived') : f.status===status);
   const qs = status==='open' ? (S.data.questions||[]).filter(q=>q.status!=='answered') : [];
   el.innerHTML = `<div class="dh"><b>${F.length+qs.length} ${esc(status==='holds'?'re-derived':status)}</b> · the findings behind the tile<div class="spacer"></div><button id="dclose">×</button></div><div class="dbody">
-    ${F.map(f=>`<div class="dn"><div class="dl"><span class="st ${stOf(f)}">${esc(f.status)}</span><span class="dt">${esc(f.rule)}</span> <a class="dgo" data-id="${esc(f.id)}">${esc(f.subject||'')}</a> <span class="db">${esc((f.body||f.subgoal||'').slice(0,140))}</span></div></div>`).join('')}
+    ${F.map(f=>`<div class="dn"><div class="dl"><span class="st ${stOf(f)}">${esc(f.status)}</span><span class="dt">${esc(f.rule)}</span> <a class="dgo" data-id="${esc(f.id)}">${esc(f.subject||'')}${f.scenario_id?' · '+esc(f.scenario_id):''}</a> <span class="db">${esc((f.body||f.subgoal||'').slice(0,140))}</span>${f.also&&f.also.length?`<span class="dp">same result for ${esc(f.also.join(', '))}</span>`:''}</div></div>`).join('')}
     ${qs.map(q=>`<div class="dn"><div class="dl"><span class="st open">question</span> <a class="dgo" data-id="${esc(q.claim_id)}">${esc(q.id)}</a> <span class="db">${esc(q.text)}</span><span class="dp">to ${esc(q.to_role)}</span></div></div>`).join('')}
-    <div class="limits"><b>Limits.</b> A list of the ledger's findings with this status; the count is a total over all findings, not a diff.</div></div>`;
+    <div class="limits"><b>Limits.</b> The ledger's distinct findings with this status; a finding that holds for more than one scenario is listed once and names the others. The count is a total, not a diff.</div></div>`;
   el.classList.add('on');
   el.querySelector('#dclose').onclick = ()=>el.classList.remove('on');
   el.querySelectorAll('.dgo').forEach(a=>a.onclick=()=>goTo(a.dataset.id));
@@ -364,9 +368,10 @@ function cellVal(r, col){
   if (col==='subject') return r.subject; if (col==='status') return r.status; if (col==='provenance') return prov(r.provenance);
   const v = (r.attrs||{})[col]; return v==null ? '' : (typeof v==='object' ? JSON.stringify(v) : String(v));
 }
+const gridMode = () => GRID.tab==='lopa' ? 'qra' : 'grid';
 function openGrid(tab){
-  if (S.mode!=='qra') setMode('grid');
   if (tab) GRID.tab = tab;
+  setMode(gridMode());
   if (!GRID.tables) { buildGraph(); buildTables(); loadPrefs(); }
   $('#sheet').classList.remove('on'); $('#strip').style.display='none'; $('#grid').classList.add('on'); S.sheet = null; if (S.follow) follow();
   renderGrid();
@@ -377,9 +382,18 @@ function closeGrid(){ $('#grid').classList.remove('on'); }
 const AMBER = 'no document states this';
 function scenarioStatus(sc){ const F = (S.data?.findings||[]).filter(f => f.scenario_id===sc || f.subject===sc); return F.some(f=>f.status==='refuted') ? 'refuted' : F.some(f=>f.status==='open') ? 'open' : F.length ? 'holds' : 'none'; }
 function qraEligible(sc){ const st = scenarioStatus(sc); return st==='refuted' || st==='open'; }
+const CHW = { ql: 7.0, qs: 6.4 };
+function wrapLine(text, maxChars){
+  const words = String(text).split(/\s+/); const out = []; let cur = '';
+  for (const w of words) { if ((cur + ' ' + w).trim().length > maxChars && cur) { out.push(cur); cur = w; } else cur = (cur ? cur + ' ' : '') + w; }
+  if (cur) out.push(cur); return out.length ? out : [''];
+}
+function boxLines(w, lines){ return lines.flatMap((l,i) => wrapLine(l, Math.floor((w-20)/(i?CHW.qs:CHW.ql))).map(t => ({t, cls: i?'qs':'ql'}))); }
+function boxH(w, lines){ return 14 + boxLines(w, lines).length*15 + 4; }
 function svgBox(x,y,w,h,lines,cls,id){
-  const t = lines.map((l,i)=>`<text x="${x+10}" y="${y+18+i*15}" class="${i?'qs':'ql'}">${esc(l)}</text>`).join('');
-  return `<g class="qn ${cls||''}" ${id?`data-id="${esc(id)}"`:''}><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8"/>${t}</g>`;
+  const ls = boxLines(w, lines); const hh = h || (14 + ls.length*15 + 4);
+  const t = ls.map((l,i)=>`<text x="${x+10}" y="${y+18+i*15}" class="${l.cls}">${esc(l.t)}</text>`).join('');
+  return `<g class="qn ${cls||''}" ${id?`data-id="${esc(id)}"`:''}><rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="8"/>${t}</g>`;
 }
 function svgLine(x1,y1,x2,y2,cls){ return `<path d="M${x1},${y1} L${x2},${y2}" class="qe ${cls||''}"/>`; }
 function gate(x,y,kind){ return `<g class="qg"><circle cx="${x}" cy="${y}" r="13"/><text x="${x}" y="${y+4}" text-anchor="middle">${kind}</text></g>`; }
@@ -401,23 +415,28 @@ function openQra(sc){
   });
   // ---- fault tree ----
   const W = 980; let ft = '';
-  ft += svgBox(W/2-170, 16, 340, 58, ['TOP EVENT · '+sc, consequence.slice(0,54), consequence.slice(54,110)], 'top', rows[0].id);
-  ft += svgLine(W/2, 74, W/2, 100) + gate(W/2, 113, 'OR');
-  const ieW = 300, ieY = 150; const ieXs = ies.map((_,i) => W/2 - (ies.length*ieW + (ies.length-1)*40)/2 + i*(ieW+40));
-  ies.forEach((ie,i) => { const x = ieXs[i]; ft += svgLine(W/2, 126, x+ieW/2, ieY) + svgBox(x, ieY, ieW, 58, ['INITIATING EVENT', ie.label.slice(0,44), `IEF ${ie.ief}/yr · LOPA row${ie.hz?' · HAZOP '+ie.hz.attrs.cause.slice(0,22)+'…':''}`], 'ie', ie.id); });
-  const andY = 240; ft += svgLine(ieXs[0]+ieW/2, ieY+58, ieXs[0]+ieW/2, andY-13) + gate(ieXs[0]+ieW/2, andY, 'AND');
-  const lw = 400, lh = 104, ly = 285; const lxs = layers.map((_,i) => W/2 - (layers.length*lw + (layers.length-1)*30)/2 + i*(lw+30));
-  layers.forEach((L,i) => { const x = lxs[i];
-    const l2 = L.srs ? `voting ${L.srs.attrs.voting} · proof test ${L.srs.attrs.pst_interval_yr} yr · SIL target ${L.srs.attrs.sil_target} (SRS)` : L.srs===null && rows.find(r=>r.id===L.id).attrs.ipl_type==='SIF' ? 'SRS row: '+AMBER : 'operator layer: no SRS row applies';
+  const topL = ['TOP EVENT · '+sc, consequence]; const topW = 420, topH = boxH(topW, topL);
+  ft += svgBox(W/2-topW/2, 16, topW, 0, topL, 'top', rows[0].id);
+  const orY = 16 + topH + 26; ft += svgLine(W/2, 16+topH, W/2, orY-13) + gate(W/2, orY, 'OR');
+  const ieW = 360, ieY = orY + 30; const ieXs = ies.map((_,i) => W/2 - (ies.length*ieW + (ies.length-1)*40)/2 + i*(ieW+40));
+  let ieH = 0; const ieLs = ies.map(ie => ['INITIATING EVENT', ie.label, `IEF ${ie.ief}/yr (LOPA row)${ie.hz?' · HAZOP cause: '+ie.hz.attrs.cause:''}`]);
+  ies.forEach((ie,i) => { const x = ieXs[i]; const h = boxH(ieW, ieLs[i]); ieH = Math.max(ieH, h); ft += svgLine(W/2, orY+13, x+ieW/2, ieY) + svgBox(x, ieY, ieW, h, ieLs[i], 'ie', ie.id); });
+  const andY = ieY + ieH + 28; ft += svgLine(ieXs[0]+ieW/2, ieY+ieH, ieXs[0]+ieW/2, andY-13) + gate(ieXs[0]+ieW/2, andY, 'AND');
+  const lw = 440, ly = andY + 32; const lxs = layers.map((_,i) => W/2 - (layers.length*lw + (layers.length-1)*30)/2 + i*(lw+30));
+  const layLs = layers.map(L => {
+    const l2 = L.srs ? `voting ${L.srs.attrs.voting} · proof test ${L.srs.attrs.pst_interval_yr} yr · SIL target ${L.srs.attrs.sil_target} (SRS)` : rows.find(r=>r.id===L.id).attrs.ipl_type==='SIF' ? 'SRS row: '+AMBER : 'operator layer: no SRS row applies';
     const l3 = L.lam ? `PFD(t) ≈ λ_DU·t` : `PFD(t) ≈ λ_DU·t: λ_DU ${AMBER}`;
-    ft += svgLine(ieXs[0]+ieW/2, andY+13, x+lw/2, ly) + svgBox(x, ly, lw, lh, [`${L.ipl} · must fail`, (L.desc||'').slice(0,54), `PFD ${L.pfd} (LOPA row) · sensor ${L.sensor}`, l2.slice(0,56), l3.slice(0,56)], L.lam ? 'layer' : 'layer amberline', L.id);
+    return [`${L.ipl} · must fail`, L.desc||'', `PFD ${L.pfd} (LOPA row) · sensor ${L.sensor}`, l2, l3];
   });
-  let shY = ly+lh+48; shared.forEach((s, k) => { const sc_ = claimForSubject(s); const x = W/2-150, y = shY + k*70;
-    ft += svgBox(x, y, 300, 46, [`SHARED COMPONENT · ${s}`, 'one node feeding every gate it serves (structural rule R1)'], 'shared', sc_?.id);
-    layers.forEach((L,i) => { if (L.sharedWith.includes(s)) ft += svgLine(x+150, y, lxs[i]+lw/2, ly+lh, 'shared'); });
-    ft += svgLine(x+150, y, ieXs[0]+ieW/2, ieY+58, 'shared');
+  let lh = 0; layLs.forEach(ls => lh = Math.max(lh, boxH(lw, ls)));
+  layers.forEach((L,i) => { const x = lxs[i]; ft += svgLine(ieXs[0]+ieW/2, andY+13, x+lw/2, ly) + svgBox(x, ly, lw, lh, layLs[i], L.lam ? 'layer' : 'layer amberline', L.id); });
+  let shY = ly+lh+48; const shW = 420; const shLs = ['', 'one node feeding every gate it serves (structural rule R1)']; const shH = boxH(shW, shLs);
+  shared.forEach((s, k) => { const sc_ = claimForSubject(s); const x = W/2-shW/2, y = shY + k*(shH+24);
+    ft += svgBox(x, y, shW, shH, [`SHARED COMPONENT · ${s}`, shLs[1]], 'shared', sc_?.id);
+    layers.forEach((L,i) => { if (L.sharedWith.includes(s)) ft += svgLine(x+shW/2, y, lxs[i]+lw/2, ly+lh, 'shared'); });
+    ft += svgLine(x+shW/2, y, ieXs[0]+ieW/2, ieY+ieH, 'shared');
   });
-  const ftH = shY + shared.length*70 + 10;
+  const ftH = shY + shared.length*(shH+24) + 10;
   // ---- event tree ----
   const words = consequence.toLowerCase();
   const outcomes = []; if (/overpressure/.test(words)) outcomes.push('Overpressure of piping'); if (/release/.test(words)) outcomes.push('Release'); if (/ignit|fire/.test(words)) outcomes.push('Ignition'); if (/injur|exposure|asphyx/.test(words)) outcomes.push('Exposure of people');
@@ -434,13 +453,16 @@ function openQra(sc){
     ['population / occupancy', null, null],
   ];
   const cases = outcomes.map((o,i) => ({ name: o, amber: inputs.filter(x=>!x[1]).map(x=>x[0]) }));
-  let et = ''; const cx = 20, cy = 60; et += svgBox(cx, cy-24, 170, 48, ['TOP EVENT', sc+' occurs'], 'top', rows[0].id);
-  const step = Math.max(190, Math.floor((W-220)/Math.max(1,cases.length)));
-  cases.forEach((c,i) => { const x = cx+190+i*step, y = cy-24; et += svgLine(x-20, cy, x, cy) + svgBox(x, y, step-30, 48, [c.name.toUpperCase(), c.amber.length ? `${c.amber.length} inputs ${AMBER}` : 'inputs on record'], c.amber.length ? 'amber' : 'ok');
-    et += svgLine(x+(step-30)/2, y+48, x+(step-30)/2, y+74) + `<text x="${x+(step-30)/2}" y="${y+88}" class="qs" text-anchor="middle">yes / no</text>`; });
-  et += `<text x="${cx}" y="150" class="qs">Branch probabilities on every node: ${AMBER}. The branches are the outcomes the HAZOP consequence names, in the order it names them.</text>`;
+  let et = ''; const cx = 20, cy = 60; et += svgBox(cx, cy-24, 190, 48, ['TOP EVENT', sc+' occurs'], 'top', rows[0].id);
+  const step = Math.max(190, Math.floor((W-240)/Math.max(1,cases.length)));
+  const caseLs = cases.map(c => [c.name.toUpperCase(), c.amber.length ? `${c.amber.length} inputs: ${AMBER}` : 'inputs on record']);
+  let ch = 48; caseLs.forEach(ls => ch = Math.max(ch, boxH(step-30, ls)));
+  cases.forEach((c,i) => { const x = cx+210+i*step, y = cy-24; et += svgLine(x-20, cy, x, cy) + svgBox(x, y, step-30, ch, caseLs[i], c.amber.length ? 'amber' : 'ok');
+    et += svgLine(x+(step-30)/2, y+ch, x+(step-30)/2, y+ch+24) + `<text x="${x+(step-30)/2}" y="${y+ch+38}" class="qs" text-anchor="middle">yes / no</text>`; });
+  const etH = cy-24+ch+78;
+  et += `<text x="${cx}" y="${etH-14}" class="qs">Branch probabilities on every node: ${AMBER}. The branches are the outcomes the HAZOP consequence names, in the order it names them.</text>`;
   // ---- inputs ledger + amber list ----
-  const led = inputs.map(([k,v,id]) => { const c = id ? DEP.byId[id] : null; const syn = c && String(c.provenance?.doc||'').startsWith('synthetic'); return `<tr class="${v?'':'amb'}"><td>${esc(k)}</td><td>${v?esc(v):'<span class="st amber">'+AMBER+'</span>'}</td><td class="mono">${c?`<a class="dgo" data-id="${esc(id)}">${esc(id)}</a> · ${syn?'synthetic':esc(prov(c.provenance))}`:'—'}</td></tr>`; }).join('');
+  const led = inputs.map(([k,v,id]) => { const c = id ? DEP.byId[id] : null; return `<tr class="${v?'':'amb'}"><td>${esc(k)}</td><td>${v?esc(v):'<span class="st amber">'+AMBER+'</span>'}</td><td class="mono">${c?`<a class="dgo" data-id="${esc(id)}">${esc(id)}</a> · ${esc(prov(c.provenance))}`:'—'}</td></tr>`; }).join('');
   const lamRows = layers.map(L => `<tr class="${L.lam?'':'amb'}"><td>λ_DU for ${esc(L.ipl)} (${esc(L.sensor)})</td><td>${L.lam?esc(L.lam.body):'<span class="st amber">'+AMBER+'</span>'}</td><td class="mono">${L.lam?esc(L.lam.id):'—'}</td></tr>`).join('');
   const amberList = [...inputs.filter(x=>!x[1]).map(x=>x[0]), ...layers.filter(L=>!L.lam).map(L=>`λ_DU for ${L.ipl} (${L.sensor})` + (L.srs?.attrs?.pst_interval_yr ? ` over the ${L.srs.attrs.pst_interval_yr} yr test interval` : ', and a test interval: none on record for this layer')), 'branch probabilities for each event-tree node', ...(outcomes.length?[]:['the outcome set: the HAZOP consequence names no outcome'])];
   const src = String(S.data.limits||'').replace(/^Phase:[^.]*\.\s*/,'').split(' Claims:')[0];
@@ -450,7 +472,7 @@ function openQra(sc){
     <h3>1 · Fault tree for the top event</h3>
     <svg viewBox="0 0 ${W} ${ftH}" class="qsvg" style="height:${ftH}px">${ft}</svg>
     <h3>2 · Event tree from the top event</h3>
-    <svg viewBox="0 0 ${W} 170" class="qsvg" style="height:170px">${et}</svg>
+    <svg viewBox="0 0 ${W} ${etH}" class="qsvg" style="height:${etH}px">${et}</svg>
     <h3>3 · Inputs ledger</h3>
     <table class="h qt"><tr><th>input</th><th>value on record</th><th>provenance</th></tr>${led}${lamRows}</table>
     <h3>4 · What a QRA would still have to measure</h3>
@@ -458,7 +480,7 @@ function openQra(sc){
     <div class="limits"><b>Limits.</b> Trees are the support graph re-drawn with gates: initiating events and layers from the LOPA rows, voting and test interval from the SRS row, the shared component from the structural finding R1. Every amber item is a gap, not an estimate; nothing is filled in. No fault-tree solving, no minimal cut sets, no branch probabilities. ${esc(src)}</div>
   </div>`;
   $('#qra').classList.add('on'); setMode('qra');
-  $('#qra #qclose').onclick = ()=>{ closeQra(); setMode($('#grid').classList.contains('on') ? 'grid' : 'pid'); };
+  $('#qra #qclose').onclick = ()=>{ closeQra(); setMode($('#grid').classList.contains('on') ? gridMode() : 'pid'); };
   $$('#qra .qn[data-id], #qra .dgo').forEach(n => n.onclick = () => deps(n.dataset.id));
 }
 function closeQra(){ $('#qra').classList.remove('on'); }
@@ -477,15 +499,15 @@ function renderGrid(){
   const qcol = GRID.tab==='lopa';
   const th = (qcol?'<th>QRA</th>':'') + vis.map((c,i)=>`<th><span class="mv" data-c="${esc(c)}" data-d="-1" title="move left">‹</span>${esc(c)}<span class="mv" data-c="${esc(c)}" data-d="1" title="move right">›</span></th>`).join('');
   const editable = c => !['subject','status','provenance'].includes(c);
-  const body = rows.map(r=>`<tr data-id="${esc(r.id)}">${qcol?`<td class="act">${qraEligible(r.attrs?.scenario_id)?`<button class="qbtn" data-s="${esc(r.attrs.scenario_id)}">Scope a QRA</button>`:`<span class="tag">${esc(scenarioStatus(r.attrs?.scenario_id))}</span>`}</td>`:''}${vis.map(c=>{ const k=r.id+'|'+c; const ed = GRID.edits[k]; return `<td class="${c==='status'?'st-'+stOf(r):''} ${ed?'edited':''} ${editable(c)?'ed':''}" data-id="${esc(r.id)}" data-col="${esc(c)}" title="${ed?('was '+esc(ed.before)+' · '):''}click: dependencies · double-click: edit">${esc(cellVal(r,c))}</td>`; }).join('')}</tr>`).join('');
+  const body = rows.map(r=>`<tr data-id="${esc(r.id)}">${qcol?`<td class="act">${qraEligible(r.attrs?.scenario_id)?`<button class="qbtn" data-s="${esc(r.attrs.scenario_id)}">Scope a QRA</button>`:`<span class="tag">${esc(scenarioStatus(r.attrs?.scenario_id))}</span>`}</td>`:''}${vis.map(c=>{ const k=r.id+'|'+c; const ed = GRID.edits[k]; return `<td class="${c==='status'?'st-'+stOf(r):''} ${ed?'edited':''} ${editable(c)?'ed':''}" data-id="${esc(r.id)}" data-col="${esc(c)}" title="${ed?('was '+esc(ed.before)+' · '):''}${GRID.tab==='index'?'reference row':'click: what this rests on and what rests on it'} · double-click: edit">${esc(cellVal(r,c))}</td>`; }).join('')}</tr>`).join('');
   $('#grid table').innerHTML = `<thead><tr>${th}</tr></thead><tbody>${body || `<tr><td class="empty">no rows match</td></tr>`}</tbody>`;
-  $('#grid .gcount').textContent = `${rows.length} of ${t.rows.length} rows · every cell is a claim with provenance · column layout is kept in this browser only`;
-  $$('#grid .gtabs .pill').forEach(p=>p.onclick=()=>{ GRID.tab = p.dataset.t; renderGrid(); });
+  $('#grid .gcount').textContent = `${rows.length} of ${t.rows.length} rows · ${GRID.tab==='index' ? 'reference rows from the drawings' : 'click any cell for what it rests on and what rests on it'} · double-click to edit · column layout is kept in this browser only`;
+  $$('#grid .gtabs .pill').forEach(p=>p.onclick=()=>{ GRID.tab = p.dataset.t; setMode(gridMode()); renderGrid(); });
   $('#grid .gfilter').oninput = e => { pf.filter = e.target.value; savePrefs(); renderGrid(); $('#grid .gfilter').focus(); };
   $$('#grid .gcolmenu input').forEach(i=>i.onchange=()=>{ pf.hidden = pf.hidden.filter(c=>c!==i.dataset.c); if (!i.checked) pf.hidden.push(i.dataset.c); savePrefs(); renderGrid(); });
   $$('#grid th .mv').forEach(m=>m.onclick=()=>{ const i = order.indexOf(m.dataset.c), j = i + (+m.dataset.d); if (j<0||j>=order.length) return; [order[i],order[j]]=[order[j],order[i]]; pf.order = order; savePrefs(); renderGrid(); });
   $$('#grid .qbtn').forEach(b=>b.onclick=e=>{ e.stopPropagation(); openQra(b.dataset.s); });
-  $$('#grid td[data-id]').forEach(td=>{ td.onclick = ()=>{ if (td.querySelector('input')) return; deps(td.dataset.id); }; if (td.classList.contains('ed')) td.ondblclick = ()=>startEdit(td); });
+  $$('#grid td[data-id]').forEach(td=>{ td.onclick = ()=>{ if (td.querySelector('input') || GRID.tab==='index') return; deps(td.dataset.id); }; if (td.classList.contains('ed')) td.ondblclick = ()=>startEdit(td); });
 }
 function startEdit(td){
   if (td.querySelector('input')) return td.querySelector('input');
@@ -512,14 +534,15 @@ function showGate(){
   const findings = obl.filter(id => (S.data.findings||[]).some(f=>f.id===id));
   const qs = (S.data.questions||[]).filter(q => q.status!=='answered' && obl.includes(q.claim_id));
   const line = id => { const c = DEP.byId[id]; return `<div class="dn"><div class="dl"><span class="st ${stOf(c)}">${esc(c.status)}</span><span class="dt">${esc(c.type)}</span> <a class="dgo" data-id="${esc(id)}">${esc(c.subject)}</a> <span class="db">${esc((c.body||'').slice(0,120))}</span><span class="dp">${esc(prov(c.provenance))}</span></div></div>`; };
-  $('#grid .ggate').innerHTML = `<div class="dh"><b>Save gate</b> · ${edits.length} edit${edits.length>1?'s':''} on ${ids.length} row${ids.length>1?'s':''} · ${obl.length} obligated<div class="spacer"></div><button class="gtoggle" title="collapse">—</button></div><div class="dbody">
-    <div class="dhead">${edits.map(e=>`<div><b>${esc(e.id)}</b> · ${esc(e.col)}: <s>${esc(e.before)}</s> → <b>${esc(e.after)}</b></div>`).join('')}</div>
-    <p class="gline">This change obligates <b>${obl.length}</b> claims along “rests on” edges: <b>${findings.length}</b> findings would have to be re-decided and <b>${qs.length}</b> rest on an unanswered question.</p>
-    <p class="gline warn">Re-deciding them takes the solver, which this static build does not carry. Nothing is committed: the ledger on this page is unchanged, and the counts of re-derived and failed are not shown because they have not been computed.</p>
-    <h3>Obligated findings · ${findings.length}</h3>${findings.map(line).join('') || '<div class="empty">none</div>'}
+  const byStatus = st => findings.filter(id => (DEP.byId[id].status||'')===st).length;
+  const rowsTouched = ids.map(i => DEP.byId[i]).map(c => `${c.subject} in the ${whereOf(c).replace(/^sheet /,'sheet ')}`);
+  $('#grid .ggate').innerHTML = `<div class="dh"><b>Before you save</b> · ${edits.length} edit${edits.length>1?'s':''} · ${obl.length} claims rest on ${ids.length>1?'these rows':'this row'}<div class="spacer"></div><button class="gtoggle" title="collapse">—</button></div><div class="dbody">
+    <div class="dhead">${edits.map(e=>`<div><b>${esc(DEP.byId[e.id].subject)}</b> · ${esc(e.col.replace(/_/g,' '))}: <s>${esc(e.before)}</s> → <b>${esc(e.after)}</b> <span class="dp">${esc(rowsTouched[ids.indexOf(e.id)]||'')}</span></div>`).join('')}</div>
+    <p class="gline">State of the PHA against this row: <b>${obl.length}</b> claims rest on it. <b>${findings.length}</b> of them are findings, currently <b>${byStatus('refuted')}</b> refuted, <b>${byStatus('holds')+byStatus('derived')}</b> re-derived and <b>${byStatus('open')}</b> open${qs.length?`, and <b>${qs.length}</b> rest on a question nobody has answered yet`:''}. Saving re-decides every one of them. Until it is re-decided, each is an obligation, not a result.</p>
+    <h3>Findings that will be re-decided · ${findings.length}</h3>${findings.map(line).join('') || '<div class="empty">none</div>'}
     ${qs.length?`<h3>Rest on an unanswered question · ${qs.length}</h3>${qs.map(q=>`<div class="dn"><div class="dl"><span class="st open">question</span> <a class="dgo" data-id="${esc(q.claim_id)}">${esc(q.id)}</a> <span class="db">${esc(q.text)}</span><span class="dp">to ${esc(q.to_role)}</span></div></div>`).join('')}`:''}
-    <div class="gbtns"><button disabled title="needs the solver's re-decision first">Acknowledge</button><button disabled title="needs the solver's re-decision first">Pin for later</button><button class="gcancel">Cancel · revert the edit</button></div>
-    <div class="limits"><b>Limits.</b> Obligation is a walk over ${(S.data.support||[]).length} recorded support edges from the edited rows; it names what would be re-decided, not the result. No claim's status was changed. Acknowledge and Pin stay disabled until a solver pass exists for this edit.</div></div>`;
+    <div class="gbtns"><button disabled title="available once the re-decision has run">Acknowledge and save</button><button disabled title="available once the re-decision has run">Pin for later</button><button class="gcancel">Cancel · revert the edit</button></div>
+    <div class="limits"><b>Limits.</b> Obligation is a walk over ${(S.data.support||[]).length} recorded support edges from the edited row; it names what will be re-decided, not the outcome. This static build does not carry the solver, so the re-decision does not run here, nothing is saved, and Acknowledge and Pin stay disabled.</div></div>`;
   $('#grid .ggate').classList.add('on'); $('#grid .ggate').classList.remove('collapsed');
   $('#grid .ggate .gtoggle').onclick = ()=>{ const g = $('#grid .ggate'); g.classList.toggle('collapsed'); $('#grid .ggate .gtoggle').textContent = g.classList.contains('collapsed') ? '+' : '—'; };
   $('#grid .ggate .gcancel').onclick = ()=>{ GRID.edits = {}; $('#grid .ggate').classList.remove('on'); renderGrid(); };
@@ -540,13 +563,13 @@ async function editAsEngineer(){
 $('#btnGrid').onclick = ()=>{ closeQra(); openGrid(); };
 const FEAT_GO = {
   pid: ()=>{ closeQra(); closeGrid(); setMode('pid'); openSheet('MM0012'); focus(['PIT-1001']); const c = claimForSubject('PIT-1001'); if (c) { deps(c.id); const t = S.index.find(t=>t.tag==='PIT-1001'); if (t) panTo([t.x,t.y,t.w,t.h]); } },
-  grid: ()=>{ closeQra(); $('#deps').classList.remove('on'); setMode('grid'); editAsEngineer(); },
-  qra: ()=>{ $('#deps').classList.remove('on'); openGrid('lopa'); openQra('S-1.5.2'); },
+  grid: ()=>{ closeQra(); $('#deps').classList.remove('on'); editAsEngineer(); },
+  qra: ()=>{ $('#deps').classList.remove('on'); closeQra(); $('#grid .ggate').classList.remove('on'); openGrid('lopa'); },
 };
 $$('#demo .feat').forEach(f=>{ f.onclick = () => FEAT_GO[f.dataset.f](); });
 $('#btnEdit').onclick = editAsEngineer;
 $('#grid .gsave').onclick = showGate;
 $('#grid .gcols').onclick = ()=>{ GRID.menu = !GRID.menu; renderGrid(); };
 
-window.P = { state: S, load, openSheet, commit, follow, prov, focus, highlightFinding, deps, depsList, openGrid, editAsEngineer, qra: openQra, on: (ev, fn) => (listeners[ev] ||= []).push(fn) };
+window.P = { state: S, load, openSheet, commit, follow, prov, focus, highlightFinding, dedupe, diffCount, deps, depsList, openGrid, editAsEngineer, qra: openQra, on: (ev, fn) => (listeners[ev] ||= []).push(fn) };
 load('first_pass');

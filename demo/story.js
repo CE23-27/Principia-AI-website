@@ -50,7 +50,7 @@ function carousel(el, slides) {
 }
 async function buildCarousels() {
   const moc = await getJSON('/api/moc');
-  const R = '<span class="real-badge">REAL</span>', S = '<span class="synth-badge">SYNTHETIC</span>';
+  const R = '<span class="real-badge">REAL</span>', S = '';
   const docs = Object.entries(SHEET_CAPS).map(([s, [t, x]]) => ({src: `sheets/${s}.png`, title: `${s} · ${t}`, text: x, badge: R}));
   docs.push({src: 'story/hazop_p16.png', title: 'HAZOP worksheet, node 1, page 1 of 8', text: 'Less/No Flow and More Flow. Safeguards as the team wrote them: MOV-1001 closes on loss of flow; PSV-1001 set at 80 psig.', badge: R});
   docs.push({src: 'story/hazop_p18.png', title: 'HAZOP worksheet, node 1, page 3 of 8', text: 'Higher Pressure 1.5.1 and 1.5.2: “PS-1001 on inlet of facility closes MOV-1001” and “PIT monitoring pressure in multiple areas, operator response.” Rated A2 = 6. Recommendation 15: add PAH/PAHH alarms on the station PITs.', badge: R});
@@ -133,7 +133,7 @@ function statusOf(ruleSubjectMatch) {
 }
 function renderAcross() {
   const d = P.state.data; if (!d || !d.findings) return;
-  const picks = d.findings.filter(f => f.status !== 'holds').slice(0, 9);
+  const seen = new Set(); const picks = d.findings.filter(f => f.status !== 'holds').filter(f => { const k = (f.body||f.subgoal)+'|'+f.status; if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 9);
   $('#acrossCards').innerHTML = picks.map(f => `<div class="card dep" data-f="${esc(f.id)}" title="dependencies" style="cursor:pointer"><div class="head"><span class="st ${f.status==='holds'?'derived':f.status}">${f.status}</span> <span class="tag">${f.rule} · ${esc(f.subject||'')}</span></div><div class="body" style="margin-top:6px">${esc(f.body||f.subgoal)}</div><div class="prov">${(f.core&&f.core.length?f.core:f.support||[]).slice(0,4).map(id => { const c = d.claims.find(x => x.id===id); return c ? `<b>${esc(c.subject)}</b> ${esc(P.prov(c.provenance))}` : esc(id); }).join('<br>')}</div></div>`).join('');
   document.querySelectorAll('#acrossCards .card.dep').forEach(c => c.onclick = () => { document.querySelector('#demo').scrollIntoView({block:'start'}); P.deps(c.dataset.f); });
 }
@@ -148,7 +148,7 @@ async function renderContrast() {
   const b = baseline;
   $('#llmModel').textContent = b ? 'no ledger, no solver' : '';
   const d = P.state.data; if (!d || !d.findings) return;
-  const F = d.findings, after = P.state.phase === 'moc';
+  const F = P.dedupe(d.findings), after = P.state.phase === 'moc';
   const n = st => F.filter(f => f.status === st).length;
   const r9 = F.find(f => f.rule === 'R9' && f.subject === 'PAH-1001');
   const r16 = F.find(f => f.rule === 'R16' && f.subject === 'PAH-1001');
@@ -167,10 +167,10 @@ async function renderContrast() {
   const plain2 = none(`None are named. The text gives setpoints and rates with no row, page or sheet behind them, so any line could be wrong and nothing in the answer would show it. One already is: it puts PAH-1001 at <b>1,750 psig in the MADB</b>. The MADB row says 1,700; it is the DCS copy that reads 1,750.`);
 
   const plain3 = none(`The answer is a one-time reading. Ask again after the next change and you get a new text with no relation to this one. Nothing marks which of these lines rested on the 12 psi/min figure.`);
-  const diff = d.diff || {};
+  const diff = d.diff || {}; const cnt = P.diffCount(d);
   const touched = (mocDef && mocDef.touches || []).map(esc).join(', ');
   const ours3 = after && d.diff
-    ? `<div class="prov">MOC-001 is a transition on the ledger. <b>${(d.obligated||[]).length}</b> claims rested on what it touched${touched ? ` (${touched})` : ''} and were obligated. Of the ${['refuted','re_derived','opened','unchanged'].reduce((a, k) => a + (diff[k]||[]).length, 0)} findings re-decided: <b>${(diff.refuted||[]).length}</b> newly refuted · <b>${(diff.re_derived||[]).length}</b> newly re-derived · <b>${(diff.opened||[]).length}</b> newly opened · <b>${(diff.unchanged||[]).length}</b> unchanged. Change the rate basis again and the same walk runs over the same edges.</div>`
+    ? `<div class="prov">MOC-001 is a transition on the ledger. <b>${(d.obligated||[]).length}</b> claims rested on what it touched${touched ? ` (${touched})` : ''} and were obligated. Of the ${['refuted','re_derived','opened','unchanged'].reduce((a, k) => a + cnt(k), 0)} findings re-decided: <b>${cnt('refuted')}</b> newly refuted · <b>${cnt('re_derived')}</b> newly re-derived · <b>${cnt('opened')}</b> newly opened · <b>${cnt('unchanged')}</b> unchanged. Change the rate basis again and the same walk runs over the same edges.</div>`
     : `<div class="prov">Commit MOC-001 above. Every claim whose support reaches ${touched || 'a touched subject'} becomes an obligation and is re-decided, and the counts appear here.</div>`;
 
   const plain4 = none(`It lists items the engineer should still look at, which is useful. It cannot say what it read, which rules it applied, or where its own reading stopped.`);

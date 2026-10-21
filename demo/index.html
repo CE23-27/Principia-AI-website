@@ -108,7 +108,8 @@ table.t td.mono{font-family:var(--mono);font-size:12px}
 #demo .bar{flex-wrap:wrap;row-gap:8px}
 #demo .bar button{padding:5px 9px;font-size:12.5px}
 #demo .bar button.primary{padding:7px 13px}
-#demo .bar h2{font-size:20px}
+#demo .bar h2{font-size:18px}
+@media (max-width:1500px){#demo .bar #phase{display:none}}
 #demo .bar h2{font-size:22px;margin:0}
 #demo .bar .spacer{flex:1}
 main{display:grid;grid-template-columns:1fr 400px;height:88vh;min-height:640px}
@@ -191,7 +192,10 @@ main{display:grid;grid-template-columns:1fr 400px;height:88vh;min-height:640px}
 text.qs{font-family:var(--mono);fill:var(--muted);font-size:10.5px}
 table.qt td,table.qt th{font-size:11.5px;vertical-align:top}table.qt tr.amb td{color:#ffd9a8}table.qt td.mono{font-family:var(--mono);font-size:11px}
 .qcopy{width:100%;min-height:150px;background:rgba(0,0,0,.35);border:1px solid rgba(255,184,107,.45);color:#ffd9a8;font:11.5px var(--mono);border-radius:8px;padding:8px;resize:vertical}
-#grid td.act{white-space:nowrap}#grid .qbtn{padding:2px 8px;font-size:11px;border-color:rgba(255,184,107,.5);color:#ffd9a8}
+#grid td.act{white-space:nowrap}#grid .qbtn{padding:3px 9px;font-size:11px;border-color:rgba(255,184,107,.7);color:#ffd9a8;background:rgba(255,184,107,.08);animation:qpulse 1.8s ease-in-out infinite}
+#grid .qbtn:hover{color:var(--text);border-color:var(--warn);animation:none;box-shadow:0 0 0 2px rgba(255,184,107,.35)}
+@keyframes qpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,184,107,0)}50%{box-shadow:0 0 14px 1px rgba(255,184,107,.45)}}
+@media (prefers-reduced-motion:reduce){#grid .qbtn{animation:none}}
 #grid .gbar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 #grid .gtabs{display:flex;gap:6px;flex-wrap:wrap}
 #grid .gtabs .pill{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:999px;padding:4px 11px;font-size:12px;color:var(--muted);cursor:pointer}
@@ -329,17 +333,17 @@ footer{padding:22px 28px;font-size:11.5px;color:var(--faint)}
     <p class="lead">One ledger under the documents. Pick a way in; the stage below switches to it. Every surface answers the same two questions for anything you click: what does this rest on, and what rests on it.</p>
   </div>
   <div class="features">
-    <div class="feat cur" data-f="pid"><div class="fn">01</div><h4>Interactive P&amp;IDs</h4><p>Seven real sheets. Every box is a claim with a sheet and zone behind it. Click one for what it rests on and what rests on it; commit MOC-001 and watch the obligation walk the drawings.</p><button class="primary">Open PIT-1001 on MM0012</button></div>
-    <div class="feat" data-f="grid"><div class="fn">02</div><h4>The ledger as a spreadsheet</h4><p>LOPA, SRS, alarm databases and the instrument index as an editable grid. Every cell has provenance. Nothing saves without passing the gate, which names every claim the edit obligates.</p><button>Watch an edit go through the gate</button></div>
-    <div class="feat" data-f="qra"><div class="fn">03</div><h4>From SIL to QRA scoping</h4><p>A refuted LOPA row becomes the structure a QRA would need: a fault tree with the shared transmitter drawn once, an event tree, an inputs ledger, and the list of what no document states. Never a risk number.</p><button>Scope a QRA for S-1.5.2</button></div>
+    <div class="feat cur" data-f="qra"><div class="fn">01</div><h4>From an open LOPA row to a scoped QRA</h4><p>The LOPA as a spreadsheet. A row the solver has refuted or left open carries a lit button; press it and the row becomes the structure a QRA would need: a fault tree with the shared transmitter drawn once, an event tree, an inputs ledger, and the list of what no document states. Never a risk number.</p><button class="primary">Open the LOPA rows</button></div>
+    <div class="feat" data-f="pid"><div class="fn">02</div><h4>Interactive P&amp;IDs</h4><p>Seven real sheets. Every box is a claim with a sheet and zone behind it. Click one for what it rests on and what rests on it; commit MOC-001 and watch the obligation walk the drawings.</p><button>Open PIT-1001 on MM0012</button></div>
+    <div class="feat" data-f="grid"><div class="fn">03</div><h4>Smart saves that mitigate PHA fatigue</h4><p>LOPA, SRS and the alarm databases as a grid the engineer already knows. Click any cell for what it rests on and what rests on it. Before a save, the ledger states what the edit touches: every finding that will be re-decided, and anything resting on an unanswered question. No re-reading the whole PHA to find out.</p><button>Watch an edit go through the gate</button></div>
   </div>
   <div class="bar">
-    <h2 id="demoTitle">Interactive P&amp;IDs</h2><span id="phase" class="tag">phase: first pass</span>
+    <h2 id="demoTitle">From an open LOPA row to a scoped QRA</h2><span id="phase" class="tag">phase: first pass</span>
     <div class="spacer"></div>
     <button id="btnLegend">Legend</button>
     <button id="btnReset" title="rebuild the ledger from the documents">Reset</button>
     <button id="btnStrip">All sheets</button>
-    <button id="btnGrid" title="the ledger's document tables, editable, with a save gate">Grid</button>
+    <button id="btnGrid" title="the ledger's document tables, editable, with a save gate">Spreadsheet</button>
     <button id="btnEdit" title="watch an edit go through the save gate">Edit as the engineer</button>
     <button id="btnDialog">Ask as the engineer</button>
     <button id="btnFollow" disabled>Follow the line</button>
@@ -388,7 +392,7 @@ footer{padding:22px 28px;font-size:11.5px;color:var(--faint)}
   <table class="t cmp" id="cmpTable"><thead><tr><th>Question</th><th>Plain answer <span class="tag" id="llmModel"></span></th><th>Principia</th></tr></thead><tbody></tbody></table>
 </section>
 
-<footer>P&amp;IDs and HAZOP from the Project Tundra NEPA record (Minnkota Power; Burns &amp; McDonnell; Hoglin Engineering, 2021). LOPA, SRS, alarm databases, historian and MOC-001 are synthetic and labelled as such. Questions are addressed to roles, not to the people named in the title blocks.</footer>
+<footer>P&amp;IDs and HAZOP from the Project Tundra NEPA record (Minnkota Power; Burns &amp; McDonnell; Hoglin Engineering, 2021). LOPA, SRS, alarm databases, historian and MOC-001 are filled in; the division is stated at the top of the page. Questions are addressed to roles, not to the people named in the title blocks.</footer>
 <script>
 (function(){
   if (matchMedia('(max-width:1100px), (hover:none) and (pointer:coarse)').matches) return;
