@@ -65,12 +65,13 @@ async function buildCarousels() {
   carousel($('#carDocs'), docs);
 
   let lopa = await getJSON('/api/doc?name=lopa').catch(() => []); if (!Array.isArray(lopa)) lopa = [];
-  const lopaHtml = lopa.length ? `<table class="t lopa"><tr><th>scenario</th><th>IEF /yr</th><th>IPL</th><th>PFD</th><th>indep.</th><th>TMEL</th></tr>${lopa.map(r => `<tr><td>${esc(r.scenario_id)}</td><td>${esc(r.ief_per_yr)}</td><td>${esc(r.ipl_description)}</td><td>${esc(r.pfd)}</td><td class="${r.independent==='true'?'good':'badc'}">${esc(r.independent)}</td><td>${esc(r.tmel_per_yr)}</td></tr>`).join('')}</table>` : '<div class="empty">lopa.csv not served</div>';
+  const lopaHtml = lopa.length ? `<table class="t lopa"><tr><th>scenario</th><th>IEF /yr</th><th>IPL</th><th>PFD</th><th>indep.</th><th>TMEL</th></tr>${lopa.map(r => `<tr class="dep" data-id="lopa-${esc(r.scenario_id)}-${esc(r.ipl_id)}" title="dependencies" style="cursor:pointer"><td>${esc(r.scenario_id)}</td><td>${esc(r.ief_per_yr)}</td><td>${esc(r.ipl_description)}</td><td>${esc(r.pfd)}</td><td class="${r.independent==='true'?'good':'badc'}">${esc(r.independent)}</td><td>${esc(r.tmel_per_yr)}</td></tr>`).join('')}</table>` : '<div class="empty">lopa.csv not served</div>';
   const today = [
     {src: 'story/hazop_p18.png', title: 'The worksheet row', text: 'The engineer reads “PIT monitoring … operator response” and credits it. Which PIT, and what else that PIT feeds, is on a drawing two documents away.', badge: R},
     {doc: true, html: `<div style="padding:22px">${lopaHtml}<p class="tag" style="margin-top:10px">Every row says independent = true. Nothing in the worksheet can know that IPL-2 and the control loop share PIT-1001.</p></div>`, title: 'The LOPA worksheet as filled in', text: 'This is the calculation that changes, or does not, when the MOC is approved. It is a spreadsheet; it does not know about MM0012.', badge: S},
   ];
   carousel($('#carToday'), today);
+  document.querySelectorAll('#carToday tr.dep').forEach(tr => tr.onclick = () => { document.querySelector('#demo').scrollIntoView({block:'start'}); P.deps(tr.dataset.id); });
 }
 
 /* ---------- engineer dialog ---------- */
@@ -133,7 +134,8 @@ function statusOf(ruleSubjectMatch) {
 function renderAcross() {
   const d = P.state.data; if (!d || !d.findings) return;
   const picks = d.findings.filter(f => f.status !== 'holds').slice(0, 9);
-  $('#acrossCards').innerHTML = picks.map(f => `<div class="card"><div class="head"><span class="st ${f.status==='holds'?'derived':f.status}">${f.status}</span> <span class="tag">${f.rule} · ${esc(f.subject||'')}</span></div><div class="body" style="margin-top:6px">${esc(f.body||f.subgoal)}</div><div class="prov">${(f.core&&f.core.length?f.core:f.support||[]).slice(0,4).map(id => { const c = d.claims.find(x => x.id===id); return c ? `<b>${esc(c.subject)}</b> ${esc(P.prov(c.provenance))}` : esc(id); }).join('<br>')}</div></div>`).join('');
+  $('#acrossCards').innerHTML = picks.map(f => `<div class="card dep" data-f="${esc(f.id)}" title="dependencies" style="cursor:pointer"><div class="head"><span class="st ${f.status==='holds'?'derived':f.status}">${f.status}</span> <span class="tag">${f.rule} · ${esc(f.subject||'')}</span></div><div class="body" style="margin-top:6px">${esc(f.body||f.subgoal)}</div><div class="prov">${(f.core&&f.core.length?f.core:f.support||[]).slice(0,4).map(id => { const c = d.claims.find(x => x.id===id); return c ? `<b>${esc(c.subject)}</b> ${esc(P.prov(c.provenance))}` : esc(id); }).join('<br>')}</div></div>`).join('');
+  document.querySelectorAll('#acrossCards .card.dep').forEach(c => c.onclick = () => { document.querySelector('#demo').scrollIntoView({block:'start'}); P.deps(c.dataset.f); });
 }
 function renderCaught() {
   const tb = $('#caughtTable tbody');
@@ -156,7 +158,7 @@ async function renderContrast() {
   const row = (q, plain, ours) => `<tr><td>${q}</td><td>${plain}</td><td>${ours}</td></tr>`;
 
   const plain = b ? `<div class="llm">${esc(b.answer).replace(/\*\*(.+?)\*\*/g, '<b style="color:var(--text)">$1</b>')}</div>` : '<div class="empty">llm_baseline.json not present (run tools/llm_baseline.py).</div>';
-  const ours1 = `<div class="kpi"><div class="r"><b>${n('refuted')}</b><span>refuted</span></div><div class="a"><b>${n('open')}</b><span>open, with a name</span></div><div class="g"><b>${n('holds')}</b><span>proved</span></div></div>
+  const ours1 = `<div class="kpi"><div class="r"><b>${n('refuted')}</b><span>refuted</span></div><div class="a"><b>${n('open')}</b><span>open, with a name</span></div><div class="g"><b>${n('holds')}</b><span>re-derived</span></div></div>
     <div class="tag">ledger totals, all ${F.length} findings, ${after ? 'after' : 'before'} MOC-001 · no verdict; the sign-off stays with the engineer</div>
     ${r9 ? `<div class="card"><div class="head"><span class="st ${r9.status}">${r9.status}</span><span class="tag">R9 · PAH-1001</span></div><div class="body">${esc(r9.body)}</div>${r9.model && Object.keys(r9.model).length ? `<div class="prov">counterexample: ${Object.entries(r9.model).map(([k, v]) => k + '=' + v).join(', ')}</div>` : ''}</div>` : ''}`;
 
@@ -168,7 +170,7 @@ async function renderContrast() {
   const diff = d.diff || {};
   const touched = (mocDef && mocDef.touches || []).map(esc).join(', ');
   const ours3 = after && d.diff
-    ? `<div class="prov">MOC-001 is a transition on the ledger. <b>${(d.obligated||[]).length}</b> claims rested on what it touched${touched ? ` (${touched})` : ''} and were obligated. Of the ${['refuted','re_derived','opened','unchanged'].reduce((a, k) => a + (diff[k]||[]).length, 0)} findings re-decided: <b>${(diff.refuted||[]).length}</b> newly refuted · <b>${(diff.re_derived||[]).length}</b> newly proved · <b>${(diff.opened||[]).length}</b> newly opened · <b>${(diff.unchanged||[]).length}</b> unchanged. Change the rate basis again and the same walk runs over the same edges.</div>`
+    ? `<div class="prov">MOC-001 is a transition on the ledger. <b>${(d.obligated||[]).length}</b> claims rested on what it touched${touched ? ` (${touched})` : ''} and were obligated. Of the ${['refuted','re_derived','opened','unchanged'].reduce((a, k) => a + (diff[k]||[]).length, 0)} findings re-decided: <b>${(diff.refuted||[]).length}</b> newly refuted · <b>${(diff.re_derived||[]).length}</b> newly re-derived · <b>${(diff.opened||[]).length}</b> newly opened · <b>${(diff.unchanged||[]).length}</b> unchanged. Change the rate basis again and the same walk runs over the same edges.</div>`
     : `<div class="prov">Commit MOC-001 above. Every claim whose support reaches ${touched || 'a touched subject'} becomes an obligation and is re-decided, and the counts appear here.</div>`;
 
   const plain4 = none(`It lists items the engineer should still look at, which is useful. It cannot say what it read, which rules it applied, or where its own reading stopped.`);

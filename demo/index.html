@@ -93,7 +93,22 @@ table.t td.mono{font-family:var(--mono);font-size:12px}
 .lopa{font-family:var(--mono);font-size:12px}
 /* demo stage */
 #demo{padding:0;max-width:none;border-bottom:1px solid var(--line)}
-#demo .bar{display:flex;align-items:center;gap:12px;padding:12px 28px;border-bottom:1px solid var(--line)}
+#demo .intro{padding:56px 28px 6px;max-width:1500px;margin:0 auto}
+#demo .features{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:12px 28px 18px;max-width:1500px;margin:0 auto}
+.feat{border:1px solid var(--line);background:var(--glass);border-radius:14px;padding:14px 16px;cursor:pointer;transition:border-color .2s;display:flex;flex-direction:column}
+.feat:hover{border-color:rgba(255,255,255,.3)}
+.feat.cur{border-color:rgba(63,208,201,.6);box-shadow:inset 0 0 0 1px rgba(63,208,201,.2)}
+.feat .fn{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.12em}
+.feat h4{margin:4px 0 6px;font-family:var(--serif);font-weight:400;font-size:21px}
+.feat.cur h4{color:var(--teal)}
+.feat p{margin:0 0 10px;font-size:13.5px;color:var(--muted);line-height:1.5;flex:1}
+.feat button{align-self:flex-start}
+#demo .bar{display:flex;align-items:center;gap:12px;padding:12px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+#demo .bar h2,#demo .bar button,#demo .bar .tag{white-space:nowrap}
+#demo .bar{flex-wrap:wrap;row-gap:8px}
+#demo .bar button{padding:5px 9px;font-size:12.5px}
+#demo .bar button.primary{padding:7px 13px}
+#demo .bar h2{font-size:20px}
 #demo .bar h2{font-size:22px;margin:0}
 #demo .bar .spacer{flex:1}
 main{display:grid;grid-template-columns:1fr 400px;height:88vh;min-height:640px}
@@ -132,6 +147,79 @@ main{display:grid;grid-template-columns:1fr 400px;height:88vh;min-height:640px}
 #sheetbar .pill{background:rgba(10,10,20,.85);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-family:var(--mono);font-size:12px;color:var(--muted);backdrop-filter:blur(8px);cursor:pointer}
 #sheetbar .pill.cur{color:var(--text);border-color:rgba(255,255,255,.35)}
 #hint{position:absolute;right:14px;top:12px;z-index:5;font-size:12px;color:var(--faint);background:rgba(10,10,20,.8);border:1px solid var(--line);border-radius:8px;padding:5px 10px}
+/* dependencies card (bottom left of the stage) and the grid */
+.st.asserted{color:var(--muted);border-color:rgba(255,255,255,.25)}.st.amber{color:#ffd9a8;border-color:var(--warn);background:rgba(255,184,107,.12)}
+#deps{position:absolute;left:16px;bottom:16px;width:520px;max-height:64%;display:none;flex-direction:column;z-index:7;background:rgba(10,10,20,.94);border:1px solid rgba(255,255,255,.16);border-radius:14px;backdrop-filter:blur(12px);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+#deps.on{display:flex}
+#deps .dh,#grid .ggate .dh{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted)}
+#deps .dh b,#grid .ggate .dh b{color:var(--text);font-weight:500}
+#deps .dh .spacer,#grid .ggate .dh .spacer{flex:1}
+#deps .dh button{padding:1px 8px;font-size:13px;line-height:1.2}
+.dbody{overflow:auto;padding:8px 12px 12px;font-size:12.5px}
+.dbody h3{margin:14px 0 6px}
+.dhead{color:var(--text);line-height:1.45}
+.dhead .dp,.dn .dp{display:block;font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:2px}
+.dt{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin:0 4px 0 6px}
+.dn{border-left:1px solid var(--line);margin:4px 0 4px 2px;padding-left:9px}
+.dn .dl{line-height:1.4}
+.dn .db{color:var(--muted)}
+.dn .dk{margin-left:6px}
+.dn .st{font-family:var(--mono);font-size:10.5px;padding:0 6px;border-radius:999px;border:1px solid}
+.dgo{color:var(--teal);cursor:pointer;text-decoration:none}.dgo:hover{text-decoration:underline}
+.dx{display:inline-block;margin:3px 0 0 9px;font-family:var(--mono);font-size:11px;color:var(--warn);cursor:pointer}
+.dg .dgh{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:8px 0 2px}
+.chips{margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;font-size:11px;color:var(--faint)}
+.chip{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border-radius:999px;padding:1px 7px;cursor:pointer;color:var(--muted)}.chip:hover{color:var(--text);border-color:var(--teal)}
+#panel .card[data-f] .head,#panel .card[data-c] .head,#panel .kpi [data-st]{cursor:pointer}
+#panel .kpi [data-st]:hover{border-color:var(--teal)}
+.box{pointer-events:all;cursor:pointer}
+#grid{position:absolute;inset:0;display:none;flex-direction:column;background:#07070f;z-index:4}
+#grid.on{display:flex}
+#grid.on ~ #dialog{display:none}
+#qra{position:absolute;inset:16px;display:none;flex-direction:column;z-index:9;background:rgba(10,10,20,.97);border:1px solid rgba(255,255,255,.16);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+#qra.on{display:flex}
+#qra .dh{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted)}
+#qra .dh b{color:var(--text);font-weight:500;font-size:14px}#qra .dh .spacer{flex:1}#qra .dh button{padding:1px 8px;font-size:13px;line-height:1.2}
+.qbody{overflow:auto;padding:6px 16px 16px;font-size:13px}
+.qsvg{width:100%;display:block;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:10px}
+.qn rect{fill:rgba(255,255,255,.04);stroke:rgba(255,255,255,.3);stroke-width:1.2}
+.qn.top rect{stroke:var(--teal)}.qn.ie rect{stroke:rgba(30,144,255,.7)}.qn.layer rect{stroke:rgba(127,224,168,.6)}.qn.amberline rect,.qn.amber rect{stroke:var(--warn);stroke-dasharray:6 4}.qn.shared rect{stroke:var(--bad);fill:rgba(255,107,122,.08)}.qn.ok rect{stroke:rgba(127,224,168,.6)}
+.qn[data-id]{cursor:pointer}.qn[data-id]:hover rect{fill:rgba(63,208,201,.12)}
+.qn text{font-family:var(--mono);fill:var(--text);font-size:11.5px}.qn text.qs{fill:var(--muted);font-size:10.5px}
+.qe{stroke:rgba(255,255,255,.35);stroke-width:1.2;fill:none}.qe.shared{stroke:var(--bad);stroke-dasharray:5 4}
+.qg circle{fill:#0f0f1a;stroke:rgba(255,255,255,.5)}.qg text{font-family:var(--mono);font-size:9.5px;fill:var(--text)}
+text.qs{font-family:var(--mono);fill:var(--muted);font-size:10.5px}
+table.qt td,table.qt th{font-size:11.5px;vertical-align:top}table.qt tr.amb td{color:#ffd9a8}table.qt td.mono{font-family:var(--mono);font-size:11px}
+.qcopy{width:100%;min-height:150px;background:rgba(0,0,0,.35);border:1px solid rgba(255,184,107,.45);color:#ffd9a8;font:11.5px var(--mono);border-radius:8px;padding:8px;resize:vertical}
+#grid td.act{white-space:nowrap}#grid .qbtn{padding:2px 8px;font-size:11px;border-color:rgba(255,184,107,.5);color:#ffd9a8}
+#grid .gbar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+#grid .gtabs{display:flex;gap:6px;flex-wrap:wrap}
+#grid .gtabs .pill{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:999px;padding:4px 11px;font-size:12px;color:var(--muted);cursor:pointer}
+#grid .gtabs .pill i{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-left:4px}
+#grid .gtabs .pill.cur{color:var(--text);border-color:rgba(255,255,255,.35)}
+#grid .gbar .spacer{flex:1}
+#grid .gfilter{background:rgba(0,0,0,.35);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:5px 9px;font:inherit;font-size:12.5px;width:180px}
+#grid .gcolmenu{display:none;gap:10px;flex-wrap:wrap;padding:8px 14px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11px;color:var(--muted)}
+#grid .gcolmenu label{display:flex;gap:4px;align-items:center;cursor:pointer}
+#grid .gwrap{flex:1;overflow:auto}
+#grid table{border-collapse:collapse;font-family:var(--mono);font-size:11.5px;min-width:100%}
+#grid th{position:sticky;top:0;background:#0f0f1a;text-align:left;font-weight:500;color:var(--faint);padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase}
+#grid th .mv{opacity:.35;cursor:pointer;padding:0 4px;font-size:13px}#grid th .mv:hover{opacity:1;color:var(--teal)}
+#grid td{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.06);border-right:1px solid rgba(255,255,255,.04);color:var(--muted);max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;vertical-align:top}
+#grid td:hover{color:var(--text);background:rgba(63,208,201,.06)}
+#grid td.ed{color:var(--text)}
+#grid td.edited{outline:1px solid var(--warn);outline-offset:-1px;background:rgba(255,184,107,.08)}
+#grid td.st-refuted{color:#ffb3bb}#grid td.st-derived{color:#bff3d6}#grid td.st-open,#grid td.st-obligated{color:#ffd9a8}
+#grid td input{width:100%;background:rgba(0,0,0,.5);border:1px solid var(--teal);color:var(--text);font:inherit;padding:2px 5px;border-radius:5px}
+#grid tr.hl td,#grid td.hl{background:rgba(63,208,201,.14)}
+#grid .gsave.hl{box-shadow:0 0 0 2px var(--teal)}
+#grid .gcount{padding:6px 14px;font-family:var(--mono);font-size:11px;color:var(--faint);border-top:1px solid var(--line)}
+#grid .ggate{position:absolute;right:16px;bottom:16px;width:560px;max-height:70%;display:none;flex-direction:column;z-index:8;background:rgba(10,10,20,.96);border:1px solid rgba(255,184,107,.45);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+#grid .ggate.on{display:flex}
+#grid .ggate.collapsed .dbody{display:none}
+#grid .ggate .dh button{padding:1px 8px;font-size:13px;line-height:1.2}
+.gline{margin:8px 0;line-height:1.5;color:var(--text)}.gline.warn{color:#ffd9a8}
+.gbtns{display:flex;gap:8px;margin:12px 0 6px}
 /* engineer dialog, bottom right of the stage */
 #dialog{position:absolute;right:16px;bottom:16px;width:500px;max-height:46%;display:flex;flex-direction:column;z-index:6;background:rgba(10,10,20,.92);border:1px solid rgba(255,255,255,.16);border-radius:14px;backdrop-filter:blur(12px);box-shadow:0 20px 60px rgba(0,0,0,.5)}
 #dialog .dh{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted)}
@@ -201,7 +289,7 @@ footer{padding:22px 28px;font-size:11.5px;color:var(--faint)}
 #small p{color:var(--muted);font-size:16px;margin:0 0 22px}
 #small a{display:inline-block;text-decoration:none;color:var(--text);border:1px solid rgba(138,43,226,.5);background:linear-gradient(135deg,rgba(138,43,226,.85),rgba(30,144,255,.55));border-radius:12px;padding:11px 18px}
 @media (max-width:1100px), (hover:none) and (pointer:coarse){#small{display:flex}body{overflow:hidden}nav,section,main,footer{display:none}}
-@media (max-width:1100px){.cols{grid-template-columns:1fr}main{grid-template-columns:1fr}aside{display:none}.carousel .slide{grid-template-columns:1fr}#dialog{width:min(520px,92%)}}
+@media (max-width:1100px){.cols{grid-template-columns:1fr}#demo .features{grid-template-columns:1fr}main{grid-template-columns:1fr}aside{display:none}.carousel .slide{grid-template-columns:1fr}#dialog{width:min(520px,92%)}}
 </style>
 </head>
 <body>
@@ -212,7 +300,7 @@ footer{padding:22px 28px;font-size:11.5px;color:var(--faint)}
 </nav>
 
 <section class="panel" id="what">
-  <h1>We know exactly what we don't know.</h1>
+  <h1>We know what we don't know, and where.</h1>
   <p class="lead">A dependency ledger under a real HAZOP and real P&amp;IDs. The engineer proposes a change; every claim that rested on what changed is re-derived by a solver and comes back as a proof, a refutation with the rows it rests on, or a question addressed to a person.</p>
   <div class="cols">
     <div class="card real"><h4>Real <span class="real-badge">PUBLIC RECORD</span></h4>
@@ -236,12 +324,23 @@ footer{padding:22px 28px;font-size:11.5px;color:var(--faint)}
 </section>
 
 <section class="panel" id="demo">
+  <div class="intro">
+    <h2>Three ways into the same ledger</h2>
+    <p class="lead">One ledger under the documents. Pick a way in; the stage below switches to it. Every surface answers the same two questions for anything you click: what does this rest on, and what rests on it.</p>
+  </div>
+  <div class="features">
+    <div class="feat cur" data-f="pid"><div class="fn">01</div><h4>Interactive P&amp;IDs</h4><p>Seven real sheets. Every box is a claim with a sheet and zone behind it. Click one for what it rests on and what rests on it; commit MOC-001 and watch the obligation walk the drawings.</p><button class="primary">Open PIT-1001 on MM0012</button></div>
+    <div class="feat" data-f="grid"><div class="fn">02</div><h4>The ledger as a spreadsheet</h4><p>LOPA, SRS, alarm databases and the instrument index as an editable grid. Every cell has provenance. Nothing saves without passing the gate, which names every claim the edit obligates.</p><button>Watch an edit go through the gate</button></div>
+    <div class="feat" data-f="qra"><div class="fn">03</div><h4>From SIL to QRA scoping</h4><p>A refuted LOPA row becomes the structure a QRA would need: a fault tree with the shared transmitter drawn once, an event tree, an inputs ledger, and the list of what no document states. Never a risk number.</p><button>Scope a QRA for S-1.5.2</button></div>
+  </div>
   <div class="bar">
-    <h2>The demo</h2><span id="phase" class="tag">phase: first pass</span>
+    <h2 id="demoTitle">Interactive P&amp;IDs</h2><span id="phase" class="tag">phase: first pass</span>
     <div class="spacer"></div>
     <button id="btnLegend">Legend</button>
     <button id="btnReset" title="rebuild the ledger from the documents">Reset</button>
     <button id="btnStrip">All sheets</button>
+    <button id="btnGrid" title="the ledger's document tables, editable, with a save gate">Grid</button>
+    <button id="btnEdit" title="watch an edit go through the save gate">Edit as the engineer</button>
     <button id="btnDialog">Ask as the engineer</button>
     <button id="btnFollow" disabled>Follow the line</button>
     <button id="btnCommit" class="primary">Commit MOC-001</button>
@@ -254,9 +353,18 @@ footer{padding:22px 28px;font-size:11.5px;color:var(--faint)}
         <div id="hint">drag to pan · wheel to zoom · click a sheet pill to jump</div>
         <div id="canvas"><img id="img" alt=""><svg id="overlay" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2600 1682"></svg></div>
       </div>
+      <div id="grid">
+        <div class="gbar"><span class="gtabs"></span><div class="spacer"></div><input class="gfilter" placeholder="filter rows"><button class="gcols">Columns</button><button class="gsave primary" disabled>Save</button></div>
+        <div class="gcolmenu"></div>
+        <div class="gwrap"><table class="g"></table></div>
+        <div class="gcount"></div>
+        <div class="ggate"></div>
+      </div>
+      <div id="qra"></div>
+      <div id="deps"></div>
       <div id="dialog">
         <div class="dh"><b>Engineer</b> · asks the ledger <div class="spacer"></div><span class="tag" id="dstate">idle</span><button id="dtoggle" title="collapse">—</button></div>
-        <div id="dlog"><div class="empty">Press “Ask as the engineer”. Each answer below is the solver's result for that question, with the rows it rests on.</div></div>
+        <div id="dlog"><div class="empty">Press “Ask as the engineer”. Each answer below is the solver's result for that question, with the rows it rests on. Click any box on a sheet, any card, any tile or any grid cell for what it rests on and what rests on it.</div></div>
       </div>
     </section>
     <aside id="panel"><div class="empty">Loading the ledger…</div></aside>
