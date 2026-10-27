@@ -120,6 +120,8 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,5.2vw,64px);lin
 .half .sub{color:var(--muted);font-size:16px;max-width:66ch;margin:0 0 22px}
 .half ul{margin:0;padding-left:18px;color:var(--muted);font-size:15px;display:grid;gap:8px;max-width:70ch}
 .tl{display:grid;grid-template-columns:repeat(6,1fr);align-items:start;margin-top:26px;font-family:var(--mono);font-size:12px;color:var(--faint);max-width:980px}
+.tl{max-width:none;grid-template-columns:1.9fr .8fr 2.1fr .9fr 1.1fr 1.3fr;gap:18px}
+.tl .pha span,.tl .moc span{font-size:12.5px;line-height:1.5}
 .tl div{border-top:1px solid var(--line);padding:12px 10px 0 0;position:relative;min-height:84px}
 .tl div::before{content:"";position:absolute;top:-5px;left:0;width:9px;height:9px;border-radius:50%;background:var(--line)}
 .tl .pha::before{background:var(--teal)} .tl .moc::before{background:var(--warn)} .tl .reval::before{background:var(--lav)}
@@ -250,6 +252,22 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,5.2vw,64px);lin
 .gtabs .save[disabled]{opacity:.45;cursor:default}
 .gtabs .status{font-family:var(--mono);font-size:11px;color:var(--faint);align-self:center;margin:0 10px 6px}
 .gtabs .status b{color:var(--warn);font-weight:500}
+.gridwrap{position:relative}
+.gdim{position:fixed;inset:0;z-index:49;pointer-events:none;opacity:0;transition:opacity .7s;background:radial-gradient(circle at calc(100% - 210px) calc(100% - 80px),rgba(0,0,0,0) 0,rgba(0,0,0,0) 230px,rgba(0,0,0,.42) 480px)}
+.gdim.on{opacity:1}
+.ghint{position:fixed;right:24px;bottom:24px;z-index:50;max-width:380px;cursor:pointer;background:rgba(10,10,20,.96);border:1px solid rgba(255,184,107,.55);border-radius:12px;padding:12px 14px;font-size:13.5px;line-height:1.5;color:var(--text);box-shadow:0 14px 40px rgba(0,0,0,.5);transition:opacity .6s}
+.ghint b{display:block;font-weight:500;margin-bottom:4px}
+.ghint span{color:var(--muted)}
+.ghint.fade{opacity:0}
+.gq{font-family:var(--serif);font-size:19px;color:var(--text);margin:-4px 0 10px}
+.gapscreen{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding-top:0;padding-bottom:0}
+.gapscreen h2{font-size:clamp(40px,5.2vw,66px);line-height:1.08;letter-spacing:-.012em;max-width:16ch;opacity:0;transform:translateY(12px);transition:opacity 1.1s ease,transform 1.1s ease}
+.gapscreen .sub{font-size:20px;max-width:720px;margin-top:22px;opacity:0;transform:translateY(10px);transition:opacity .9s ease,transform .9s ease}
+.gapscreen.in h2,.gapscreen.sub-in .sub{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.gapscreen h2,.gapscreen .sub{opacity:1;transform:none;transition:none}}
+.gt .pane[data-pane="lopa"] td:nth-child(3),.gt .pane[data-pane="lopa"] td:nth-child(n+6){white-space:nowrap}
+.gt .pane[data-pane="lopa"] td:nth-child(2){min-width:200px}
+.gate .item .st.h{color:var(--ok)}
 .gt{overflow-x:auto}
 .gt table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums;min-width:760px}
 .gt th{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-weight:400;white-space:nowrap}
@@ -371,293 +389,28 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,5.2vw,64px);lin
 </header>
 
 <div class="wrap">
-  <div class="center">
-    <div class="toggle" role="tablist" aria-label="Audience">
-      <button id="btn-manager" role="tab" aria-pressed="true" aria-controls="panel-manager">Manager</button>
-      <button id="btn-engineer" role="tab" aria-pressed="false" aria-controls="panel-engineer">Engineer</button>
-    </div>
-  </div>
 
   <!-- ===================== MANAGER ===================== -->
-  <section id="panel-manager" class="panel">
-    <div class="tag">PRINCIPIA MANAGER · 1 OF 8</div>
-    <h1>Two identical assets. Two different numbers.</h1>
-    <p class="lede">Before the case study, two things the room needs to hold: what the numbers are, and why they rule.</p>
-
-    <div class="cols two">
-      <article class="card real">
-        <h4>KPIs, Tier rates and quartiles</h4>
-        <ul>
-          <li>Plant data is aggregated into a few key performance indicators (KPIs): mechanical availability, utilization, maintenance cost as a share of asset value.</li>
-          <li>Beside them, the Tier 1 to Tier 4 process-safety event rates every operator reports under API RP 754.</li>
-          <li>And the peer benchmarks that place each plant in a quartile against the industry.</li>
-          <li>Together they let management judge an asset above the technical jargon.</li>
-        </ul>
-      </article>
-
-      <article class="card synth">
-        <h4>Why KPIs, Tier rates and quartiles</h4>
-        <ul>
-          <li>Credit: lenders and rating agencies read unplanned downtime as EBITDA volatility, and EBITDA against debt moves the rating.</li>
-          <li>Insurance: the risk survey that sets the premium reviews process-safety indicators and maintenance practice alongside the plant.</li>
-          <li>Bonus: the lagging indicators, Tier 1 events and loss of containment, go in the annual report and the incentive plan.</li>
-          <li>Management quotas and targets follow from all three.</li>
-        </ul>
-      </article>
-    </div>
-    <div class="leave"><span class="k">leave with</span><span class="v">The number is watched by everyone. What it rests on is kept by no one.</span></div>
-
-
-    <div class="half">
-      <div class="tag">PRINCIPIA MANAGER · 2 OF 8</div>
-      <h2>Beyond KPIs, Tier rates and quartiles</h2>
-      <p class="sub">Two plants built the same way, run on the same crude, in the same market. One produces 1.5× the other, three years running.</p>
-      <ul class="twocol">
-        <li>Every two years refineries holding about 85 % of the world's capacity submit their numbers to Solomon's Fuels Study.</li>
-        <li>Strip out crude, size and market, and the gap between sister plants is still large and persistent.</li>
-        <li>Solomon's own figures for its World's Best peer group: 30 % more reliable, 40 % of the maintenance cost, 60 % more profitable than the rest.</li>
-        <li>The study ranks the gap. It does not explain it.</li>
-      </ul>
-    </div>
-
-    <div class="half">
-      <div class="tag">PRINCIPIA MANAGER · 3 OF 8</div>
-      <h2>Two assets, and the VP</h2>
-      <p class="sub">Asset B is Project Tundra. Asset A is its declared twin: same design, same crude, same owner, labelled as filled in.</p>
-      <div class="two-cards">
-        <article class="card real">
-          <h4>Asset A<span class="badge">declared twin</span></h4>
-          <ul class="plain">
-            <li>Operational availability: first quartile, three study cycles running</li>
-            <li>Maintenance cost efficiency: second quartile</li>
-            <li>Turnaround interval six years; SIS partial-stroke tested in service</li>
-            <li>No Tier 1 event in the record</li>
-          </ul>
-        </article>
-        <article class="card synth">
-          <h4>Asset B<span class="badge">tundra · filled-in KPIs</span></h4>
-          <ul class="plain">
-            <li>Operational availability: third quartile, three study cycles running</li>
-            <li>Maintenance cost efficiency: fourth quartile</li>
-            <li>Turnaround interval four years; SIS tested at turnaround</li>
-            <li>No Tier 1 event in the record</li>
-          </ul>
-        </article>
-      </div>
-
-      <p class="caption">Our VP of Operations, Dan. The Solomon debrief. <em>Five people</em> bring five screens.</p>
-      <div class="ledgers" id="mledgers"><span data-l="Benchmarking engineer">Benchmarking engineer<i>Solomon cycle</i></span><span data-l="Corporate reliability">Corporate reliability<i>APM, bad actors, barriers</i></span><span data-l="OE audit">OE audit<i>OEMS assessment</i></span><span data-l="BI / performance">BI / performance<i>scorecards over PI and SAP</i></span><span data-l="Site lead, Asset A">Site lead, Asset A<i>the other plant</i></span></div>
-      <div class="search"><span class="scope" id="msscope"></span><span style="color:var(--faint)">⌕</span><span class="q" id="msq"></span><span class="r" id="msr"></span></div>
-      <div class="results" id="msres"></div>
-      <div class="fadewrap" id="mfw">
-        <!-- MANAGER WALL: background tiles cycle through the six incumbent-tool screens docs/mgr_*.jpg (see manifest at top) -->
-        <div class="fadegrid" id="mfg"><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_trend.png)"></div><div class="tl" style="background-image:url(docs/mgr_oe.png)"></div><div class="tl" style="background-image:url(docs/mgr_scorecard.png)"></div><div class="tl" style="background-image:url(docs/mgr_quartile.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div><div class="tl" style="background-image:url(docs/mgr_badactors.png)"></div><div class="tl" style="background-image:url(docs/mgr_barriers.png)"></div></div>
-        <div class="front" id="mff"></div>
-        <div class="cap" id="mfcap"></div>
-        <div class="more">+ 212 reports, dashboards and assessments across 5 groups</div>
-        <div class="ctl2"><span class="cnt" id="mfcnt"></span><button type="button" id="mfprev" aria-label="Previous">‹</button><button type="button" id="mfnext" aria-label="Next">›</button><button type="button" id="mfplay" aria-pressed="true">Pause</button></div>
-      </div>
-      <div class="opened" id="mopened"><div class="hd">OPENED SO FAR</div></div>
-      <!-- MANAGER WALL CONFIG: all entries are HTML artefacts (Solomon table, scatter, scorecard, OE assessment, plan, Asset A practice table) -->
-      <script>window.__mgr={"prefix": "m", "flat": [{"s": 0, "d": 0, "kind": "syn", "src": null, "title": "Fuels Study \u00b7 quartile table, three study years", "html": "<div class=\"paper\"><h5>Fuels Study \u00b7 Regional Quartile Performance &amp; Rank</h5><div class=\"sub2\">Three study years \u00b7 My Refinery (Asset B) \u00b7 representative</div>\n<table><tr><th>Metric</th><th>'20</th><th>'22</th><th>'24</th><th>Asset A '24</th></tr>\n<tr><td>Operational Availability</td><td class=\"q3\">Q3 \u00b7 41/58</td><td class=\"q3\">Q3 \u00b7 39/58</td><td class=\"q3\">Q3 \u00b7 42/58</td><td class=\"q1\">Q1 \u00b7 6/58</td></tr>\n<tr><td>Energy Efficiency (EII)</td><td class=\"q2\">Q2 \u00b7 22/58</td><td class=\"q2\">Q2 \u00b7 24/58</td><td class=\"q2\">Q2 \u00b7 21/58</td><td class=\"q2\">Q2 \u00b7 19/58</td></tr>\n<tr><td>Maintenance Cost Efficiency</td><td class=\"q4\">Q4 \u00b7 47/58</td><td class=\"q3\">Q3 \u00b7 40/58</td><td class=\"q4\">Q4 \u00b7 45/58</td><td class=\"q2\">Q2 \u00b7 17/58</td></tr>\n<tr><td>Non-Maintenance Personnel Efficiency</td><td class=\"q2\">Q2 \u00b7 26/58</td><td class=\"q2\">Q2 \u00b7 25/58</td><td class=\"q2\">Q2 \u00b7 27/58</td><td class=\"q3\">Q3 \u00b7 33/58</td></tr>\n</table><div class=\"foot2\">Underlying KPIs: Operational Availability \u00b7 Maintenance Cost Efficiency \u00b7 Annualized T/A Downtime \u00b7 Annualized T/A Cost \u00b7 Reliability &amp; Maintenance Effectiveness</div></div>"}, {"s": 0, "d": 1, "kind": "syn", "src": null, "title": "Fuels Study \u00b7 cost distribution, My Refinery marked", "html": "<div class=\"paper\"><h5>Cost of Producing Transportation Fuels \u00b7 Regional Distribution</h5><div class=\"sub2\">CTF, USD/bbl vs percent of participation \u00b7 representative</div>\n<svg class=\"scat\" viewBox=\"0 0 700 300\" role=\"img\" aria-label=\"scatter\">\n<rect x=\"0\" y=\"0\" width=\"700\" height=\"300\" fill=\"#f4f4f0\"/>\n<line x1=\"60\" y1=\"260\" x2=\"660\" y2=\"260\" stroke=\"#555\"/><line x1=\"60\" y1=\"20\" x2=\"60\" y2=\"260\" stroke=\"#555\"/>\n<text x=\"360\" y=\"290\" font-size=\"11\" text-anchor=\"middle\" fill=\"#555\">Percent of participation</text>\n<text x=\"18\" y=\"140\" font-size=\"11\" fill=\"#555\" transform=\"rotate(-90 18 140)\">CTF, USD/bbl</text>\n<circle cx=\"60.0\" cy=\"244.76477820397838\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"65.0\" cy=\"237.97039940698454\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"70.0\" cy=\"241.6895356427171\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"75.0\" cy=\"236.38575052870075\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"80.0\" cy=\"235.71441199750063\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"85.0\" cy=\"247.8156140725716\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"90.0\" cy=\"248.7159679805908\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"95.0\" cy=\"230.30320854056524\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"100.0\" cy=\"242.718650650617\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"105.0\" cy=\"242.94241772001183\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"110.0\" cy=\"225.8442135545688\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"115.0\" cy=\"237.03167836772622\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"120.0\" cy=\"228.58358435415195\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"125.0\" cy=\"236.09412482368396\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"130.0\" cy=\"232.08308817734678\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"135.0\" cy=\"242.3788198402436\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"140.0\" cy=\"231.25685759565604\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"145.0\" cy=\"225.6402921817783\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"150.0\" cy=\"232.7233146760011\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"155.0\" cy=\"227.40468385576096\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"160.0\" cy=\"228.40337250493823\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"165.0\" cy=\"241.21155030040023\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"170.0\" cy=\"225.36892702093564\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"175.0\" cy=\"228.4597819813256\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"180.0\" cy=\"234.23457258481812\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"185.0\" cy=\"239.56346038423592\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"190.0\" cy=\"220.5723938305099\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"195.0\" cy=\"228.56703684328176\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"200.0\" cy=\"222.49238491102773\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"205.0\" cy=\"218.29730467115252\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"210.0\" cy=\"221.23089291111168\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"215.0\" cy=\"215.97419660603225\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"220.0\" cy=\"226.83205016682484\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"225.0\" cy=\"217.1705554036053\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"230.0\" cy=\"224.2647800868432\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"235.0\" cy=\"212.7061812337943\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"240.0\" cy=\"213.18357197867576\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"245.0\" cy=\"229.59124346381603\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"250.0\" cy=\"227.94771467451136\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"255.0\" cy=\"225.35643568993189\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"260.0\" cy=\"208.06816262536807\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"265.0\" cy=\"218.87932677264251\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"270.0\" cy=\"213.8424945083954\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"275.0\" cy=\"220.14787446281525\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"280.0\" cy=\"214.74073802832396\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"285.0\" cy=\"216.5287081625293\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"290.0\" cy=\"216.4035735862358\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"295.0\" cy=\"210.3460724357533\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"300.0\" cy=\"209.44662236123713\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"305.0\" cy=\"201.478640022795\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"310.0\" cy=\"205.42694212892428\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"315.0\" cy=\"199.04186118083157\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"320.0\" cy=\"199.6747019332101\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"325.0\" cy=\"195.73941407671546\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"330.0\" cy=\"201.78774694202434\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"335.0\" cy=\"211.97114116800313\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"340.0\" cy=\"195.61794500521302\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"345.0\" cy=\"192.31183217635166\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"350.0\" cy=\"192.60145660397853\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"355.0\" cy=\"198.94471409942255\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"360.0\" cy=\"194.7107882329808\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"365.0\" cy=\"204.70914033677113\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"370.0\" cy=\"189.98715618115236\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"375.0\" cy=\"194.58304092375994\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"380.0\" cy=\"199.83955837066046\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"385.0\" cy=\"203.61007253722678\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"390.0\" cy=\"185.10682963413453\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"395.0\" cy=\"180.9950298893718\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"400.0\" cy=\"199.69046164218724\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"405.0\" cy=\"182.88181941178942\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"410.0\" cy=\"190.31183084740792\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"415.0\" cy=\"194.8623024516853\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"420.0\" cy=\"190.54081412709664\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"425.0\" cy=\"178.91046719049828\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"430.0\" cy=\"175.43072160706146\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"435.0\" cy=\"192.45741550003913\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"440.0\" cy=\"178.6982271509561\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"445.0\" cy=\"190.00799961189404\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"450.0\" cy=\"173.9601829987767\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"455.0\" cy=\"181.24456635249905\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"460.0\" cy=\"167.89586870590887\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"465.0\" cy=\"164.44261801444304\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"470.0\" cy=\"173.62881358121928\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"475.0\" cy=\"161.5030059149056\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"480.0\" cy=\"175.3703312859476\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"485.0\" cy=\"179.19335985427395\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"490.0\" cy=\"166.38639318187282\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"495.0\" cy=\"177.5761834115997\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"500.0\" cy=\"172.6002483005542\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"505.0\" cy=\"166.63528437814375\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"510.0\" cy=\"160.83775097710003\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"515.0\" cy=\"169.48082250787024\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"520.0\" cy=\"170.6238486867675\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"525.0\" cy=\"151.09763747852534\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"530.0\" cy=\"161.906985447328\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"535.0\" cy=\"146.33440925003106\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"540.0\" cy=\"146.303280609749\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"545.0\" cy=\"156.31455860334322\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"550.0\" cy=\"153.08432833911013\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"555.0\" cy=\"150.35047789846925\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"560.0\" cy=\"146.19663511775585\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"565.0\" cy=\"145.81937977000834\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"570.0\" cy=\"145.1728686556974\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"575.0\" cy=\"142.37822667029195\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"580.0\" cy=\"133.86321953834226\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"585.0\" cy=\"141.9297113956907\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"590.0\" cy=\"142.1170624061413\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"595.0\" cy=\"134.26699725223867\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"600.0\" cy=\"143.38805388894124\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"605.0\" cy=\"140.48597489665406\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"610.0\" cy=\"124.08387952042202\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"615.0\" cy=\"132.60787129942435\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"620.0\" cy=\"130.47619929295132\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"625.0\" cy=\"140.7503788300879\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"630.0\" cy=\"130.32039522131902\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"635.0\" cy=\"125.14020147309114\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"640.0\" cy=\"135.89454859621515\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"645.0\" cy=\"121.21632422848099\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"650.0\" cy=\"119.2759924588474\" r=\"2.3\" fill=\"#8a8a84\"/><circle cx=\"655.0\" cy=\"130.2742243087306\" r=\"2.3\" fill=\"#8a8a84\"/>\n<rect x=\"380\" y=\"150\" width=\"120\" height=\"60\" fill=\"none\" stroke=\"#b55\" stroke-dasharray=\"4 3\"/>\n<text x=\"505\" y=\"160\" font-size=\"10.5\" fill=\"#b55\">refineries that could threaten</text><text x=\"505\" y=\"173\" font-size=\"10.5\" fill=\"#b55\">your market position</text>\n<circle cx=\"455\" cy=\"178\" r=\"6\" fill=\"#d9480f\"/><text x=\"466\" y=\"196\" font-size=\"11\" font-weight=\"600\" fill=\"#d9480f\">My Refinery (B)</text>\n<circle cx=\"214\" cy=\"236\" r=\"6\" fill=\"#2b7a3d\"/><text x=\"225\" y=\"232\" font-size=\"11\" font-weight=\"600\" fill=\"#2b7a3d\">Asset A</text>\n</svg></div>"}, {"s": 1, "d": 0, "kind": "syn", "src": null, "title": "AssetLens \u00b7 fleet asset health, A vs B", "html": "<div class=\"dash\"><div class=\"ttl2\"><span>ASSETLENS \u00b7 FLEET ASSET HEALTH \u00b7 ASSET A vs ASSET B</span><span>APM \u00b7 refreshed nightly</span></div>\n<table style=\"width:100%;border-collapse:collapse;font-size:12px\"><tr style=\"color:var(--faint);text-align:left\"><th style=\"padding:4px 6px\">Unit</th><th>Health A</th><th>Health B</th><th>Bad actors B</th><th>Open work orders B</th><th>Overdue SCE tasks B</th></tr>\n<tr><td style=\"padding:4px 6px\">Main meter station</td><td style=\"color:var(--ok)\">92</td><td style=\"color:#ff8a8a\">71</td><td>PS-1001 \u00b7 MOV-1001 actuator</td><td>38</td><td>6</td></tr>\n<tr><td style=\"padding:4px 6px\">Flow control skids</td><td style=\"color:var(--ok)\">95</td><td style=\"color:var(--warn)\">84</td><td>FCV-1002 positioner</td><td>21</td><td>2</td></tr>\n<tr><td style=\"padding:4px 6px\">Pig launcher / receiver</td><td style=\"color:var(--ok)\">90</td><td style=\"color:var(--warn)\">80</td><td>XV-1001 seat</td><td>17</td><td>1</td></tr>\n<tr><td style=\"padding:4px 6px\">Orifice meter skids</td><td style=\"color:var(--ok)\">97</td><td style=\"color:var(--ok)\">93</td><td>\u2014</td><td>9</td><td>0</td></tr>\n<tr><td style=\"padding:4px 6px\">RTU &amp; analyzer</td><td style=\"color:var(--ok)\">96</td><td style=\"color:var(--ok)\">94</td><td>\u2014</td><td>5</td><td>0</td></tr></table>\n<div style=\"font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:10px\">Health score = weighted sum of condition, PM compliance and age \u00b7 weights set 2019 \u00b7 no link to the LOPA or the SRS</div></div>"}, {"s": 1, "d": 1, "kind": "syn", "src": null, "title": "AssetLens \u00b7 bad actors YTD, Asset B", "html": "<div class=\"dash\"><div class=\"ttl2\"><span>ASSETLENS \u00b7 BAD ACTORS YTD \u00b7 ASSET B</span><span>lost production hours</span></div>\n<table style=\"width:100%;border-collapse:collapse;font-size:12px\"><tr style=\"color:var(--faint);text-align:left\"><th style=\"padding:4px 6px\">#</th><th>Tag</th><th>Failures</th><th>Hours lost</th><th>Cause code</th></tr>\n<tr><td style=\"padding:4px 6px\">1</td><td>PS-1001 (spurious trips)</td><td>4</td><td>61</td><td>Instrument \u00b7 unknown</td></tr>\n<tr><td style=\"padding:4px 6px\">2</td><td>MOV-1001 actuator</td><td>2</td><td>44</td><td>Mechanical \u00b7 wear</td></tr>\n<tr><td style=\"padding:4px 6px\">3</td><td>FCV-1002 positioner</td><td>3</td><td>29</td><td>Instrument \u00b7 drift</td></tr>\n<tr><td style=\"padding:4px 6px\">4</td><td>XV-1001</td><td>1</td><td>18</td><td>Mechanical \u00b7 seat</td></tr>\n<tr><td style=\"padding:4px 6px\">5</td><td>Analyzer H2O</td><td>5</td><td>12</td><td>Instrument \u00b7 fouling</td></tr></table>\n<div style=\"font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:10px\">Asset A: 2 bad actors, 23 hours. The #1 on Asset B is the SIF that Asset A tests in service.</div></div>"}, {"s": 1, "d": 2, "kind": "syn", "src": null, "title": "BarrierBoard \u00b7 barrier health, main meter station", "html": "<div class=\"dash\"><div class=\"ttl2\"><span>BARRIERBOARD \u00b7 BARRIER HEALTH \u00b7 ASSET B \u00b7 MAIN METER STATION</span><span>bowtie \u00b7 updated from CMMS + inhibit log</span></div>\n<table style=\"width:100%;border-collapse:collapse;font-size:12px\"><tr style=\"color:var(--faint);text-align:left\"><th style=\"padding:4px 6px\">Barrier</th><th>Status</th><th>Basis</th><th>Last set by</th></tr>\n<tr><td style=\"padding:4px 6px\">SIF-101 high-pressure trip</td><td style=\"color:var(--warn)\">Degraded</td><td>Proof test overdue 41 days</td><td>rule</td></tr>\n<tr><td style=\"padding:4px 6px\">PSV-1001 relief</td><td style=\"color:var(--ok)\">Healthy</td><td>Inspection in date</td><td>rule</td></tr>\n<tr><td style=\"padding:4px 6px\">PAH-1001 operator response</td><td style=\"color:var(--ok)\">Healthy</td><td>Alarm enabled</td><td>rule</td></tr>\n<tr><td style=\"padding:4px 6px\">MOV-1001 isolation</td><td style=\"color:var(--ok)\">Healthy</td><td>Overridden by hand \u00b7 2026-08-02 \u00b7 \"actuator repaired\"</td><td style=\"color:var(--warn)\">J. Ruiz</td></tr>\n<tr><td style=\"padding:4px 6px\">Permit to work</td><td style=\"color:var(--ok)\">Healthy</td><td>Audit score</td><td>rule</td></tr></table>\n<div style=\"font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:10px\">Status is a traffic light per barrier. \"Healthy\" for PAH-1001 means the alarm is enabled; it does not know the DCS limit is 1,750 and the MADB says 1,700.</div></div>"}, {"s": 2, "d": 0, "kind": "syn", "src": null, "title": "OE assessment \u00b7 Asset B \u00b7 cycle 2026", "html": "<div class=\"paper\"><h5>OE Assessment \u00b7 Asset B \u00b7 Cycle 2026</h5><div class=\"sub2\">Corporate OE audit \u00b7 processes rated after evaluating local risks \u00b7 18 of 41 shown</div>\n<table><tr><th>Element</th><th>Rating</th><th>Plan</th></tr><tr><td>Reliability management standard</td><td class=\"H\">Below expectation</td><td>12 mo</td></tr><tr><td>Bad-actor program</td><td class=\"H\">Below expectation</td><td>12 mo</td></tr><tr><td>Criticality ranking</td><td class=\"M\">Meets, with gaps</td><td>24 mo</td></tr><tr><td>PM optimisation / RCM</td><td class=\"H\">Below expectation</td><td>12 mo</td></tr><tr><td>Predictive maintenance</td><td class=\"M\">Meets, with gaps</td><td>24 mo</td></tr><tr><td>Planning &amp; scheduling</td><td class=\"M\">Meets, with gaps</td><td>24 mo</td></tr><tr><td>Backlog management</td><td class=\"H\">Below expectation</td><td>12 mo</td></tr><tr><td>Shutdown / turnaround work process</td><td class=\"M\">Meets, with gaps</td><td>24 mo</td></tr><tr><td>Operator-driven reliability</td><td class=\"H\">Below expectation</td><td>12 mo</td></tr><tr><td>Root-cause analysis</td><td class=\"M\">Meets, with gaps</td><td>24 mo</td></tr><tr><td>Spares strategy</td><td class=\"L\">Meets</td><td>ongoing</td></tr><tr><td>Fixed-equipment integrity (RBI)</td><td class=\"L\">Meets</td><td>ongoing</td></tr><tr><td>Rotating-equipment program</td><td class=\"M\">Meets, with gaps</td><td>24 mo</td></tr><tr><td>Instrumentation &amp; SIS testing</td><td class=\"M\">Meets, with gaps</td><td>24 mo</td></tr><tr><td>Electrical program</td><td class=\"L\">Meets</td><td>ongoing</td></tr><tr><td>Management of change</td><td class=\"M\">Meets, with gaps</td><td>24 mo</td></tr><tr><td>Procedures &amp; training</td><td class=\"L\">Meets</td><td>ongoing</td></tr><tr><td>KPI review cadence</td><td class=\"M\">Meets, with gaps</td><td>24 mo</td></tr></table><div class=\"foot2\">Gaps enter the three-year OE plan with metrics, targets and owners; progress posted 1 Jul and 1 Jan; closure validated by the audit group.</div></div>"}, {"s": 2, "d": 1, "kind": "syn", "src": null, "title": "Three-year OE plan \u00b7 Asset B", "html": "<div class=\"paper\"><h5>Three-year OE plan \u00b7 Asset B</h5><div class=\"sub2\">From the 2026 assessment \u00b7 approved by the operating-company president</div>\n<table><tr><th>#</th><th>Recommendation</th><th>Priority</th></tr><tr><td>1</td><td>Develop and adopt a site Reliability Management Standard</td><td class=\"H\">High</td></tr><tr><td>2</td><td>Stand up a bad-actor elimination program with monthly review</td><td class=\"H\">High</td></tr><tr><td>3</td><td>Re-baseline PM tasks on critical equipment (RCM)</td><td class=\"H\">High</td></tr><tr><td>4</td><td>Institute backlog targets: ready backlog 4\u20136 weeks</td><td class=\"H\">High</td></tr><tr><td>5</td><td>Operator basic care rounds on all critical rotating equipment</td><td class=\"H\">High</td></tr><tr><td>6</td><td>Planning &amp; scheduling KPIs: schedule compliance \u2265 85 %</td><td class=\"M\">Medium</td></tr><tr><td>7</td><td>Formal RCA threshold and tracking</td><td class=\"M\">Medium</td></tr><tr><td>8</td><td>Align SIS proof-test program with turnaround cycle</td><td class=\"M\">Medium</td></tr></table>\n<div class=\"rm\" style=\"margin-top:12px\"><div></div><div class=\"hd\">Yr 1</div><div class=\"hd\">Yr 2</div><div class=\"hd\">Yr 3</div><div class=\"hd\">Yr 4</div>\n<div>Standard &amp; governance</div><div class=\"b on\"></div><div class=\"b\"></div><div class=\"b\"></div><div class=\"b\"></div>\n<div>Bad actors &amp; RCA</div><div class=\"b on\"></div><div class=\"b on\"></div><div class=\"b\"></div><div class=\"b\"></div>\n<div>PM optimisation</div><div class=\"b\"></div><div class=\"b on\"></div><div class=\"b on\"></div><div class=\"b\"></div>\n<div>Sustain &amp; measure</div><div class=\"b\"></div><div class=\"b\"></div><div class=\"b on\"></div><div class=\"b on\"></div></div>\n<div class=\"foot2\">Monitored monthly. Every line is a process or a practice; none is a unit, a safeguard, or a dollar.</div></div>"}, {"s": 3, "d": 0, "kind": "syn", "src": null, "title": "Operations scorecard \u00b7 September \u00b7 B vs A", "html": "<div class=\"dash\"><div class=\"ttl2\"><span>OPERATIONS SCORECARD \u00b7 SEPTEMBER \u00b7 ASSET B vs ASSET A</span><span>SAP PM \u00b7 PI \u00b7 export 10/01</span></div>\n<div class=\"tiles\">\n<div class=\"tile\"><div class=\"k\">Mechanical availability</div><div class=\"v\">94.1 %</div><div class=\"d bad\">Asset A 97.4 % \u00b7 gap \u22123.3</div><div class=\"g\"><i style=\"width:94%\"></i></div></div>\n<div class=\"tile\"><div class=\"k\">Utilization</div><div class=\"v\">86 %</div><div class=\"d bad\">Asset A 93 % \u00b7 guided 92 %</div><div class=\"g\"><i style=\"width:86%\"></i></div></div>\n<div class=\"tile\"><div class=\"k\">Maintenance cost, % RAV</div><div class=\"v\">3.4 %</div><div class=\"d bad\">Asset A 1.9 % \u00b7 top quartile 1.5 %</div><div class=\"g\"><i style=\"width:68%\"></i></div></div>\n<div class=\"tile\"><div class=\"k\">Unplanned downtime, days YTD</div><div class=\"v\">11.2</div><div class=\"d bad\">Asset A 2.1</div><div class=\"g\"><i style=\"width:56%\"></i></div></div>\n<div class=\"tile\"><div class=\"k\">Tier 1 / Tier 2 events YTD</div><div class=\"v\">0 / 3</div><div class=\"d ok\">Asset A 0 / 2</div><div class=\"g\"><i style=\"width:20%\"></i></div></div>\n<div class=\"tile\"><div class=\"k\">Safety-critical maintenance on time</div><div class=\"v\">78 %</div><div class=\"d bad\">Asset A 96 % \u00b7 target 95 %</div><div class=\"g\"><i style=\"width:78%\"></i></div></div>\n</div></div>"}, {"s": 4, "d": 0, "kind": "syn", "src": null, "title": "Asset A \u00b7 turnaround and SIS testing practice", "html": "<div class=\"paper\"><h5>Asset A \u00b7 Turnaround &amp; SIS testing practice</h5><div class=\"sub2\">Shared by the Asset A site lead \u00b7 site procedure extract and interval history</div>\n<table><tr><th>Item</th><th>Asset A</th><th>Asset B</th></tr>\n<tr><td>Turnaround interval</td><td>6 years (since 2019 RBI cycle)</td><td>4 years</td></tr>\n<tr><td>SIS proof testing</td><td>Partial-stroke in service, quarterly; full stroke at TA</td><td>Full stroke at TA only</td></tr>\n<tr><td>Logic solver test</td><td>Every second TA</td><td>Every TA</td></tr>\n<tr><td>PAH setpoints</td><td>Re-rationalised 2021 after PHA; nuisance trips down 70 %</td><td>Rationalised 2022; DCS limit differs from MADB on 1 tag</td></tr>\n<tr><td>Spurious trips, 2025</td><td>1</td><td>7</td></tr>\n</table><div class=\"foot2\">\"A lot of it is the crew.\" No document on either site says why the intervals are what they are.</div></div>"}], "meta": [{"app": "Benchmarking engineer", "q": "Why is Asset A at 1.5\u00d7 over three cycles?", "answer": "<b>Q3 vs Q1</b> on availability, three cycles running. Normalised for crude, size and market.", "titles": ["Fuels Study \u00b7 quartile table, three study years", "Fuels Study \u00b7 cost distribution, My Refinery marked"]}, {"app": "Corporate reliability", "q": "Why is Asset A at 1.5\u00d7 over three cycles?", "answer": "<b>14 bad actors</b> on B against 2 on A. Health scores lower on three units.", "titles": ["AssetLens \u00b7 fleet asset health, A vs B", "AssetLens \u00b7 bad actors YTD, Asset B", "BarrierBoard \u00b7 barrier health, main meter station"]}, {"app": "OE audit", "q": "Why is Asset A at 1.5\u00d7 over three cycles?", "answer": "<b>5 processes</b> rated below expectation on B. All in the three-year plan.", "titles": ["OE assessment \u00b7 Asset B \u00b7 cycle 2026", "Three-year OE plan \u00b7 Asset B"]}, {"app": "BI / performance", "q": "Why is Asset A at 1.5\u00d7 over three cycles?", "answer": "<b>Six tiles</b> red on B. Every tile a number; no tile a reason.", "titles": ["Operations scorecard \u00b7 September \u00b7 B vs A"]}, {"app": "Site lead, Asset A", "q": "Why is Asset A at 1.5\u00d7 over three cycles?", "answer": "<b>Partial-stroke testing</b>, a six-year interval, \"a lot of it is the crew.\"", "titles": ["Asset A \u00b7 turnaround and SIS testing practice"]}]};</script>
-
-      <p class="hand">Who he turns to:</p>
-      <div class="strip">
-        <div class="now"><b>Ask benchmarking</b><span>Q3 on availability, three cycles running. Asset A is Q1. The gap is real and normalised.</span></div>
-        <div><b>Ask reliability</b><span>Fourteen bad actors, three units with low health scores, one barrier degraded. Scores, not reasons.</span></div>
-        <div><b>Ask OE audit</b><span>Five processes below expectation. A three-year plan of practices. No unit, no safeguard.</span></div>
-        <div><b>Ask BI</b><span>Six red tiles. Every tile a number; no tile a reason.</span></div>
-        <div><b>Ask Asset A</b><span>Partial-stroke testing, a six-year interval, "a lot of it is the crew." No document says why.</span></div>
-        <div><b>Apply pressure</b><span>Targets go to Asset B. The number moves, or it does not, and nobody can say why.</span></div>
-      </div>
-      <p class="hand">The last cell is the one the next panel replaces.</p>
-    </div>
-  <div class="half">
-      <div class="tag">PRINCIPIA MANAGER · 4 OF 8</div>
-      <h2>The pressure</h2>
-      <p class="sub">Five screens, no reason. So the question goes down the line as a target.</p>
-      <div class="press">
-        <article class="card real">
-          <h4>What goes down</h4>
-          <p>Asset B gets Asset A's numbers as next year's targets: availability 97 %, maintenance 2 % RAV, two turnaround days back. The three-year OE plan is attached. The site is asked to explain the gap it cannot see either.</p>
-        </article>
-        <article class="card synth">
-          <h4>Best case</h4>
-          <p>Nothing moves. The site spends on planners, overtime and a consultant; the number stays where it was, because the cause is upstream of every metric on the scorecard. The spend is the cost of not knowing what the number rests on.</p>
-        </article>
-        <article class="card runs">
-          <h4>Worst case</h4>
-          <p>The number moves. A test interval is stretched, a proof test slips past the turnaround, a setpoint goes up to quiet an alarm. Availability improves for two quarters. Asset B is lagging because it is carrying a safety constraint Asset A is not, and the pressure is now pushing against the constraint.</p>
-        </article>
-      </div>
-      <div class="leave"><span class="k">leave with</span><span class="v">A target without a reason is a request to find one, and the cheapest reasons are the dangerous ones.</span></div>
-    </div>
-
-    <div class="half">
-      <div class="tag">PRINCIPIA MANAGER · 5 OF 8</div>
-      <h2>The dashboard, with the reasons kept</h2>
-      <p class="sub">Asset A and Asset B, the way Dan already sees them, with one difference: every tile opens to what it rests on. Click the amber availability tile on Asset B.</p>
-      <div class="units">
-        <div class="unit"><div class="uh"><h4>Asset A</h4><span>same design · YTD</span></div>
-          <div class="tiles">
-            <div class="tile2 g" data-t="a1"><div class="k">Mechanical availability</div><div class="v">97.4 %</div><div class="d">+0.3 vs last year</div></div>
-            <div class="tile2 g" data-t="a2"><div class="k">Spurious trips, high-pressure SIF</div><div class="v">1</div><div class="d">PAH re-rationalised 2021</div></div>
-            <div class="tile2 g" data-t="a3"><div class="k">Alarm rate, main console</div><div class="v">5 / hr</div><div class="d">ISA-18.2 target 6</div></div>
-            <div class="tile2 g" data-t="a4"><div class="k">Tier 1 / Tier 2</div><div class="v">0 / 0</div><div class="d">clean</div></div>
-          </div></div>
-        <div class="unit"><div class="uh"><h4>Asset B</h4><span>Tundra · YTD</span></div>
-          <div class="tiles">
-            <div class="tile2 a" data-t="m1" id="tile-avail"><div class="k">Mechanical availability</div><div class="v">93.4 %</div><div class="d">−2.9 vs last year</div><span class="hint">click</span></div>
-            <div class="tile2 r" data-t="m2"><div class="k">Spurious trips, SIF-101</div><div class="v">7</div><div class="d">1 last year</div></div>
-            <div class="tile2 a" data-t="m3"><div class="k">Alarm rate, console 2</div><div class="v">14 / hr</div><div class="d">ISA-18.2 target 6</div></div>
-            <div class="tile2 a" data-t="m4"><div class="k">Tier 1 / Tier 2</div><div class="v">0 / 2</div><div class="d">both pressure excursions</div></div>
-          </div></div>
-      </div>
-      <div class="trace" id="trace">
-        <h4>Mechanical availability, Asset B · 93.4 % · rests on</h4>
-        <div class="step" data-i="1"><div class="n">1</div><div class="b">Site downtime 11.2 days. 9.4 of them are on one unit, the main meter station; the compressor unit lost 0.8<span class="u">Asset B · meter station</span><small>CMMS downtime log by unit</small></div></div>
-        <div class="step" data-i="2"><div class="n">2</div><div class="b">7.9 of those days are spurious trips of SIF-101; 5 of the 7 trips followed a PAH-1001 alarm the operator did not reach in time<span class="u">Asset B · meter station</span><small>trip log PS-1001 · alarm journal console 2</small></div></div>
-        <div class="step" data-i="3"><div class="n">3</div><div class="b">PAH-1001 operator response is credited at 10 min in LOPA S-1.5.2; at the pressure-rise basis MOC-001 set, 12 psi/min, the margin from the 1,700 alarm to the 1,750 trip is 4.2 min<span class="u">Asset B · meter station</span><small>LOPA Rev 1 row 2 · MADB Rev 3 row 1 · SRS-101</small></div></div>
-        <div class="step" data-i="4"><div class="n">4</div><div class="b">The historian holds excursions on PIT-1001 at 7 and 13 psi/min against the LOPA basis of 5<span class="u">Asset B · meter station</span><small>historian EX-2, EX-3 · LOPA Rev 1 basis</small></div></div>
-        <div class="step" data-i="5"><div class="n">5</div><div class="b">The basis moved because of MOC-001 on a different unit: CCS discharge pressure 1,500 → 1,650 psig, pressure rise 5 → 12 psi/min, "other units affected: none"<span class="u other">Asset B · compressor unit</span><small>ChangeFlow MOC-001 · approved · PHA impact reviewed on the compressor unit only</small></div></div>
-        <div class="step" data-i="6"><div class="n">6</div><div class="b">Asset A made the same tie-in in 2021 and re-rationalised its PAH setpoints under the PHA afterwards; its spurious-trip count is 1<span class="u other">Asset A</span><small>Asset A alarm rationalisation 2021 · MOC-2021-087 · "units affected: meter station"</small></div></div>
-        <div class="end" id="trace-end">The gap between the assets is a gap between two units inside Asset B, and the edge between them is written in a form that says "none." Asset A kept that edge; Asset B threw it away.</div>
-        <div class="ctl"><button class="go" id="trace-next">Next</button><button id="trace-reset">Reset</button></div>
-      </div>
-      <div class="leave"><span class="k">leave with</span><span class="v">The number was right. Its cost landed in another unit's ledger. The ledger keeps the edge.</span></div>
-    </div>
-
-    <div class="half">
-      <div class="tag">PRINCIPIA MANAGER · 6 OF 8</div>
-      <h2>The gap is not data. It is reasoning.</h2>
-      <p class="sub">Every number Dan was shown is real and drillable. What none of them can do is explain itself, or explain its neighbour.</p>
-      <div class="gap2">
-        <div class="col solved">
-          <h4>Connecting a KPI to a unit: solved</h4>
-          <ul>
-            <li>Scorecards over PI and SAP drill from site to unit to equipment.</li>
-            <li>Asset-performance platforms hold HAZOP, LOPA and SIF as linked records.</li>
-            <li>Barrier dashboards show a traffic light per safeguard.</li>
-            <li>Benchmarks place every unit in a quartile.</li>
-          </ul>
-        </div>
-        <div class="col unsolved">
-          <h4>Connecting performance metrics to downstream dependencies: not solved</h4>
-          <ul>
-            <li>Which of my numbers moved because of a change made on a different unit?</li>
-            <li>Why is Asset B’s availability four points under Asset A’s?</li>
-            <li>If one process unit defers a test, what does it cost the plant as a whole?</li>
-            <li>Which on-target KPI is dragging down an off-target one?</li>
-          </ul>
-          <div class="empty">no tool answers these · the aggregation threw the support away</div>
-          <div class="until">Until now.</div>
-        </div>
-      </div>
-      <div class="leave"><span class="k">leave with</span><span class="v">Aggregation without the chain is a number nobody can re-open. We keep the chain.</span></div>
-    </div>
-
-    <div class="half">
-      <div class="tag">PRINCIPIA MANAGER · 7 OF 8</div>
-      <h2>What exists, and what can be done</h2>
-      <p class="sub">Four verbs. The incumbents do the first two well. The third and fourth are where the money is.</p>
-      <div class="cmp"><table>
-        <tr><th>Tool</th><th>Aggregate</th><th>Drill to the unit</th><th>Trace to the claim, across units</th><th>Price a safeguard or a deferral</th></tr>
-        <tr><td>BI scorecards (Power BI, Tableau over PI / SAP)</td><td class="y">yes</td><td class="y">yes</td><td class="n">no, exports</td><td class="n">no</td></tr>
-        <tr><td>Asset-performance platforms (AssetLens-type)</td><td class="y">yes</td><td class="y">to the SIF and its test</td><td class="p">within the record it stores</td><td class="p">at the scenario, excluded from the rank</td></tr>
-        <tr><td>Barrier dashboards (BarrierBoard-type)</td><td class="y">yes</td><td class="y">to the barrier</td><td class="n">status is entered or overridden by hand</td><td class="n">no</td></tr>
-        <tr><td>Benchmarking and consultants</td><td class="y">yes</td><td class="p">to the practice</td><td class="n">no</td><td class="p">program-level only</td></tr>
-        <tr class="us"><td>Principia Manager</td><td class="y">the same tiles</td><td class="y">yes</td><td class="y">every claim under the number, in any unit, with provenance</td><td class="y">the safeguard's share of avoided loss against its own cost, placeholders flagged</td></tr>
-      </table></div>
-      <div class="leave"><span class="k">leave with</span><span class="v">Not a new dashboard. The first one whose numbers carry their own derivation.</span></div>
-    </div>
-
-    <div class="half">
-      <div class="tag">PRINCIPIA MANAGER · 8 OF 8</div>
-      <h2>What is real, and what is filled in</h2>
-      <p class="sub">The manager track runs on the engineer track's ledger. Where it adds numbers, they are labelled.</p>
-      <div class="lim">
-        <article class="card real">
-          <h4>Real<span class="badge">public record</span></h4>
-          <ul><li>The Tundra sheets and HAZOP under every tile</li><li>Solomon's published World's Best figures and participation</li><li>Published earnings-call KPIs (utilization, capture, %RAV)</li></ul>
-        </article>
-        <article class="card synth">
-          <h4>Filled in<span class="badge">synthetic, labelled</span></h4>
-          <ul><li>Asset A as a declared twin of Asset B</li><li>Every KPI value, trip count and downtime figure on the tiles</li><li>Unit costs: placeholders until a plant supplies its own</li></ul>
-        </article>
-</div>
-      <div class="limline"><b>Limits.</b> Tiles computed from the engineer ledger plus filled-in operating data; trip and downtime figures invented to be consistent with the HAZOP; no production or financial figure here is measured at any site.</div>
-      <div class="leave"><span class="k">leave with</span><span class="v">Every number on this screen opens to the unit, the safeguard, the owner and the assumption it was computed from.</span></div>
-    </div>
-
-    </section>
+  
 
   <!-- ===================== ENGINEER ===================== -->
-  <section id="panel-engineer" class="panel" hidden>
-    <div class="tag">PRINCIPIA ENGINEER · 1 OF 7</div>
-    <h1>Two documents that live worlds apart.</h1>
-    <p class="lede">Two things the room needs before the story: what a hazard study is, and what a change form is.</p>
-
-    <div class="cols two">
-      <article class="card real">
-        <h4>PHA · HAZOP<span class="badge">the study</span></h4>
-        <ul>
-          <li>A Process Hazard Analysis (PHA) is the systematic study an operations team undertakes to identify every credible hazard, for every part of a plant, and the safeguards that stand against it.</li>
-          <li>The result is a worksheet of hundreds of rows: the document the plant is allowed to run on.</li>
-          <li>OSHA mandates that they revalidate it, do it again, every five years.</li>
-        </ul>
-      </article>
-
-      <article class="card synth">
-        <h4>MOC<span class="badge">the change</span></h4>
-        <ul>
-          <li>Management of Change (MOC) is the form that asks whether a change is safe: a new well tied in, a setpoint moved, a valve relocated.</li>
-          <li>The MOC process re-opens and reviews the PHA that directly covers the change. Nothing in the process mandates the re-opening of any other.</li>
-          <li>The change can reach other PHAs indirectly: a shared flare line, a transmitter two units borrow, a rate another study assumed. Any other PHA that quietly depends on the change is examined only if an engineer's intuition says to.</li>
-        </ul>
-      </article>
-    </div>
-    <div class="leave"><span class="k">leave with</span><span class="v">The plant changed. The study that approved it didn't.</span></div>
-
-
-    <div class="half">
-      <div class="tag">PRINCIPIA ENGINEER · 2 OF 7</div>
-      <h2>The problem: the change that was reviewed alone</h2>
-      <p class="sub">A review of 1,633 accident reports put a management-of-change failure behind roughly one in eleven; the folklore figure of 80 % has no primary source. Flixborough is the textbook case: a temporary bypass, no change review, 28 dead. The mechanism is always the same shape.</p>
-      <div class="tl">
-        <div class="pha"><b>Year 0 · PHA</b><span>The study is done. Every row is true of the plant as built.</span></div>
-        <div><b>Year 1</b><span>Normal operation.</span></div>
-        <div class="moc"><b>Year 2 · MOC</b><span>A change is approved. Its own PHA is re-opened; the rows elsewhere that rested on the old basis are not.</span></div>
-        <div><b>Year 3</b><span>The plant runs on a study that is no longer true.</span></div>
-        <div><b>Year 4</b><span>Still running on it. Somewhere a safeguard is credited with stopping a scenario it no longer can. Nobody knows which.</span></div>
-        <div class="reval"><b>Year 5 · Revalidation</b><span>The next mandated look. If the gap is caught, it is caught here. If a demand came first, it was caught by the plant.</span></div>
-      </div>
+  <section id="panel-engineer" class="panel">
+    <div class="tag">PRINCIPIA ENGINEER · 1 OF 4</div>
+    <h1>The problem: two documents that live worlds apart.</h1>
+    <p class="sub">A review of 1,633 accident reports put a management-of-change failure behind roughly one in eleven; the folklore figure of 80 % has no primary source. Flixborough is the textbook case: a temporary bypass, no change review, 28 dead. The mechanism is always the same shape.</p>
+    <div class="tl">
+      <div class="pha"><b>Year 0 · PHA</b><span>The Process Hazard Analysis: the systematic study an operations team undertakes to find every credible hazard, for every part of the plant, and the safeguards that stand against it. Every row is true of the plant as built.</span></div>
+      <div><b>Year 1</b><span>Normal operation.</span></div>
+      <div class="moc"><b>Year 2 · MOC</b><span>Management of Change: the form that asks whether a change is safe, a well tied in, a setpoint moved, a valve relocated. It re-opens the PHA that directly covers the change. Nothing mandates re-opening any other, so the rows elsewhere that rested on the old basis stay as they were.</span></div>
+      <div><b>Year 3</b><span>The plant runs on a study that is no longer true.</span></div>
+      <div><b>Year 4</b><span>Still running on it. Somewhere a safeguard is credited with stopping a scenario it no longer can. Nobody knows which.</span></div>
+      <div class="reval"><b>Year 5 · Revalidation</b><span>The next mandated look. If the gap is caught, it is caught here. If a demand came first, it was caught by the plant.</span></div>
     </div>
 
     <div class="half">
-      <div class="tag">PRINCIPIA ENGINEER · 3 OF 7</div>
+      <div class="tag">PRINCIPIA ENGINEER · 2 OF 4</div>
       <h2>The plant, and the engineer</h2>
       <p class="sub">Project Tundra, Oliver County, North Dakota: CO₂ meter stations on the public record, with the downstream documents filled in and labelled.</p>
-      <div class="two-cards">
-        <article class="card real">
-          <h4>Real<span class="badge">public record</span></h4>
-          <ul class="plain">
-            <li>Seven P&amp;ID sheets MM0011–MM0017 (Burns &amp; McDonnell, Rev A, 2021)</li>
-            <li>HAZOP worksheets, three nodes, eight pages (Hoglin Engineering, Feb 2021)</li>
-            <li>All 35 recommendations and the 5×5 risk matrix</li>
-            <li>Design pressure 1,800 psig, ANSI 900 piping, 12,980 ton/day</li>
-          </ul>
-          <div class="src">Source: Project Tundra NEPA record, DOE/NETL, Appendices D–E.</div>
-        </article>
-        <article class="card synth">
-          <h4>Filled in<span class="badge">synthetic, labelled</span></h4>
-          <ul class="plain">
-            <li>LOPA rows for the scenarios the matrix rates at 6 or above</li>
-            <li>SRS and cause-and-effect for the two shutdown functions</li>
-            <li>Master alarm database and the DCS copy, one tag drifted on purpose</li>
-            <li>Historian excursions, a one-page site procedure, and MOC-001</li>
-          </ul>
-        </article>
-      </div>
 
       <p class="caption">Our engineer, Cathy. <em>MOC-001</em> is on her desk. This is what she sees.</p>
       <div class="ledgers" id="eledgers"><span data-l="HazardDesk">HazardDesk<i>PHA software</i></span><span data-l="DrawVault">DrawVault<i>drawing & document control</i></span><span data-l="ChangeFlow">ChangeFlow<i>MOC workflow</i></span><span data-l="SafetyReq">SafetyReq<i>SIS lifecycle</i></span><span data-l="AlarmBase">AlarmBase<i>alarm management</i></span><span data-l="TrendStore">TrendStore<i>historian</i></span><span data-l="ProcLib">ProcLib<i>procedures</i></span></div>
@@ -687,36 +440,44 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,5.2vw,64px);lin
       <p class="hand">The last cell is the one the next panel replaces.</p>
     </div>
 
+    <div class="half gapscreen" id="gapscreen">
+      <h2>The gap is not data. It is reasoning.</h2>
+      <p class="sub">Everything Cathy searched for exists and is findable. What does not exist is the capacity to reason across what she didn't simultaneously.</p>
+                </div>
+
     <div class="half">
-      <div class="tag">PRINCIPIA ENGINEER · 4 OF 7</div>
+      <div class="tag">PRINCIPIA ENGINEER · 3 OF 4</div>
       <h2>The spreadsheet, and the save</h2>
-      <p class="sub">Cathy's documents, in the grid she already uses. Nothing new on screen until she saves. Try it: MOC-001 raised the delivered pressure to 1,650 psig and PAH-1001 at 1,700 is now alarming every shift, so she moves the setpoint up. Edit the highlighted cell and press Save.</p>
+      <p class="sub">Cathy's documents, in the grid she already uses. Nothing new on screen until she saves.</p>
       <div class="gridwrap">
         <div class="gtabs" role="tablist">
-          <button role="tab" aria-selected="false" data-pane="lopa">LOPA</button>
+          <button role="tab" aria-selected="true" data-pane="lopa">LOPA</button>
           <button role="tab" aria-selected="false" data-pane="srs">SRS</button>
-          <button role="tab" aria-selected="true" data-pane="madb">Alarm database</button>
           <button role="tab" aria-selected="false" data-pane="dcs">DCS copy</button>
+          <button role="tab" aria-selected="false" data-pane="madb">Alarm database</button>
           <span class="sp"></span>
           <span class="status" id="g-status">no unsaved changes</span>
           <button class="save" id="g-save" disabled>Save</button>
         </div>
         <div class="gt">
-          <div class="pane" data-pane="lopa"><table><tr><th>Scenario</th><th>Initiating event</th><th>IEF /yr</th><th>IPL 1</th><th>IPL 2</th><th>Mitigated</th><th>TMEL</th><th>Gap</th></tr><tr><td class="k">S-1.5.1</td><td>Loss of upstream overpressure protection at CCS (PSV, PSHH shutdowns)</td><td>1E-1</td><td>SIF-101 · 1E-2</td><td>PAH-1001 operator response · 1E-1<span class="prov">credited at ≥ 10 min</span></td><td>1E-4</td><td>1E-4</td><td class="k">met<span class="prov">LOPA Rev 1 · row 1</span></td></tr>
-<tr><td class="k">S-1.5.2</td><td>Pipeline outlet blockage, CCS continues to feed</td><td>1E-1</td><td>SIF-101 · 1E-2</td><td>PAH-1001 operator response · 1E-1<span class="prov">credited at ≥ 10 min</span></td><td>1E-4</td><td>1E-4</td><td class="k">met<span class="prov">LOPA Rev 1 · row 2</span></td></tr>
-<tr><td class="k">S-1.2.2</td><td>PCV-1001 regulator failure, analyzer building</td><td>1E-2</td><td>PSV-1001 set 80 psig · 1E-2</td><td>—</td><td>1E-4</td><td>1E-4</td><td class="k">met<span class="prov">LOPA Rev 1 · row 5</span></td></tr>
-<tr><td class="k">S-1.7.1</td><td>Cooler failure, high-temperature CO₂ to pipeline</td><td>1E-2</td><td>TSHH-0612/0613 shutdown at 120 °F · 1E-2</td><td>—</td><td>1E-4</td><td>1E-4</td><td class="k">met<span class="prov">LOPA Rev 1 · row 6</span></td></tr></table></div>
-          <div class="pane" data-pane="srs"><table><tr><th>SIF</th><th>Function</th><th>Sensor · voting</th><th>Trip</th><th>SIL target</th><th>Proof-test interval</th><th>Response</th></tr><tr><td class="k">SIF-101</td><td>High inlet pressure → close MOV-1001</td><td>PS-1001 · 1oo1</td><td>1,750 psig</td><td>SIL 1</td><td>2 years</td><td>10 s<span class="prov">SRS-101 Rev A</span></td></tr>
+          <div class="pane on" data-pane="lopa"><table><tr><th>Scenario</th><th>Initiating event</th><th>IEF /yr</th><th>IPL 1</th><th>IPL 2</th><th>Credited time</th><th>Mitigated</th><th>TMEL</th><th>Gap</th></tr><tr><td class="k">S-1.5.1</td><td>Loss of upstream overpressure protection at CCS (PSV, PSHH shutdowns)</td><td>1E-1</td><td>SIF-101 · 1E-2</td><td>PAH-1001 operator response · 1E-1</td><td>10 min</td><td>1E-4</td><td>1E-4</td><td class="k">met<span class="prov">LOPA Rev 1 · row 1</span></td></tr>
+<tr><td class="k">S-1.5.2</td><td>Pipeline outlet blockage, CCS continues to feed</td><td>1E-1</td><td>SIF-101 · 1E-2</td><td>PAH-1001 operator response · 1E-1</td><td class="ed" id="cell-lopa" data-pane="lopa" contenteditable="true" spellcheck="false" data-orig="10" data-unit=" min">10</td><td>1E-4</td><td>1E-4</td><td class="k">met<span class="prov">LOPA Rev 1 · row 2</span></td></tr>
+<tr><td class="k">S-1.2.2</td><td>PCV-1001 regulator failure, analyzer building</td><td>1E-2</td><td>PSV-1001 set 80 psig · 1E-2</td><td>—</td><td>—</td><td>1E-4</td><td>1E-4</td><td class="k">met<span class="prov">LOPA Rev 1 · row 5</span></td></tr>
+<tr><td class="k">S-1.7.1</td><td>Cooler failure, high-temperature CO₂ to pipeline</td><td>1E-2</td><td>TSHH-0612/0613 shutdown at 120 °F · 1E-2</td><td>—</td><td>—</td><td>1E-4</td><td>1E-4</td><td class="k">met<span class="prov">LOPA Rev 1 · row 6</span></td></tr></table></div>
+          <div class="pane" data-pane="srs"><table><tr><th>SIF</th><th>Function</th><th>Sensor · voting</th><th>Trip</th><th>SIL target</th><th>Proof-test interval</th><th>Response</th></tr><tr><td class="k">SIF-101</td><td>High inlet pressure → close MOV-1001</td><td>PS-1001 · 1oo1</td><td class="ed" id="cell-srs" data-pane="srs" contenteditable="true" spellcheck="false" data-orig="1,750" data-unit=" psig">1,750</td><td>SIL 1</td><td>2 years</td><td>10 s<span class="prov">SRS-101 Rev A</span></td></tr>
 <tr><td class="k">SIF-104</td><td>Low inlet pressure, well pad 1 → close MOV-1004</td><td>PS-1004 · 1oo1</td><td>1,200 psig</td><td>SIL 1</td><td>2 years</td><td>10 s<span class="prov">SRS-104 Rev A</span></td></tr></table></div>
-          <div class="pane on" data-pane="madb"><table><tr><th>Tag</th><th>Sensor</th><th>Setpoint, psig</th><th>Priority</th><th>Class</th><th>Consequence</th><th>Time to respond</th></tr><tr><td class="k">PAH-1001</td><td>PIT-1001</td><td class="ed" id="cell-pah" contenteditable="true" spellcheck="false" data-orig="1,700">1,700</td><td>High</td><td>safety-related</td><td>HAZOP 1.5.2 · overpressure of ANSI 900 piping; SIF-101 trip at 1,750</td><td>10 min<span class="prov">MADB Rev 3 · row 1</span></td></tr>
+          <div class="pane" data-pane="madb"><table><tr><th>Tag</th><th>Sensor</th><th>Setpoint, psig</th><th>Priority</th><th>Class</th><th>Consequence</th><th>Time to respond</th></tr><tr><td class="k">PAH-1001</td><td>PIT-1001</td><td class="ed" id="cell-pah" data-pane="madb" contenteditable="true" spellcheck="false" data-orig="1,700" data-unit=" psig">1,700</td><td>High</td><td>safety-related</td><td>HAZOP 1.5.2 · overpressure of ANSI 900 piping; SIF-101 trip at 1,750</td><td>10 min<span class="prov">MADB Rev 3 · row 1</span></td></tr>
 <tr><td class="k">PAL-1004</td><td>PIT-1005</td><td>1,250</td><td>Medium</td><td>operability</td><td>HAZOP 2.6.1 · phase change of the CO₂, injection upset</td><td>10 min<span class="prov">MADB Rev 3 · row 2</span></td></tr></table></div>
-          <div class="pane" data-pane="dcs"><table><tr><th>Tag</th><th>Alarm</th><th>Limit (DCS)</th><th>Limit (MADB)</th><th>Priority</th><th>Last changed</th></tr><tr><td class="k">PIT-1001</td><td>PAH-1001</td><td>1,750</td><td>1,700</td><td>High</td><td>2025-03-14 · no MOC reference<span class="prov">DCS export 2026-09-30</span></td></tr>
+          <div class="pane" data-pane="dcs"><table><tr><th>Tag</th><th>Alarm</th><th>Limit (DCS)</th><th>Limit (MADB)</th><th>Priority</th><th>Last changed</th></tr><tr><td class="k">PIT-1001</td><td>PAH-1001</td><td class="ed" id="cell-dcs" data-pane="dcs" contenteditable="true" spellcheck="false" data-orig="1,750" data-unit=" psig">1,750</td><td>1,700</td><td>High</td><td>2025-03-14 · no MOC reference<span class="prov">DCS export 2026-09-30</span></td></tr>
 <tr><td class="k">PIT-1005</td><td>PAL-1004</td><td>1,250</td><td>1,250</td><td>Medium</td><td>2022-02-18</td></tr></table></div>
         </div>
+        <div class="gdim" id="g-dim"></div>
+        <div class="ghint" id="g-hint" hidden></div>
       </div>
 
       <div class="gate" id="gate">
         <h4>Before this saves</h4>
+        <div class="gq" id="gate-q"></div>
         <div class="line" id="gate-line"></div>
         <div id="gate-items"></div>
         <div class="foot">
@@ -728,40 +489,10 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,5.2vw,64px);lin
       <div class="pinned" id="pinned" hidden><div class="hd">PINNED GAPS · the audit trail of what is known and not yet answered</div></div>
     </div>
 
-    <div class="half">
-      <div class="tag">PRINCIPIA ENGINEER · 5 OF 7</div>
-      <h2>The gap is not data. It is reasoning.</h2>
-      <p class="sub">Everything Cathy searched for exists and is findable. What does not exist is anything that can say which of it the change touches.</p>
-      <div class="gap2">
-        <div class="col solved">
-          <h4>Retrieving the PHA: solved</h4>
-          <ul>
-            <li>Document control finds the sheet by tag in seconds.</li>
-            <li>PHA software holds every worksheet, revision and recommendation, searchable.</li>
-            <li>MOC workflows route the form, collect the signatures, attach the study.</li>
-            <li>SIS lifecycle tools keep the SRS and the proof-test record.</li>
-            <li>Enterprise search puts all of it behind one box.</li>
-          </ul>
-        </div>
-        <div class="col unsolved">
-          <h4>Deciding which PHA the MOC breaks: not solved</h4>
-          <ul>
-            <li>Which LOPA credits rest on the rate that just moved?</li>
-            <li>Which alarm response times are still true at the new pressure?</li>
-            <li>Which safeguards share a transmitter with the trip?</li>
-            <li>Which study on another unit assumed this one's old basis?</li>
-          </ul>
-          <div class="empty">no tool answers these · the answer lives in an engineer's memory of a study done years ago</div>
-          <div class="until">Until now.</div>
-        </div>
-      </div>
-      <div class="leave"><span class="k">leave with</span><span class="v">Finding the document is search. Knowing what it rests on is reasoning. Only one of those has software.</span></div>
-    </div>
 
     <div class="half">
-      <div class="tag">PRINCIPIA ENGINEER · 6 OF 7</div>
+      <div class="tag">PRINCIPIA ENGINEER · 4 OF 4</div>
       <h2>What exists, and what can be done</h2>
-      <p class="sub">Three verbs. Every tool on the market does the first. One does the second for the row it stores. None does the third.</p>
       <div class="cmp"><table>
         <tr><th>Tool</th><th>Retrieve the study</th><th>Link a row to what it rests on</th><th>Re-derive on change</th><th>Say what it does not know</th></tr>
         <tr><td>PHA software (HazardDesk and the like)</td><td class="y">yes</td><td class="p">within one study</td><td class="n">no</td><td class="n">no</td></tr>
@@ -771,27 +502,35 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,5.2vw,64px);lin
         <tr><td>Document control, enterprise search</td><td class="y">yes</td><td class="n">no</td><td class="n">no</td><td class="n">no</td></tr>
         <tr class="us"><td>Principia Engineer</td><td class="y">reads theirs</td><td class="y">across studies, units and documents</td><td class="y">every claim that rested on the change, at save</td><td class="y">open questions, with the row and the owner</td></tr>
       </table></div>
-      <div class="leave"><span class="k">leave with</span><span class="v">We do not replace any of these. We read what they hold and keep the arrows they throw away.</span></div>
+      <div class="leave"><span class="v">We do not replace any of these. We read what they hold and keep the arrows they throw away.</span></div>
     </div>
 
     <div class="half">
-      <div class="tag">PRINCIPIA ENGINEER · 7 OF 7</div>
-      <h2>What is real, and what is filled in</h2>
-      <p class="sub">Everything in this track runs on the documents below. Nothing is invented to fill a gap; a gap is shown as a gap.</p>
-      <div class="lim">
+      <div class="two-cards">
         <article class="card real">
           <h4>Real<span class="badge">public record</span></h4>
-          <ul><li>Seven P&amp;ID sheets, Burns &amp; McDonnell, Rev A 2021</li><li>HAZOP worksheets, eight pages, Hoglin Engineering, Feb 2021</li><li>All 35 recommendations and the 5×5 matrix</li><li>Project Tundra NEPA record, DOE/NETL</li></ul>
+          <ul class="plain">
+            <li>Seven P&amp;ID sheets MM0011–MM0017 (Burns &amp; McDonnell, Rev A, 2021)</li>
+            <li>HAZOP worksheets, three nodes, eight pages (Hoglin Engineering, Feb 2021)</li>
+            <li>All 35 recommendations and the 5×5 risk matrix</li>
+            <li>Design pressure 1,800 psig, ANSI 900 piping, 12,980 ton/day</li>
+          </ul>
+          <div class="src">Source: Project Tundra NEPA record, DOE/NETL, Appendices D–E.</div>
         </article>
         <article class="card synth">
           <h4>Filled in<span class="badge">synthetic, labelled</span></h4>
-          <ul><li>LOPA, SRS, cause-and-effect, alarm database, DCS export, historian, procedure, MOC-001</li><li>Written to be consistent with the real sheets and the HAZOP, and to contain the one drift on purpose</li><li>Replaced by the plant's own documents in a pilot</li></ul>
+          <ul class="plain">
+            <li>LOPA rows for the scenarios the matrix rates at 6 or above</li>
+            <li>SRS and cause-and-effect for the two shutdown functions</li>
+            <li>Master alarm database and the DCS copy, one tag drifted on purpose</li>
+            <li>Historian excursions, a one-page site procedure, and MOC-001</li>
+          </ul>
         </article>
-</div>
+      </div>
       <div class="limline"><b>Limits.</b> Sources read: MM0011–MM0017, HAZOP pp. 1–8, recommendations, matrix, filled-in set v3. Rules applied: 20. Not read: anything outside the meter stations. Nothing here is a safety determination; every output is a question to an engineer with the rows attached.</div>
-      <div class="leave"><span class="k">leave with</span><span class="v">We know what we don't know, and where.</span></div>
     </div>
-  </section>
+
+</section>
 </div>
 
 <script>
@@ -835,23 +574,9 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,5.2vw,64px);lin
     show(0);
   }
   if(window.__eng) initWall(window.__eng);
-  if(window.__mgr) initWall(window.__mgr);
 })();
 
 
-(function(){
-  var btns={manager:document.getElementById('btn-manager'),engineer:document.getElementById('btn-engineer')};
-  var panels={manager:document.getElementById('panel-manager'),engineer:document.getElementById('panel-engineer')};
-  function show(k){
-    for(var key in panels){panels[key].hidden=(key!==k);btns[key].setAttribute('aria-pressed',key===k?'true':'false');}
-    try{localStorage.setItem('principia-opening-track',k);}catch(e){}
-  }
-  btns.manager.addEventListener('click',function(){show('manager');});
-  btns.engineer.addEventListener('click',function(){show('engineer');});
-  var h=(location.hash||'').replace('#','');
-  if(h==='manager'||h==='engineer'){show(h);return;}
-  try{var s=localStorage.getItem('principia-opening-track');if(s==='manager'||s==='engineer')show(s);}catch(e){}
-})();
 
 (function(){
   var reduce=false; try{reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){}
@@ -875,53 +600,117 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,5.2vw,64px);lin
 })();
 
 (function(){
-  var cell=document.getElementById('cell-pah'); if(!cell) return;
-  var save=document.getElementById('g-save'), status=document.getElementById('g-status'), gate=document.getElementById('gate');
-  var line=document.getElementById('gate-line'), items=document.getElementById('gate-items'), commit=document.getElementById('gate-commit'), cancel=document.getElementById('gate-cancel');
+  var g=document.getElementById('gapscreen'); if(!g) return;
+  var reduce=false; try{reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){}
+  if(reduce){ g.classList.add('in','sub-in'); return; }
+  var armed=false, done=false;
+  function sub(){ if(done) return; done=true; g.classList.add('sub-in'); ['wheel','touchmove','scroll','keydown'].forEach(function(ev){ window.removeEventListener(ev,onScroll); }); }
+  function onScroll(){ if(armed) sub(); }
+  var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting&&!g.classList.contains('in')){ g.classList.add('in'); setTimeout(function(){ armed=true; ['wheel','touchmove','scroll','keydown'].forEach(function(ev){ window.addEventListener(ev,onScroll,{passive:true}); }); setTimeout(sub,7000); },900); } }); },{threshold:.6});
+  io.observe(g);
+})();
+
+(function(){
+  var cells=[].slice.call(document.querySelectorAll('.gt td.ed[data-pane]')); if(!cells.length) return;
+  var save=document.getElementById('g-save'), status=document.getElementById('g-status'), gate=document.getElementById('gate'), hint=document.getElementById('g-hint');
+  var gq=document.getElementById('gate-q'), line=document.getElementById('gate-line'), items=document.getElementById('gate-items'), commit=document.getElementById('gate-commit'), cancel=document.getElementById('gate-cancel');
   var committed=document.getElementById('committed'), pinned=document.getElementById('pinned');
-  // tabs
+  var fmt=function(n){ return n.toLocaleString('en-US'); };
+  var mins=function(m){ var mm=Math.floor(m), ss=Math.round((m-mm)*60); return mm+' min '+ss+' s'; };
+  var R16=function(madb,dcs){ return {t:'Rule 16 · the three setpoints agree',d:'MADB says '+fmt(madb)+'. DCS says '+fmt(dcs)+' (changed 2025-03-14, no MOC reference). SRS-101 references 1,700. Three documents, '+(madb===dcs&&dcs===1700?'one number.':'more than one number.'),p:'MADB Rev 3 row 1 · DCS export 2026-09-30 · SRS-101 Rev A · site procedure §5'}; };
+  var R1=function(){ return {t:'Rule 1 · IPL-2 independent of the control loop',d:'IPL-2 senses through PIT-1001, the transmitter the PIC-1001 override loop also uses (MM0012 zone C9). A single failure of PIT-1001 defeats both.',p:'LOPA Rev 1 row 2 · P&ID MM0012 · CCPS IPL independence'}; };
+  var PIC=function(v){ return {t:'PIC-1001 override setpoint',d:'The drawing says "SET @ XXX PSIG". Whether the override acts before PAH-1001'+(v?' at '+fmt(v):'')+' cannot be decided until the process engineer of record supplies the number.',p:'P&ID MM0012 zone B9 · question to the process engineer of record'}; };
+  var RATE=function(){ return {t:'Rate basis after MOC-001',d:'The historian holds three excursions on PIT-1001 at 4, 7 and 13 psi/min against the old basis of 5. MOC-001 moved the basis to 12. Was the LOPA re-run on 12?',p:'historian EX-1 to EX-3 · MOC-001 · LOPA Rev 1'}; };
+  var PANES={
+    lopa:{label:'S-1.5.2 operator response credited at',doc:'LOPA Rev 2',q:'Which LOPA credits rest on the rate that just moved?',hint:'Change the credited time in the outlined cell and save to find out.',
+      build:function(v){ var w=(1750-1700)/12; var f=[],o=[],h=[];
+        if(v>w) f.push({t:'Rule 9 · operator response time ≥ time credited · S-1.5.2 and S-1.5.1',d:'At the pressure-rise basis MOC-001 set, 12 psi/min, there are '+mins(w)+' between the 1,700 alarm and the 1,750 trip. The credit asks for '+v+'. Both scenarios credit the same alarm on the same rate; neither holds.',p:'LOPA Rev 1 rows 1–2 · MOC-001 · MADB Rev 3 · SRS-101'});
+        else f.push({t:'Rule 9 · credited time below the site floor',d:v+' minutes fits inside the '+mins(w)+' available, but site procedure §2 credits operator response only at 10 minutes or more. The credit cannot be taken at '+v+'.',p:'site procedure §2 · LOPA Rev 1 rows 1–2'});
+        f.push(R1()); f.push(R16(1700,1750));
+        o.push(RATE());
+        h.push({t:'IPL-1 · SIF-101 does not rest on the rate',d:'Its credit rests on the trip setpoint, 1,750 psig on PS-1001. Consistent at 5 psi/min and at 12.',p:'LOPA Rev 1 rows 1–2 · SRS-101 Rev A'});
+        h.push({t:'R13 · the arithmetic as credited',d:'0.1 × 0.01 × 0.1 = 1e-4 against the 1e-4 target on S-1.5.1 and S-1.5.2. It stands only while IPL-2 stands; without it, 1e-3.',p:'LOPA Rev 1 · site procedure §1'});
+        h.push({t:'S-1.2.2 and S-1.7.1 · nothing rests on the rate',d:'PSV-1001 and the CCS temperature shutdown carry no operator credit. Their 1e-4 is unchanged by MOC-001.',p:'LOPA Rev 1 rows 5–6'});
+        return {f:f,o:o,h:h}; }},
+    srs:{label:'SIF-101 trip setpoint',doc:'SRS-101 Rev B',q:'Which safeguards share a transmitter with the trip?',hint:'Change the trip setpoint in the outlined cell and save to find out.',
+      build:function(t){ var w=(t-1700)/12; var f=[],o=[],h=[];
+        f.push({t:'Rule 1 · the credited alarm shares its transmitter',d:'The trip itself shares nothing: PS-1001 is its own switch. But the alarm credited beside it, PAH-1001, senses through PIT-1001, the transmitter the PIC-1001 override loop also uses. One failure of PIT-1001 takes the operator layer and the control loop together.',p:'SRS-101 Rev A · P&ID MM0012 zone C9 · CCPS IPL independence'});
+        if(t<=1700) f.push({t:'Rule 8 · the credited alarm sits below the trip',d:'With the trip at '+fmt(t)+' the 1,700 alarm is not below it: the operator gets no warning before SIF-101 acts.',p:'site procedure §3 · MADB Rev 3'});
+        else if(w<10) f.push({t:'Rule 9 · operator response time ≥ time credited',d:'From the 1,700 alarm to a '+fmt(t)+' trip there are '+mins(w)+' at 12 psi/min. The credit asks for 10.',p:'LOPA Rev 1 row 2 · MOC-001 · site procedure §2'});
+        if(t+2>1800) f.push({t:'RMAWP · trip plus overshoot within design pressure',d:fmt(t)+' psig plus 2 psi of rise during the 10 s response exceeds the 1,800 psig design pressure on the MS-1001 skid note.',p:'site procedure §6 · P&ID MM0011 skid note'});
+        else h.push({t:'RMAWP · trip plus overshoot within design pressure',d:fmt(t)+' psig plus 2 psi of rise during the 10 s response stays inside the 1,800 psig design pressure.',p:'site procedure §6 · P&ID MM0011 skid note'});
+        f.push(R16(1700,1750)); o.push(PIC(null));
+        h.push({t:'SIF-101 sensing · no credited layer shares PS-1001',d:'The trip reads one switch and nothing else credited on these scenarios reads it. The sharing is on the alarm side, not the trip side.',p:'SRS-101 Rev A · LOPA Rev 1'});
+        h.push({t:'SIF-104 · untouched',d:'PS-1004 to MOV-1004 at 1,200 psig; PAL-1004 on PIT-1005 shares nothing with it.',p:'SRS-104 Rev A · MADB Rev 3 row 2'});
+        return {f:f,o:o,h:h}; }},
+    dcs:{label:'PAH-1001 limit in the DCS',doc:'DCS export',q:'Which alarm response times are still true at the new pressure?',hint:'Change the configured limit in the outlined cell and save to find out.',
+      build:function(d){ var w=(1750-d)/12; var f=[],o=[],h=[];
+        if(d>=1750) f.push({t:'Rule 8 · the configured alarm sits below the trip',d:'At '+fmt(d)+' the DCS alarm is not below the 1,750 trip: the operator gets no time at all. The MADB\'s 1,700 is never what the console shows.',p:'DCS export 2026-09-30 · site procedure §3'});
+        else if(w<10) f.push({t:'Rule 9 · operator response time ≥ time credited',d:'At the configured '+fmt(d)+', the console gives '+mins(w)+' before the trip at 12 psi/min. The LOPA credits 10.',p:'DCS export 2026-09-30 · LOPA Rev 1 row 2 · MOC-001'});
+        else h.push({t:'Rule 9 · PAH-1001 at the configured value',d:'At '+fmt(d)+' the console gives '+mins(w)+' before the trip at 12 psi/min, more than the 10 credited.',p:'DCS export · LOPA Rev 1 row 2'});
+        if(!(d===1700)) f.push(R16(1700,d)); else h.push({t:'Rule 16 · the three setpoints agree',d:'MADB, SRS reference and DCS all say 1,700.',p:'MADB Rev 3 · SRS-101 · DCS export'});
+        o.push({t:'The 2025-03-14 change to the DCS limit',d:'The export records the change and no MOC. Who changed it, and under what, is not on record.',p:'DCS export 2026-09-30 · ChangeFlow search: no match'});
+        h.push({t:'PAL-1004 · its 10 minutes stand',d:'An operability alarm with no trip beneath it; the new pressure does not shorten it. MADB and DCS agree at 1,250.',p:'MADB Rev 3 row 2 · DCS export'});
+        h.push({t:'Rule 8 on the MADB copy',d:'The MADB\'s 1,700 is below the 1,750 trip. The rationalised alarm is sound; the configured one is what the console shows.',p:'MADB Rev 3 row 1 · SRS-101'});
+        return {f:f,o:o,h:h}; }},
+    madb:{label:'PAH-1001 setpoint',doc:'MADB Rev 4',q:'What rests on the PAH-1001 setpoint?',hint:'Edit the highlighted cell and press Save.',
+      build:function(v){ var w=(1750-v)/12; var f=[],o=[],h=[];
+        f.push(R16(v,1750));
+        if(v>=1750) f.push({t:'Rule 8 · the credited alarm sits below the trip',d:'At '+fmt(v)+' the alarm is not below the 1,750 trip: the operator gets no warning before SIF-101 acts.',p:'site procedure §3 · SRS-101 Rev A'});
+        else if(w<10) f.push({t:'Rule 9 · operator response time ≥ time credited',d:'At the pressure-rise basis MOC-001 set, 12 psi/min, PIT-1001 climbs from '+fmt(v)+' to the 1,750 trip in about '+mins(w)+'. LOPA S-1.5.2 credits PAH-1001 operator response at 10 minutes or more. The credit does not hold.',p:'LOPA Rev 1 row 2 · MOC-001 · site procedure §2'});
+        else h.push({t:'Rule 9 · operator response time ≥ time credited',d:'From '+fmt(v)+' to the 1,750 trip there are '+mins(w)+' at 12 psi/min, more than the 10 credited.',p:'LOPA Rev 1 row 2 · MOC-001'});
+        f.push(R1()); o.push(PIC(v)); o.push(RATE());
+        h.push({t:'R13 · S-1.5.1 and S-1.5.2 against TMEL 1e-4',d:'0.1 × 0.01 × 0.1 = 1e-4 as credited. Stands only while IPL-2 stands.',p:'LOPA Rev 1 · site procedure §1'});
+        h.push({t:'RMAWP · SIF-101 trip plus overshoot within 1,800 psig',d:'1,750 plus 2 psi of rise during the 10 s response stays inside the design pressure.',p:'site procedure §6 · P&ID MM0011 skid note'});
+        h.push({t:'PAL-1004 · below its trip, agreed across MADB and DCS',d:'1,250 on both copies; 10 minutes stand.',p:'MADB Rev 3 row 2 · DCS export'});
+        return {f:f,o:o,h:h}; }}
+  };
+  var hintT=null, dim=document.getElementById('g-dim'), inView=false, dismissed={};
+  function activePane(){ var b=document.querySelector('.gtabs [aria-selected="true"]'); return b?b.dataset.pane:'lopa'; }
+  function showHint(pane){ var d=PANES[pane]; if(!d||!inView||dismissed[pane]) return; hint.innerHTML='<b>'+d.q+'</b><span>'+d.hint+'</span>'; hint.hidden=false; hint.classList.remove('fade'); dim.classList.add('on'); if(hintT) clearTimeout(hintT); hintT=setTimeout(function(){ hideHint(); },9000); }
+  function hideHint(){ if(hintT) clearTimeout(hintT); hintT=null; hint.classList.add('fade'); dim.classList.remove('on'); setTimeout(function(){ if(hint.classList.contains('fade')) hint.hidden=true; },650); }
+  hint.addEventListener('click',function(){ dismissed[activePane()]=true; hideHint(); });
   [].slice.call(document.querySelectorAll('.gtabs [data-pane]')).forEach(function(b){ b.addEventListener('click',function(){
     [].slice.call(document.querySelectorAll('.gtabs [data-pane]')).forEach(function(x){x.setAttribute('aria-selected',x===b?'true':'false');});
-    [].slice.call(document.querySelectorAll('.gt .pane')).forEach(function(p){p.classList.toggle('on',p.dataset.pane===b.dataset.pane);}); }); });
-  function val(){ return parseInt((cell.textContent||'').replace(/[^0-9]/g,''),10); }
-  function dirty(){ var d=cell.textContent.trim()!==cell.dataset.orig; cell.classList.toggle('dirty',d); save.disabled=!d; status.innerHTML=d?'<b>1</b> unsaved change · PAH-1001 setpoint '+cell.dataset.orig+' → '+cell.textContent.trim():'no unsaved changes'; if(!d){gate.classList.remove('on');} }
-  cell.addEventListener('input',dirty); cell.addEventListener('blur',function(){ var v=val(); if(!isNaN(v)) cell.textContent=v.toLocaleString('en-US'); dirty(); });
-  cell.addEventListener('keydown',function(e){ if(e.key==='Enter'){e.preventDefault(); cell.blur();} });
-  function build(v){
-    var trip=1750, ramp=12, credit=10, dcs=1750, srsRef=1700; // SRS-101 · MOC-001 rate basis · site procedure §2 · DCS export
-    var minutes=(trip-v)/ramp; var mm=Math.floor(minutes), ss=Math.round((minutes-mm)*60);
-    var fails=[], opens=[], rederive=[];
-    rederive=['R13 · S-1.5.1 and S-1.5.2 mitigated likelihood against TMEL 1e-4','RMAWP · SIF-101 trip plus overshoot within the 1,800 psig design pressure','R8 · PAL-1004 below the SIF-104 trip','R16 · PAL-1004 agrees across MADB and DCS','R1 · IPL-1 (SIF-101) shares no component with the PIC-1001 loop'];
-    fails.push({t:'Rule 16 · the three setpoints agree',d:'MADB will say '+v.toLocaleString('en-US')+'. DCS says '+dcs.toLocaleString('en-US')+' (changed 2025-03-14, no MOC reference). SRS-101 references '+srsRef.toLocaleString('en-US')+'. Three documents, three numbers.',p:'MADB Rev 3 row 1 · DCS export 2026-09-30 · SRS-101 Rev A · site procedure §5'});
-    if(minutes<credit) fails.push({t:'Rule 9 · operator response time ≥ time credited',d:'At the pressure-rise basis MOC-001 set, 12 psi/min, PIT-1001 climbs from '+v.toLocaleString('en-US')+' to the 1,750 trip in about '+mm+' min '+ss+' s. LOPA S-1.5.2 credits PAH-1001 operator response at 10 minutes or more. The credit does not hold.',p:'LOPA Rev 1 row 2 · MOC-001 · site procedure §2'});
-    if(v>=trip) fails.push({t:'Rule 8 · the credited alarm sits below the trip',d:'At '+v.toLocaleString('en-US')+' the alarm is not below the 1,750 trip: the operator gets no warning before SIF-101 acts.',p:'site procedure §3 · SRS-101 Rev A'});
-    fails.push({t:'Rule 1 · IPL-2 independent of the control loop',d:'IPL-2 senses through PIT-1001, the transmitter the PIC-1001 override loop also uses (MM0012 zone C9). A single failure of PIT-1001 defeats both. The edit re-decides the credit; the answer does not change.',p:'LOPA Rev 1 row 2 · P&ID MM0012 · CCPS IPL independence'});
-    opens.push({t:'PIC-1001 override setpoint',d:'The drawing says "SET @ XXX PSIG". Whether the override acts before PAH-1001 at '+v.toLocaleString('en-US')+' cannot be decided until the process engineer of record supplies the number.',p:'P&ID MM0012 zone B9 · question to the process engineer of record'});
-    opens.push({t:'Rate basis after MOC-001',d:'The historian holds three excursions on PIT-1001 at 4, 7 and 13 psi/min against the old basis of 5. MOC-001 moved the basis to 12. Was the LOPA re-run on 12?',p:'historian EX-1 to EX-3 · MOC-001 · LOPA Rev 1'});
-    var n=rederive.length+fails.length+opens.length;
-    line.innerHTML='This change obligates <b>'+n+'</b> claims. <span class="g">'+rederive.length+' re-derive</span> · <span class="f">'+fails.length+' fail</span> · <span class="o">'+opens.length+' rest on an unanswered question</span>.';
+    [].slice.call(document.querySelectorAll('.gt .pane')).forEach(function(p){p.classList.toggle('on',p.dataset.pane===b.dataset.pane);});
+    showHint(b.dataset.pane); }); });
+  function val(c){ return parseInt((c.textContent||'').replace(/[^0-9]/g,''),10); }
+  function fmtCell(c,v){ return c.dataset.unit===' min' ? String(v) : fmt(v); }
+  function dirtyCells(){ return cells.filter(function(c){ return c.textContent.trim()!==c.dataset.orig; }); }
+  function dirty(){ var ds=dirtyCells(); cells.forEach(function(c){ c.classList.toggle('dirty', ds.indexOf(c)>=0); }); save.disabled=!ds.length;
+    status.innerHTML=ds.length?'<b>'+ds.length+'</b> unsaved change'+(ds.length>1?'s':'')+' · '+ds.map(function(c){ return PANES[c.dataset.pane].label+' '+c.dataset.orig+' → '+c.textContent.trim(); }).join(' · '):'no unsaved changes'; if(!ds.length) gate.classList.remove('on'); }
+  cells.forEach(function(c){ c.addEventListener('input',dirty); c.addEventListener('blur',function(){ var v=val(c); if(!isNaN(v)) c.textContent=fmtCell(c,v); dirty(); }); c.addEventListener('keydown',function(e){ if(e.key==='Enter'){e.preventDefault(); c.blur();} }); });
+  var current=null;
+  function build(c){
+    var pane=c.dataset.pane, d=PANES[pane], v=val(c), r=d.build(v); current={cell:c,pane:pane,v:v};
+    gq.textContent=d.q;
+    var n=r.f.length+r.o.length+r.h.length;
+    line.innerHTML=d.label+' '+c.dataset.orig+' → '+fmtCell(c,v)+c.dataset.unit+'. This change obligates <b>'+n+'</b> claims: <span class="f">'+r.f.length+' fail</span> · <span class="o">'+r.o.length+' rest on an unanswered question</span> · <span class="g">'+r.h.length+' hold</span>.';
     items.innerHTML='';
-    fails.forEach(function(f){ items.appendChild(item('f','fails',f)); });
-    opens.forEach(function(o){ items.appendChild(item('o','open',o)); });
-    var rd=document.createElement('div'); rd.className='item done'; rd.innerHTML='<div class="st" style="color:var(--ok)">re-derive</div><div class="b" style="color:var(--muted);font-size:13px">'+rederive.join(' · ')+'</div><div></div>'; items.appendChild(rd);
-    commit.disabled=true; gate.classList.add('on'); gate.scrollIntoView({behavior:'smooth',block:'nearest'});
+    r.f.forEach(function(f){ items.appendChild(item('f','fails',f,true)); });
+    r.o.forEach(function(o){ items.appendChild(item('o','open',o,true)); });
+    r.h.forEach(function(h){ items.appendChild(item('h','holds',h,false)); });
+    commit.disabled=true; check(); gate.classList.add('on'); gate.scrollIntoView({behavior:'smooth',block:'nearest'});
   }
-  function item(cls,label,f){
-    var d=document.createElement('div'); d.className='item';
-    d.innerHTML='<div class="st '+cls+'">'+label+'</div><div class="b">'+f.t+'<br><span style="color:var(--muted);font-size:13px">'+f.d+'</span><small>'+f.p+'</small></div><div class="acts"><button data-a="ack">Acknowledge</button><button data-a="pin">Pin for later</button></div>';
+  function item(cls,label,f,acts){
+    var d=document.createElement('div'); d.className='item'+(acts?'':' done');
+    d.innerHTML='<div class="st '+cls+'">'+label+'</div><div class="b">'+f.t+'<br><span style="color:var(--muted);font-size:13px">'+f.d+'</span><small>'+f.p+'</small></div>'+(acts?'<div class="acts"><button data-a="ack">Acknowledge</button><button data-a="pin">Pin for later</button></div>':'<div></div>');
     d.querySelectorAll('button').forEach(function(b){ b.addEventListener('click',function(){
       d.classList.add('done'); var r=document.createElement('div'); r.className='res';
       if(b.dataset.a==='ack'){ r.textContent='acknowledged · C. Okafor · '+today(); }
-      else { r.textContent='pinned · owner: process engineering · '+today(); pinned.hidden=false; var row=document.createElement('div'); row.innerHTML='<b>'+label+'</b><span>'+f.t+' · caused by PAH-1001 setpoint edit</span><span>'+today()+'</span>'; pinned.appendChild(row); }
+      else { r.textContent='pinned · owner: process engineering · '+today(); pinned.hidden=false; var row=document.createElement('div'); row.innerHTML='<b>'+label+'</b><span>'+f.t+' · caused by the '+PANES[current.pane].label.toLowerCase()+' edit</span><span>'+today()+'</span>'; pinned.appendChild(row); }
       d.appendChild(r); check(); }); });
     return d;
   }
   function today(){ var d=new Date(); return d.toISOString().slice(0,10); }
   function check(){ var left=items.querySelectorAll('.item:not(.done)').length; commit.disabled=left>0; document.getElementById('gate-foot').textContent=left>0?(left+' item'+(left===1?'':'s')+' still to acknowledge or pin before this saves.'):'Every item is accounted for. The save will record who answered what.'; }
-  save.addEventListener('click',function(){ var v=val(); if(isNaN(v)) return; committed.classList.remove('on'); build(v); });
-  cancel.addEventListener('click',function(){ cell.textContent=cell.dataset.orig; dirty(); gate.classList.remove('on'); });
-  commit.addEventListener('click',function(){ var v=cell.textContent.trim(); cell.dataset.orig=v; dirty(); gate.classList.remove('on');
-    committed.classList.add('on'); committed.textContent='saved · PAH-1001 setpoint → '+v+' · MADB Rev 4 · transition recorded · acknowledgements and pins recorded with provenance · '+today(); });
+  save.addEventListener('click',function(){ var ds=dirtyCells(); if(!ds.length) return; var on=document.querySelector('.gt .pane.on'); var c=ds.filter(function(x){ return on&&on.contains(x); })[0]||ds[0]; if(isNaN(val(c))) return; dismissed[c.dataset.pane]=true; hideHint(); committed.classList.remove('on'); build(c); });
+  cancel.addEventListener('click',function(){ dirtyCells().forEach(function(c){ c.textContent=c.dataset.orig; }); dirty(); gate.classList.remove('on'); });
+  commit.addEventListener('click',function(){ if(!current) return; var c=current.cell, v=c.textContent.trim(); c.dataset.orig=v; dirty(); gate.classList.remove('on');
+    committed.classList.add('on'); committed.textContent='saved · '+PANES[current.pane].label+' → '+v+c.dataset.unit+' · '+PANES[current.pane].doc+' · transition recorded · acknowledgements and pins recorded with provenance · '+today(); });
+  var wrap=document.querySelector('.gridwrap');
+  if('IntersectionObserver' in window && wrap){ var io=new IntersectionObserver(function(es){ es.forEach(function(e){ inView=e.isIntersecting; if(inView) showHint(activePane()); else hideHint(); }); },{threshold:.35}); io.observe(wrap); }
+  else { inView=true; showHint('lopa'); }
 })();
 
 (function(){
