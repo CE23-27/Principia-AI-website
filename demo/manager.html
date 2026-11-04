@@ -1,0 +1,1146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Principia Manager · Do business safely</title>
+<meta name="description" content="Principia Manager demo: two refineries, same design, different numbers. The reasoning between the scorecard and the plant, kept.">
+<!--
+  Principia Manager · demo page · four panels + gap screen
+  1 of 4  The problem: two plants, same design, different numbers (scorecards A/B)
+  2 of 4  Meet Priya, our reliability manager (the register, paged 4 at a time)
+  3 of 4  The same recommendation, from both ends (stepper over 8 recommendations)
+          The gap is not data. It is reasoning. (full-screen fade-in)
+  4 of 4  The same scorecard, with the reasoning kept (interactive dashboard + guided tour)
+  Self-contained: no external assets, no images. All data is synthetic (Asset A / B / C).
+  Data lives in window.__recs, window.__sides, window.__data (panels 2–3) and window.__dash, window.__dash2 (panel 4).
+-->
+<style>
+/* Layout: the site's own tokens (principiaai.co); one audience toggle, one panel of three glass cards */
+:root{
+  --bg:#0a0a14; --violet:#8a2be2; --blue:#1e90ff; --teal:#3fd0c9;
+  --line:rgba(255,255,255,.10); --glass:rgba(255,255,255,.05);
+  --text:rgba(255,255,255,.90); --muted:rgba(255,255,255,.60); --faint:rgba(255,255,255,.35);
+  --ok:#7fe0a8; --warn:#ffb86b; --lav:#c9a8ff;
+  --serif:Georgia,"Times New Roman",Times,serif;
+  --sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:dark;
+}
+*,::before,::after{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased;
+  padding-block:0 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));position:relative;overflow-x:hidden}
+body::before{content:"";position:fixed;z-index:-1;left:50%;top:40%;width:70vmax;height:70vmax;transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle,rgba(138,43,226,.22),rgba(30,144,255,.06) 45%,transparent 70%);filter:blur(40px);pointer-events:none}
+a{color:inherit}
+header{display:flex;justify-content:space-between;align-items:center;padding:22px 12px;gap:16px;flex-wrap:wrap}
+.brand{font-family:var(--serif);font-size:21px;text-decoration:none}
+.brand span{color:var(--violet)}
+.brand small{font-family:var(--sans);font-size:13px;color:var(--faint);margin-left:12px}
+header nav{display:flex;gap:22px}
+header nav a{text-decoration:none;color:var(--muted);font-size:15px}
+
+.toggle{display:inline-flex;gap:6px;border:1px solid var(--line);background:var(--glass);border-radius:999px;padding:5px}
+.toggle button{background:none;border:1px solid transparent;color:var(--muted);border-radius:999px;padding:9px 24px;font:inherit;font-size:15px;cursor:pointer;transition:all .2s}
+.toggle button:hover{color:var(--text)}
+.toggle button[aria-pressed="true"]{color:var(--text);border-color:rgba(138,43,226,.5);
+  background:linear-gradient(135deg,rgba(138,43,226,.85),rgba(30,144,255,.55));box-shadow:0 10px 30px rgba(138,43,226,.25)}
+.toggle button:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 12px}
+.center{display:flex;justify-content:center;margin:26px 0 54px}
+.tag{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.06em}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,5.2vw,64px);line-height:1.06;letter-spacing:-.012em;margin:10px 0 18px;text-wrap:balance;max-width:20ch}
+.lede{color:var(--muted);font-size:18px;margin:0}
+
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:34px}
+.cols.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cols.why{grid-template-columns:minmax(0,1fr) minmax(0,1.9fr)}
+.card ul.twocol,.half ul.twocol{grid-template-columns:1fr 1fr;column-gap:28px;max-width:none}
+@media (max-width:820px){.card ul.twocol,.half ul.twocol{grid-template-columns:1fr}}
+@media (max-width:820px){.cols{grid-template-columns:1fr}}
+.card{border:1px solid var(--line);background:var(--glass);border-radius:14px;padding:18px 18px 16px;font-size:14px;display:grid;gap:10px;align-content:start;min-width:0}
+.card h4{margin:0;font-family:var(--serif);font-weight:400;font-size:22px;line-height:1.2}
+.card p{margin:0;color:var(--muted);font-size:14.5px}
+.card ul{margin:0;padding-left:18px;color:var(--muted);font-size:14.5px;display:grid;gap:7px}
+.card li{margin:0}
+.card.real h4{color:var(--teal)} .card.synth h4{color:var(--warn)} .card.runs h4{color:var(--lav)}
+.badge{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;padding:2px 7px;border-radius:999px;border:1px solid var(--line);color:var(--faint);vertical-align:middle;margin-left:8px;text-transform:uppercase}
+.card.real .badge{border-color:rgba(63,208,201,.5);color:var(--teal)}
+.card.synth .badge{border-color:rgba(255,184,107,.5);color:var(--warn)}
+.card.runs .badge{border-color:rgba(201,168,255,.5);color:var(--lav)}
+.fig{font-family:var(--mono);font-size:12.5px;line-height:1.5;color:var(--text);border-top:1px solid var(--line);padding-top:10px;margin-top:4px}
+.fig small{display:block;color:var(--faint);font-size:11px;margin-top:3px}
+
+.timeline{display:grid;grid-template-columns:repeat(6,1fr);align-items:end;margin-top:8px;font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+.timeline div{border-top:1px solid var(--line);padding-top:6px;position:relative}
+.timeline div::before{content:"";position:absolute;top:-4px;left:0;width:7px;height:7px;border-radius:50%;background:var(--line)}
+.timeline .pha::before{background:var(--teal)} .timeline .moc::before{background:var(--warn)} .timeline .reval::before{background:var(--lav)}
+.timeline .pha,.timeline .moc,.timeline .reval{color:var(--text)}
+
+.half{margin-top:54px;padding-top:34px;border-top:1px solid var(--line)}
+.half h2{font-family:var(--serif);font-weight:400;font-size:30px;margin:8px 0 6px;text-wrap:balance}
+.half .sub{color:var(--muted);font-size:16px;max-width:66ch;margin:0 0 22px}
+.half ul{margin:0;padding-left:18px;color:var(--muted);font-size:15px;display:grid;gap:8px;max-width:70ch}
+.tl{display:grid;grid-template-columns:repeat(6,1fr);align-items:start;margin-top:26px;font-family:var(--mono);font-size:12px;color:var(--faint);max-width:980px}
+.tl div{border-top:1px solid var(--line);padding:12px 10px 0 0;position:relative;min-height:84px}
+.tl div::before{content:"";position:absolute;top:-5px;left:0;width:9px;height:9px;border-radius:50%;background:var(--line)}
+.tl .pha::before{background:var(--teal)} .tl .moc::before{background:var(--warn)} .tl .reval::before{background:var(--lav)}
+.tl b{display:block;font-family:var(--sans);font-weight:500;color:var(--text);font-size:13px;margin-bottom:3px}
+.tl .pha b{color:var(--teal)} .tl .moc b{color:var(--warn)} .tl .reval b{color:var(--lav)}
+.tl span{display:block;line-height:1.4}
+@media (max-width:820px){.tl{grid-template-columns:repeat(3,1fr)}}
+.two-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:22px}
+@media (max-width:820px){.two-cards{grid-template-columns:1fr}}
+.card.real{border-color:rgba(63,208,201,.45);box-shadow:rgba(63,208,201,.15) 0 0 0 1px inset}
+.card ul.plain{display:grid;gap:4px}
+.card .src{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:6px}
+.caption{font-family:var(--serif);font-size:24px;line-height:1.3;margin:30px 0 14px}
+.caption em{font-style:normal;color:var(--warn)}
+.car{position:relative;border:1px solid var(--line);border-radius:14px;background:var(--glass);overflow:hidden}
+.car .stage{position:relative;height:clamp(300px,52vw,560px);display:flex;align-items:center;justify-content:center;background:#0d0d19}
+.car .slide{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:18px;opacity:0;transition:opacity .35s}
+.car .slide.on{opacity:1}
+.car .slide img{max-width:100%;max-height:100%;border-radius:4px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.car .slide.synth{padding:40px}
+.car .sdoc{width:min(520px,100%);aspect-ratio:4/3;border:1px solid rgba(255,184,107,.55);border-radius:8px;background:rgba(255,184,107,.05);padding:22px;display:grid;grid-template-rows:auto 1fr auto;gap:12px}
+.car .sdoc .n{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--warn)}
+.car .sdoc .rows{display:grid;gap:7px;align-content:start}
+.car .sdoc .rows i{display:block;height:8px;border-radius:2px;background:rgba(255,255,255,.08)}
+.car .sdoc .rows i:nth-child(2n){width:78%} .car .sdoc .rows i:nth-child(3n){width:55%}
+.car .sdoc .t{font-family:var(--serif);font-size:20px;color:var(--text)}
+.car .bar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--line);flex-wrap:wrap}
+.car .lbl{font-size:14px;color:var(--text)}
+.car .lbl .pill{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;padding:2px 7px;border-radius:999px;border:1px solid rgba(63,208,201,.5);color:var(--teal);margin-right:10px;vertical-align:middle;text-transform:uppercase}
+.car .lbl .pill.s{border-color:rgba(255,184,107,.5);color:var(--warn)}
+.car .ctl{display:flex;gap:8px;align-items:center}
+.car .ctl button{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:6px 10px;font:inherit;font-size:13px;cursor:pointer}
+.car .ctl button:hover{color:var(--text)}
+.car .ctl .cnt{font-family:var(--mono);font-size:11px;color:var(--faint);min-width:5ch;text-align:center}
+.strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));font-size:13.5px;margin-top:26px}
+@media (max-width:820px){.strip{grid-template-columns:1fr 1fr}}
+.strip div{border-top:1px solid var(--line);padding:12px 12px 0 0;position:relative;min-height:96px}
+.strip div::before{content:"";position:absolute;top:-5px;left:0;width:9px;height:9px;border-radius:50%;background:var(--line)}
+.strip div.now::before{background:var(--warn)} .strip div.now b{color:var(--warn)}
+.strip b{display:block;font-weight:500;color:var(--text);margin-bottom:4px}
+.strip span{display:block;color:var(--muted);line-height:1.45}
+.hand{margin-top:14px;font-size:14px;color:var(--muted)}
+.paper{width:min(760px,100%);background:#f4f4f0;color:#1a1a1a;border-radius:4px;box-shadow:0 10px 40px rgba(0,0,0,.5);padding:22px 26px;font-family:var(--sans);font-size:12px;line-height:1.35;max-height:100%;overflow:auto}
+.paper h5{margin:0 0 4px;font-size:15px;font-weight:600;color:#111}
+.paper .sub2{color:#555;font-size:11px;margin-bottom:12px}
+.paper table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+.paper th,.paper td{border:1px solid #c9c9c3;padding:5px 8px;text-align:left}
+.paper th{background:#e4e4de;font-weight:600;font-size:11px}
+.paper td.q1{background:#cfe8d0} .paper td.q2{background:#e9f0c9} .paper td.q3{background:#fbe4b4} .paper td.q4{background:#f6c4bd}
+.paper .foot2{margin-top:10px;font-size:10px;color:#777;font-family:var(--mono)}
+.paper .H{background:#f6c4bd} .paper .M{background:#fbe4b4} .paper .L{background:#cfe8d0}
+.paper .rm{display:grid;grid-template-columns:200px repeat(4,1fr);gap:4px;align-items:center;font-size:11px}
+.paper .rm .b{height:14px;border-radius:2px;background:#8a8a84} .paper .rm .b.on{background:#3b6ea5}
+.paper .rm .hd{font-weight:600;text-align:center;color:#555}
+.email{width:min(620px,100%);background:#ffffff;color:#1a1a1a;border-radius:4px;box-shadow:0 10px 40px rgba(0,0,0,.5);padding:20px 24px;font-family:var(--sans);font-size:13px;line-height:1.5;max-height:100%;overflow:auto}
+.email .hdr{font-size:12px;color:#555;border-bottom:1px solid #ddd;padding-bottom:8px;margin-bottom:10px;display:grid;gap:2px}
+.email .hdr b{color:#222;font-weight:600}
+.dash{width:min(760px,100%);background:#141424;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:16px 18px;max-height:100%;overflow:auto;font-size:12px}
+.dash .ttl2{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--faint);margin-bottom:12px}
+.dash .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.dash .tile{border:1px solid var(--line);border-radius:6px;padding:10px 12px;background:rgba(255,255,255,.03)}
+.dash .tile .k{font-size:11px;color:var(--muted)} .dash .tile .v{font-size:22px;font-weight:500;font-variant-numeric:tabular-nums;margin:2px 0}
+.dash .tile .d{font-size:11px;color:var(--faint)} .dash .tile .d.bad{color:#ff8a8a} .dash .tile .d.ok{color:var(--ok)}
+.dash .tile .g{height:4px;border-radius:2px;background:rgba(255,255,255,.08);margin-top:6px;overflow:hidden}
+.dash .tile .g i{display:block;height:100%;background:var(--blue)}
+.scat{width:100%;height:auto;display:block}
+/* ledger search + fade-out grid */
+.ledgers{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}
+.ledgers span{font-family:var(--mono);font-size:11px;letter-spacing:.04em;padding:5px 10px;border-radius:999px;border:1px solid var(--line);color:var(--faint);transition:all .3s}
+.ledgers span.on{color:var(--text);border-color:var(--warn);background:rgba(255,184,107,.1)}
+.ledgers span i{font-style:normal;color:var(--faint);margin-left:6px}
+.ledgers span.on i{color:var(--warn)}
+.search{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:10px;padding:10px 14px;margin-bottom:10px;font-family:var(--mono);font-size:13px}
+.search .q{color:var(--text);min-width:12ch}
+.search .q::after{content:"▍";color:var(--warn);animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.search .r{margin-left:auto;color:var(--faint);font-size:11px;text-align:right}
+.search .r b{color:var(--warn);font-weight:500}
+.fadewrap{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#0d0d19;height:clamp(360px,54vw,600px)}
+.fadegrid{position:absolute;left:-30px;right:-30px;top:0;display:grid;grid-template-columns:repeat(12,1fr);gap:8px;transform-origin:50% 40%;opacity:.75;will-change:transform;
+  -webkit-mask-image:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,.35) 0%,#000 30%,#000 60%,transparent 92%);mask-image:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,.35) 0%,#000 30%,#000 60%,transparent 92%)}
+.fadegrid.scroll{transition:transform 1.8s cubic-bezier(.3,.7,.3,1)}
+.fadegrid .tl{aspect-ratio:1.55;border-radius:2px;background:#f4f4f0 center/cover no-repeat;border:1px solid rgba(0,0,0,.4)}
+.fadegrid .tl img{width:100%;height:100%;object-fit:cover;filter:grayscale(.5)}
+.fadegrid .tl.s{border-color:rgba(255,184,107,.35);background:rgba(255,184,107,.05)}
+.fadegrid .tl.pick{border-color:var(--warn);box-shadow:0 0 0 2px rgba(255,184,107,.5),0 0 30px rgba(255,184,107,.4)}
+.fadewrap .front{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;padding:28px;opacity:0;transition:opacity .5s}
+.fadewrap .front.on{opacity:1}
+.fadewrap .front img{max-width:min(680px,100%);max-height:100%;border-radius:4px;box-shadow:0 24px 70px rgba(0,0,0,.75)}
+.fadewrap .front .sdoc{width:min(460px,100%);aspect-ratio:4/3;border:1px solid rgba(255,184,107,.6);border-radius:8px;background:#12121f;padding:22px;display:grid;grid-template-rows:auto 1fr auto;gap:12px;box-shadow:0 24px 70px rgba(0,0,0,.75)}
+.fadewrap .front .sdoc .n{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--warn)}
+.fadewrap .front .sdoc .rows{display:grid;gap:7px;align-content:start}
+.fadewrap .front .sdoc .rows i{display:block;height:8px;border-radius:2px;background:rgba(255,255,255,.08)}
+.fadewrap .front .sdoc .rows i:nth-child(2n){width:78%} .fadewrap .front .sdoc .rows i:nth-child(3n){width:55%}
+.fadewrap .front .sdoc .t{font-family:var(--serif);font-size:20px;color:var(--text)}
+.fadewrap .more{position:absolute;z-index:3;right:16px;bottom:12px;font-family:var(--mono);font-size:12px;color:var(--warn)}
+.fadewrap .cap{position:absolute;z-index:3;left:16px;bottom:12px;font-family:var(--mono);font-size:11px;color:var(--faint);max-width:60%}
+.fadewrap .cap b{color:var(--text);font-weight:500}
+.fadewrap .ctl2{position:absolute;z-index:3;right:14px;top:12px;display:flex;gap:6px}
+.fadewrap .ctl2 button{background:rgba(10,10,20,.7);border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 9px;font:inherit;font-size:12px;cursor:pointer}
+.fadewrap .ctl2 .cnt{font-family:var(--mono);font-size:11px;color:var(--faint);padding:6px 4px}
+.fadegrid .tl img{display:block;width:100%!important;height:100%!important;max-width:none;object-fit:cover;object-position:center;filter:none;background:#f4f4f0}
+.search{flex-wrap:wrap}
+.search .scope{font-size:11px;color:var(--warn);padding:2px 8px;border:1px solid rgba(255,184,107,.4);border-radius:6px;white-space:nowrap}
+.results{border:1px solid var(--line);border-top:0;border-radius:0 0 10px 10px;background:rgba(255,255,255,.03);margin:-10px 0 10px;padding:6px 0;font-family:var(--mono);font-size:12px;max-height:150px;overflow:auto}
+.results div{padding:4px 14px;color:var(--faint);display:flex;justify-content:space-between;gap:10px}
+.results div.on{color:var(--text);background:rgba(255,184,107,.08)} .results div.seen{color:var(--muted)}
+.results div span:last-child{white-space:nowrap}
+.opened{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 16px;margin-top:12px;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.opened div{display:flex;gap:8px;align-items:baseline;border-top:1px solid var(--line);padding-top:5px}
+.opened div b{color:var(--warn);font-weight:500;font-size:10.5px;min-width:9ch}
+.opened .hd{grid-column:1/-1;border:0;color:var(--faint);font-size:11px;padding:0}
+.fadewrap .front .paper{width:min(700px,100%);max-height:100%;font-size:11.5px}
+.fadewrap .front .paper table{font-size:11px}
+.fadewrap .front .paper th,.fadewrap .front .paper td{padding:4px 6px}
+.paper .form{display:grid;grid-template-columns:150px 1fr;gap:4px 10px;font-size:11.5px}
+.paper .form b{font-weight:600;color:#444}
+.paper .form .box{border:1px solid #c9c9c3;background:#fff;padding:3px 6px;min-height:20px}
+.paper ol{margin:6px 0 0 18px;padding:0} .paper ol li{margin:3px 0}
+.spark{width:100%;height:auto;display:block;margin-top:8px}
+/* panel 4: grid + save gate */
+.gridwrap{border:1px solid var(--line);border-radius:14px;background:var(--glass);overflow:hidden}
+.gtabs{display:flex;gap:2px;border-bottom:1px solid var(--line);padding:8px 10px 0;background:rgba(255,255,255,.02);flex-wrap:wrap}
+.gtabs button{background:none;border:1px solid transparent;border-bottom:0;color:var(--faint);border-radius:8px 8px 0 0;padding:7px 14px;font:inherit;font-size:13px;cursor:pointer}
+.gtabs button[aria-selected="true"]{color:var(--text);border-color:var(--line);background:var(--bg)}
+.gtabs .sp{flex:1}
+.gtabs .save{background:linear-gradient(135deg,rgba(138,43,226,.85),rgba(30,144,255,.55));border:1px solid rgba(138,43,226,.5);color:var(--text);border-radius:8px;padding:7px 16px;margin-bottom:6px;font-size:13px}
+.gtabs .save[disabled]{opacity:.45;cursor:default}
+.gtabs .status{font-family:var(--mono);font-size:11px;color:var(--faint);align-self:center;margin:0 10px 6px}
+.gtabs .status b{color:var(--warn);font-weight:500}
+.gt{overflow-x:auto}
+.gt table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums;min-width:760px}
+.gt th{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-weight:400;white-space:nowrap}
+.gt td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:var(--muted);vertical-align:top}
+.gt tr:hover td{background:rgba(255,255,255,.025)}
+.gt td.k{color:var(--text);font-family:var(--mono);font-size:12px;white-space:nowrap}
+.gt td.ed{color:var(--text);background:rgba(30,144,255,.08);border:1px solid rgba(30,144,255,.35);border-radius:4px;outline:none;cursor:text}
+.gt td.ed.dirty{background:rgba(255,184,107,.12);border-color:var(--warn)}
+.gt td .prov{display:block;font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px}
+.gt .pane{display:none} .gt .pane.on{display:block}
+.gate{border:1px solid rgba(255,184,107,.5);border-radius:14px;background:rgba(255,184,107,.05);padding:18px 20px;margin-top:14px;display:none}
+.gate.on{display:block}
+.gate h4{margin:0 0 4px;font-family:var(--serif);font-weight:400;font-size:22px}
+.gate .line{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-bottom:14px}
+.gate .line b{color:var(--text);font-weight:500}
+.gate .line .f{color:#ff8a8a} .gate .line .o{color:var(--warn)} .gate .line .g{color:var(--ok)}
+.gate .item{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:12px;align-items:start;padding:10px 0;border-top:1px solid var(--line)}
+.gate .item .st{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding-top:3px}
+.gate .item .st.f{color:#ff8a8a} .gate .item .st.o{color:var(--warn)}
+.gate .item .b{color:var(--text);font-size:14px}
+.gate .item .b small{display:block;color:var(--faint);font-family:var(--mono);font-size:11px;margin-top:3px}
+.gate .item .acts{display:flex;gap:6px;flex-wrap:wrap}
+.gate .item .acts button{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 9px;font:inherit;font-size:12px;cursor:pointer}
+.gate .item .acts button:hover{color:var(--text)}
+.gate .item.done{opacity:.55} .gate .item.done .acts{display:none}
+.gate .item .res{font-family:var(--mono);font-size:11px;color:var(--ok);padding-top:4px}
+.gate .foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:12px;margin-top:4px;font-family:var(--mono);font-size:11.5px;color:var(--faint)}
+.gate .foot button{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:6px 12px;font:inherit;font-size:12px;cursor:pointer}
+.gate .foot button.commit{color:var(--text);border-color:rgba(138,43,226,.5);background:linear-gradient(135deg,rgba(138,43,226,.85),rgba(30,144,255,.55))}
+.gate .foot button[disabled]{opacity:.4;cursor:default}
+.pinned{margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.pinned div{display:grid;grid-template-columns:auto 1fr auto;gap:12px;padding:6px 0;border-top:1px solid var(--line)}
+.pinned .hd{color:var(--faint);font-size:11px;border:0;display:block}
+.pinned b{color:var(--warn);font-weight:500}
+.committed{margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--ok);display:none}
+.committed.on{display:block}
+/* gap / comparison / limits */
+.gap2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
+@media (max-width:820px){.gap2{grid-template-columns:1fr}}
+.gap2 .col{border:1px solid var(--line);border-radius:14px;background:var(--glass);padding:18px 20px}
+.gap2 .col h4{margin:0 0 10px;font-family:var(--serif);font-weight:400;font-size:21px}
+.gap2 .col.solved h4{color:var(--teal)} .gap2 .col.unsolved h4{color:var(--warn)}
+.gap2 ul{margin:0;padding-left:18px;color:var(--muted);font-size:14px;display:grid;gap:6px}
+.gap2 .col.unsolved ul li{color:var(--faint)}
+.gap2 .empty{font-family:var(--mono);font-size:12px;color:var(--faint);border:1px dashed var(--line);border-radius:8px;padding:14px;text-align:center;margin-top:10px}
+.gap2 .until{font-family:var(--serif);font-size:20px;color:var(--text);margin-top:12px}
+.cmp{overflow-x:auto;margin-top:6px}
+.cmp table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:620px}
+.cmp th{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-weight:400}
+.cmp td{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:var(--muted);vertical-align:top}
+.cmp td:first-child{color:var(--text)}
+.cmp td.y{color:var(--ok)} .cmp td.n{color:var(--faint)} .cmp td.p{color:var(--warn)}
+.cmp tr.us td{color:var(--text);background:rgba(138,43,226,.07)}
+.cmp tr.us td:first-child{color:var(--lav)}
+.lim{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:6px}
+@media (max-width:820px){.lim{grid-template-columns:1fr}}
+.lim .card ul{margin:0;padding-left:18px;color:var(--muted);font-size:14px;display:grid;gap:6px}
+.limline{font-family:var(--mono);font-size:12px;color:var(--faint);border-top:1px solid var(--line);padding-top:12px;margin-top:16px}
+.limline b{color:var(--warn);font-weight:500}
+/* manager: pressure, dashboard trace */
+.press{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:6px}
+@media (max-width:820px){.press{grid-template-columns:1fr}}
+.press .card p{font-size:14px}
+.units{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
+@media (max-width:820px){.units{grid-template-columns:1fr}}
+.unit{border:1px solid var(--line);border-radius:14px;background:var(--glass);padding:14px 16px}
+.unit .uh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}
+.unit .uh h4{margin:0;font-family:var(--serif);font-weight:400;font-size:20px}
+.unit .uh span{font-family:var(--mono);font-size:11px;color:var(--faint)}
+.unit .tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tile2{border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:rgba(255,255,255,.03);cursor:pointer;position:relative;transition:border-color .2s}
+.tile2:hover{border-color:rgba(255,255,255,.35)}
+.tile2 .k{font-size:11px;color:var(--muted)} .tile2 .v{font-size:20px;font-weight:500;font-variant-numeric:tabular-nums;margin:2px 0}
+.tile2 .d{font-size:11px;color:var(--faint)}
+.tile2.g{border-left:3px solid var(--ok)} .tile2.a{border-left:3px solid var(--warn)} .tile2.r{border-left:3px solid #ff6b6b}
+.tile2.sel{border-color:var(--warn);box-shadow:0 0 0 1px rgba(255,184,107,.4) inset}
+.tile2 .hint{position:absolute;right:8px;top:8px;font-family:var(--mono);font-size:10px;color:var(--faint)}
+.trace{border:1px solid rgba(255,184,107,.5);border-radius:14px;background:rgba(255,184,107,.04);padding:16px 18px;margin-top:14px;display:none}
+.trace.on{display:block}
+.trace h4{margin:0 0 10px;font-family:var(--serif);font-weight:400;font-size:21px}
+.trace .step{display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;padding:9px 0;border-top:1px solid var(--line);opacity:.35;transition:opacity .4s}
+.trace .step.on{opacity:1}
+.trace .step .n{font-family:var(--mono);font-size:11px;color:var(--faint);padding-top:3px}
+.trace .step .b{color:var(--text);font-size:14px}
+.trace .step .b small{display:block;font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:3px}
+.trace .step .b .u{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:999px;border:1px solid var(--line);color:var(--muted);margin-left:6px;vertical-align:middle}
+.trace .step .b .u.other{border-color:rgba(255,184,107,.5);color:var(--warn)}
+.trace .end{border-top:1px solid var(--line);padding-top:12px;margin-top:4px;font-family:var(--serif);font-size:19px;color:var(--text);display:none}
+.trace .end.on{display:block}
+.trace .ctl{display:flex;gap:8px;margin-top:12px}
+.trace .ctl button{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:6px 12px;font:inherit;font-size:12px;cursor:pointer}
+.trace .ctl button.go{color:var(--text);border-color:rgba(138,43,226,.5);background:linear-gradient(135deg,rgba(138,43,226,.85),rgba(30,144,255,.55))}
+.leave{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;margin-top:30px;padding-top:18px;border-top:1px solid var(--line)}
+.leave .k{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--faint);text-transform:uppercase;white-space:nowrap}
+.leave .v{font-family:var(--serif);font-size:22px;line-height:1.3}
+.foot{margin-top:40px;font-family:var(--mono);font-size:11px;color:var(--faint);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+@media (prefers-reduced-motion:no-preference){.panel{animation:in .25s ease-out}}
+@keyframes in{from{opacity:.5;transform:translateY(4px)}to{opacity:1;transform:none}}
+</style><style>
+.opt{margin-top:70px;padding-top:34px;border-top:1px solid var(--line)}
+.opt h1{max-width:22ch}
+/* 1: two scorecards */
+.sc2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:28px}
+@media (max-width:820px){.sc2{grid-template-columns:1fr}}
+.sc{border:1px solid var(--line);border-radius:12px;background:#121222;padding:14px 16px}
+.sc .ttl{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--mono);font-size:11px;color:var(--faint);margin-bottom:12px;letter-spacing:.06em}
+.sc .ttl b{font-family:var(--serif);font-weight:400;font-size:20px;letter-spacing:0;color:var(--text)}
+.sc .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:820px){.sc .grid{grid-template-columns:1fr 1fr}}
+.kt{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:rgba(255,255,255,.03);border-left:3px solid var(--line)}
+.kt.g{border-left-color:var(--ok)} .kt.a{border-left-color:var(--warn)} .kt.r{border-left-color:#ff6b6b}
+.kt .k{font-size:11px;color:var(--muted)} .kt .v{font-size:22px;font-weight:500;font-variant-numeric:tabular-nums;color:var(--text);margin:2px 0}
+.kt .d{font-size:11px;color:var(--faint);font-family:var(--mono)} .kt .d.up{color:var(--ok)} .kt .d.dn{color:#ff8a8a}
+.kt svg{display:block;width:100%;height:22px;margin-top:6px}
+.sc .ft{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:10px;display:flex;justify-content:space-between}
+/* 2: bar pairs */
+.bars{margin-top:28px;display:grid;gap:14px;max-width:900px}
+.br{display:grid;grid-template-columns:190px minmax(0,1fr) 110px;gap:14px;align-items:center}
+@media (max-width:820px){.br{grid-template-columns:1fr}}
+.br .n{font-size:14px;color:var(--text)} .br .n small{display:block;font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+.br .tr{display:grid;gap:5px}
+.br .b{height:12px;border-radius:3px;position:relative;background:rgba(255,255,255,.06)}
+.br .b i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
+.br .b.A i{background:var(--teal)} .br .b.B i{background:var(--warn)}
+.br .vals{font-family:var(--mono);font-size:12px;color:var(--muted);display:grid;gap:5px;text-align:right}
+.br .vals .A{color:var(--teal)} .br .vals .B{color:var(--warn)}
+.legend{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:10px;display:flex;gap:16px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-right:5px}
+/* 3: five big numbers */
+.big{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:18px;margin-top:34px}
+@media (max-width:820px){.big{grid-template-columns:1fr 1fr}}
+.bn .k{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-bottom:10px;min-height:28px}
+.bn .A,.bn .B{font-family:var(--serif);font-size:40px;line-height:1;font-variant-numeric:tabular-nums}
+.bn .A{color:var(--text)} .bn .B{color:var(--warn);margin-top:10px}
+.bn .A small,.bn .B small{font-size:14px;font-family:var(--sans);color:var(--muted);margin-left:4px}
+.bn .who{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:4px}
+.bigline{margin-top:30px;font-family:var(--serif);font-size:22px;color:var(--text);max-width:36ch;line-height:1.3}
+.bigline em{font-style:normal;color:var(--faint);font-size:15px;font-family:var(--sans);display:block;margin-top:8px}
+</style><style>
+.kt{padding:12px 14px 10px}
+.kt .v{font-size:24px}
+.kt .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.kt .d{margin-top:2px}
+.kt svg{height:52px;margin-top:8px}
+.kt .ax{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-top:3px}
+.kt .tgt{font-family:var(--mono);font-size:10px;color:var(--faint)}
+</style><style>
+/* Layout: the site's own tokens (principiaai.co); one audience toggle, one panel of three glass cards */
+:root{
+  --bg:#0a0a14; --violet:#8a2be2; --blue:#1e90ff; --teal:#3fd0c9;
+  --line:rgba(255,255,255,.10); --glass:rgba(255,255,255,.05);
+  --text:rgba(255,255,255,.90); --muted:rgba(255,255,255,.60); --faint:rgba(255,255,255,.35);
+  --ok:#7fe0a8; --warn:#ffb86b; --lav:#c9a8ff;
+  --serif:Georgia,"Times New Roman",Times,serif;
+  --sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:dark;
+}
+*,::before,::after{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased;
+  padding-block:0 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));position:relative;overflow-x:hidden}
+body::before{content:"";position:fixed;z-index:-1;left:50%;top:40%;width:70vmax;height:70vmax;transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle,rgba(138,43,226,.22),rgba(30,144,255,.06) 45%,transparent 70%);filter:blur(40px);pointer-events:none}
+a{color:inherit}
+header{display:flex;justify-content:space-between;align-items:center;padding:22px 12px;gap:16px;flex-wrap:wrap}
+.brand{font-family:var(--serif);font-size:21px;text-decoration:none}
+.brand span{color:var(--violet)}
+.brand small{font-family:var(--sans);font-size:13px;color:var(--faint);margin-left:12px}
+header nav{display:flex;gap:22px}
+header nav a{text-decoration:none;color:var(--muted);font-size:15px}
+
+.toggle{display:inline-flex;gap:6px;border:1px solid var(--line);background:var(--glass);border-radius:999px;padding:5px}
+.toggle button{background:none;border:1px solid transparent;color:var(--muted);border-radius:999px;padding:9px 24px;font:inherit;font-size:15px;cursor:pointer;transition:all .2s}
+.toggle button:hover{color:var(--text)}
+.toggle button[aria-pressed="true"]{color:var(--text);border-color:rgba(138,43,226,.5);
+  background:linear-gradient(135deg,rgba(138,43,226,.85),rgba(30,144,255,.55));box-shadow:0 10px 30px rgba(138,43,226,.25)}
+.toggle button:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 12px}
+.center{display:flex;justify-content:center;margin:26px 0 54px}
+.tag{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.06em}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,5.2vw,64px);line-height:1.06;letter-spacing:-.012em;margin:10px 0 18px;text-wrap:balance;max-width:20ch}
+.lede{color:var(--muted);font-size:18px;margin:0}
+
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:34px}
+.cols.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cols.why{grid-template-columns:minmax(0,1fr) minmax(0,1.9fr)}
+.card ul.twocol,.half ul.twocol{grid-template-columns:1fr 1fr;column-gap:28px;max-width:none}
+@media (max-width:820px){.card ul.twocol,.half ul.twocol{grid-template-columns:1fr}}
+@media (max-width:820px){.cols{grid-template-columns:1fr}}
+.card{border:1px solid var(--line);background:var(--glass);border-radius:14px;padding:18px 18px 16px;font-size:14px;display:grid;gap:10px;align-content:start;min-width:0}
+.card h4{margin:0;font-family:var(--serif);font-weight:400;font-size:22px;line-height:1.2}
+.card p{margin:0;color:var(--muted);font-size:14.5px}
+.card ul{margin:0;padding-left:18px;color:var(--muted);font-size:14.5px;display:grid;gap:7px}
+.card li{margin:0}
+.card.real h4{color:var(--teal)} .card.synth h4{color:var(--warn)} .card.runs h4{color:var(--lav)}
+.badge{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;padding:2px 7px;border-radius:999px;border:1px solid var(--line);color:var(--faint);vertical-align:middle;margin-left:8px;text-transform:uppercase}
+.card.real .badge{border-color:rgba(63,208,201,.5);color:var(--teal)}
+.card.synth .badge{border-color:rgba(255,184,107,.5);color:var(--warn)}
+.card.runs .badge{border-color:rgba(201,168,255,.5);color:var(--lav)}
+.fig{font-family:var(--mono);font-size:12.5px;line-height:1.5;color:var(--text);border-top:1px solid var(--line);padding-top:10px;margin-top:4px}
+.fig small{display:block;color:var(--faint);font-size:11px;margin-top:3px}
+
+.timeline{display:grid;grid-template-columns:repeat(6,1fr);align-items:end;margin-top:8px;font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+.timeline div{border-top:1px solid var(--line);padding-top:6px;position:relative}
+.timeline div::before{content:"";position:absolute;top:-4px;left:0;width:7px;height:7px;border-radius:50%;background:var(--line)}
+.timeline .pha::before{background:var(--teal)} .timeline .moc::before{background:var(--warn)} .timeline .reval::before{background:var(--lav)}
+.timeline .pha,.timeline .moc,.timeline .reval{color:var(--text)}
+
+.half{margin-top:54px;padding-top:34px;border-top:1px solid var(--line)}
+.half h2{font-family:var(--serif);font-weight:400;font-size:30px;margin:8px 0 6px;text-wrap:balance}
+.half .sub{color:var(--muted);font-size:16px;max-width:66ch;margin:0 0 22px}
+.half ul{margin:0;padding-left:18px;color:var(--muted);font-size:15px;display:grid;gap:8px;max-width:70ch}
+.tl{display:grid;grid-template-columns:repeat(6,1fr);align-items:start;margin-top:26px;font-family:var(--mono);font-size:12px;color:var(--faint);max-width:980px}
+.tl div{border-top:1px solid var(--line);padding:12px 10px 0 0;position:relative;min-height:84px}
+.tl div::before{content:"";position:absolute;top:-5px;left:0;width:9px;height:9px;border-radius:50%;background:var(--line)}
+.tl .pha::before{background:var(--teal)} .tl .moc::before{background:var(--warn)} .tl .reval::before{background:var(--lav)}
+.tl b{display:block;font-family:var(--sans);font-weight:500;color:var(--text);font-size:13px;margin-bottom:3px}
+.tl .pha b{color:var(--teal)} .tl .moc b{color:var(--warn)} .tl .reval b{color:var(--lav)}
+.tl span{display:block;line-height:1.4}
+@media (max-width:820px){.tl{grid-template-columns:repeat(3,1fr)}}
+.two-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:22px}
+@media (max-width:820px){.two-cards{grid-template-columns:1fr}}
+.card.real{border-color:rgba(63,208,201,.45);box-shadow:rgba(63,208,201,.15) 0 0 0 1px inset}
+.card ul.plain{display:grid;gap:4px}
+.card .src{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:6px}
+.caption{font-family:var(--serif);font-size:24px;line-height:1.3;margin:30px 0 14px}
+.caption em{font-style:normal;color:var(--warn)}
+.car{position:relative;border:1px solid var(--line);border-radius:14px;background:var(--glass);overflow:hidden}
+.car .stage{position:relative;height:clamp(300px,52vw,560px);display:flex;align-items:center;justify-content:center;background:#0d0d19}
+.car .slide{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:18px;opacity:0;transition:opacity .35s}
+.car .slide.on{opacity:1}
+.car .slide img{max-width:100%;max-height:100%;border-radius:4px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.car .slide.synth{padding:40px}
+.car .sdoc{width:min(520px,100%);aspect-ratio:4/3;border:1px solid rgba(255,184,107,.55);border-radius:8px;background:rgba(255,184,107,.05);padding:22px;display:grid;grid-template-rows:auto 1fr auto;gap:12px}
+.car .sdoc .n{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--warn)}
+.car .sdoc .rows{display:grid;gap:7px;align-content:start}
+.car .sdoc .rows i{display:block;height:8px;border-radius:2px;background:rgba(255,255,255,.08)}
+.car .sdoc .rows i:nth-child(2n){width:78%} .car .sdoc .rows i:nth-child(3n){width:55%}
+.car .sdoc .t{font-family:var(--serif);font-size:20px;color:var(--text)}
+.car .bar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--line);flex-wrap:wrap}
+.car .lbl{font-size:14px;color:var(--text)}
+.car .lbl .pill{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;padding:2px 7px;border-radius:999px;border:1px solid rgba(63,208,201,.5);color:var(--teal);margin-right:10px;vertical-align:middle;text-transform:uppercase}
+.car .lbl .pill.s{border-color:rgba(255,184,107,.5);color:var(--warn)}
+.car .ctl{display:flex;gap:8px;align-items:center}
+.car .ctl button{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:6px 10px;font:inherit;font-size:13px;cursor:pointer}
+.car .ctl button:hover{color:var(--text)}
+.car .ctl .cnt{font-family:var(--mono);font-size:11px;color:var(--faint);min-width:5ch;text-align:center}
+.strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));font-size:13.5px;margin-top:26px}
+@media (max-width:820px){.strip{grid-template-columns:1fr 1fr}}
+.strip div{border-top:1px solid var(--line);padding:12px 12px 0 0;position:relative;min-height:96px}
+.strip div::before{content:"";position:absolute;top:-5px;left:0;width:9px;height:9px;border-radius:50%;background:var(--line)}
+.strip div.now::before{background:var(--warn)} .strip div.now b{color:var(--warn)}
+.strip b{display:block;font-weight:500;color:var(--text);margin-bottom:4px}
+.strip span{display:block;color:var(--muted);line-height:1.45}
+.hand{margin-top:14px;font-size:14px;color:var(--muted)}
+.paper{width:min(760px,100%);background:#f4f4f0;color:#1a1a1a;border-radius:4px;box-shadow:0 10px 40px rgba(0,0,0,.5);padding:22px 26px;font-family:var(--sans);font-size:12px;line-height:1.35;max-height:100%;overflow:auto}
+.paper h5{margin:0 0 4px;font-size:15px;font-weight:600;color:#111}
+.paper .sub2{color:#555;font-size:11px;margin-bottom:12px}
+.paper table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+.paper th,.paper td{border:1px solid #c9c9c3;padding:5px 8px;text-align:left}
+.paper th{background:#e4e4de;font-weight:600;font-size:11px}
+.paper td.q1{background:#cfe8d0} .paper td.q2{background:#e9f0c9} .paper td.q3{background:#fbe4b4} .paper td.q4{background:#f6c4bd}
+.paper .foot2{margin-top:10px;font-size:10px;color:#777;font-family:var(--mono)}
+.paper .H{background:#f6c4bd} .paper .M{background:#fbe4b4} .paper .L{background:#cfe8d0}
+.paper .rm{display:grid;grid-template-columns:200px repeat(4,1fr);gap:4px;align-items:center;font-size:11px}
+.paper .rm .b{height:14px;border-radius:2px;background:#8a8a84} .paper .rm .b.on{background:#3b6ea5}
+.paper .rm .hd{font-weight:600;text-align:center;color:#555}
+.email{width:min(620px,100%);background:#ffffff;color:#1a1a1a;border-radius:4px;box-shadow:0 10px 40px rgba(0,0,0,.5);padding:20px 24px;font-family:var(--sans);font-size:13px;line-height:1.5;max-height:100%;overflow:auto}
+.email .hdr{font-size:12px;color:#555;border-bottom:1px solid #ddd;padding-bottom:8px;margin-bottom:10px;display:grid;gap:2px}
+.email .hdr b{color:#222;font-weight:600}
+.dash{width:min(760px,100%);background:#141424;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:16px 18px;max-height:100%;overflow:auto;font-size:12px}
+.dash .ttl2{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--faint);margin-bottom:12px}
+.dash .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.dash .tile{border:1px solid var(--line);border-radius:6px;padding:10px 12px;background:rgba(255,255,255,.03)}
+.dash .tile .k{font-size:11px;color:var(--muted)} .dash .tile .v{font-size:22px;font-weight:500;font-variant-numeric:tabular-nums;margin:2px 0}
+.dash .tile .d{font-size:11px;color:var(--faint)} .dash .tile .d.bad{color:#ff8a8a} .dash .tile .d.ok{color:var(--ok)}
+.dash .tile .g{height:4px;border-radius:2px;background:rgba(255,255,255,.08);margin-top:6px;overflow:hidden}
+.dash .tile .g i{display:block;height:100%;background:var(--blue)}
+.scat{width:100%;height:auto;display:block}
+/* ledger search + fade-out grid */
+.ledgers{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}
+.ledgers span{font-family:var(--mono);font-size:11px;letter-spacing:.04em;padding:5px 10px;border-radius:999px;border:1px solid var(--line);color:var(--faint);transition:all .3s}
+.ledgers span.on{color:var(--text);border-color:var(--warn);background:rgba(255,184,107,.1)}
+.ledgers span i{font-style:normal;color:var(--faint);margin-left:6px}
+.ledgers span.on i{color:var(--warn)}
+.search{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:10px;padding:10px 14px;margin-bottom:10px;font-family:var(--mono);font-size:13px}
+.search .q{color:var(--text);min-width:12ch}
+.search .q::after{content:"▍";color:var(--warn);animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.search .r{margin-left:auto;color:var(--faint);font-size:11px;text-align:right}
+.search .r b{color:var(--warn);font-weight:500}
+.fadewrap{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#0d0d19;height:clamp(360px,54vw,600px)}
+.fadegrid{position:absolute;left:-30px;right:-30px;top:0;display:grid;grid-template-columns:repeat(12,1fr);gap:8px;transform-origin:50% 40%;opacity:.75;will-change:transform;
+  -webkit-mask-image:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,.35) 0%,#000 30%,#000 60%,transparent 92%);mask-image:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,.35) 0%,#000 30%,#000 60%,transparent 92%)}
+.fadegrid.scroll{transition:transform 1.8s cubic-bezier(.3,.7,.3,1)}
+.fadegrid .tl{aspect-ratio:1.55;border-radius:2px;background:#f4f4f0 center/cover no-repeat;border:1px solid rgba(0,0,0,.4)}
+.fadegrid .tl img{width:100%;height:100%;object-fit:cover;filter:grayscale(.5)}
+.fadegrid .tl.s{border-color:rgba(255,184,107,.35);background:rgba(255,184,107,.05)}
+.fadegrid .tl.pick{border-color:var(--warn);box-shadow:0 0 0 2px rgba(255,184,107,.5),0 0 30px rgba(255,184,107,.4)}
+.fadewrap .front{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;padding:28px;opacity:0;transition:opacity .5s}
+.fadewrap .front.on{opacity:1}
+.fadewrap .front img{max-width:min(680px,100%);max-height:100%;border-radius:4px;box-shadow:0 24px 70px rgba(0,0,0,.75)}
+.fadewrap .front .sdoc{width:min(460px,100%);aspect-ratio:4/3;border:1px solid rgba(255,184,107,.6);border-radius:8px;background:#12121f;padding:22px;display:grid;grid-template-rows:auto 1fr auto;gap:12px;box-shadow:0 24px 70px rgba(0,0,0,.75)}
+.fadewrap .front .sdoc .n{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--warn)}
+.fadewrap .front .sdoc .rows{display:grid;gap:7px;align-content:start}
+.fadewrap .front .sdoc .rows i{display:block;height:8px;border-radius:2px;background:rgba(255,255,255,.08)}
+.fadewrap .front .sdoc .rows i:nth-child(2n){width:78%} .fadewrap .front .sdoc .rows i:nth-child(3n){width:55%}
+.fadewrap .front .sdoc .t{font-family:var(--serif);font-size:20px;color:var(--text)}
+.fadewrap .more{position:absolute;z-index:3;right:16px;bottom:12px;font-family:var(--mono);font-size:12px;color:var(--warn)}
+.fadewrap .cap{position:absolute;z-index:3;left:16px;bottom:12px;font-family:var(--mono);font-size:11px;color:var(--faint);max-width:60%}
+.fadewrap .cap b{color:var(--text);font-weight:500}
+.fadewrap .ctl2{position:absolute;z-index:3;right:14px;top:12px;display:flex;gap:6px}
+.fadewrap .ctl2 button{background:rgba(10,10,20,.7);border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 9px;font:inherit;font-size:12px;cursor:pointer}
+.fadewrap .ctl2 .cnt{font-family:var(--mono);font-size:11px;color:var(--faint);padding:6px 4px}
+.fadegrid .tl img{display:block;width:100%!important;height:100%!important;max-width:none;object-fit:cover;object-position:center;filter:none;background:#f4f4f0}
+.search{flex-wrap:wrap}
+.search .scope{font-size:11px;color:var(--warn);padding:2px 8px;border:1px solid rgba(255,184,107,.4);border-radius:6px;white-space:nowrap}
+.results{border:1px solid var(--line);border-top:0;border-radius:0 0 10px 10px;background:rgba(255,255,255,.03);margin:-10px 0 10px;padding:6px 0;font-family:var(--mono);font-size:12px;max-height:150px;overflow:auto}
+.results div{padding:4px 14px;color:var(--faint);display:flex;justify-content:space-between;gap:10px}
+.results div.on{color:var(--text);background:rgba(255,184,107,.08)} .results div.seen{color:var(--muted)}
+.results div span:last-child{white-space:nowrap}
+.opened{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 16px;margin-top:12px;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.opened div{display:flex;gap:8px;align-items:baseline;border-top:1px solid var(--line);padding-top:5px}
+.opened div b{color:var(--warn);font-weight:500;font-size:10.5px;min-width:9ch}
+.opened .hd{grid-column:1/-1;border:0;color:var(--faint);font-size:11px;padding:0}
+.fadewrap .front .paper{width:min(700px,100%);max-height:100%;font-size:11.5px}
+.fadewrap .front .paper table{font-size:11px}
+.fadewrap .front .paper th,.fadewrap .front .paper td{padding:4px 6px}
+.paper .form{display:grid;grid-template-columns:150px 1fr;gap:4px 10px;font-size:11.5px}
+.paper .form b{font-weight:600;color:#444}
+.paper .form .box{border:1px solid #c9c9c3;background:#fff;padding:3px 6px;min-height:20px}
+.paper ol{margin:6px 0 0 18px;padding:0} .paper ol li{margin:3px 0}
+.spark{width:100%;height:auto;display:block;margin-top:8px}
+/* panel 4: grid + save gate */
+.gridwrap{border:1px solid var(--line);border-radius:14px;background:var(--glass);overflow:hidden}
+.gtabs{display:flex;gap:2px;border-bottom:1px solid var(--line);padding:8px 10px 0;background:rgba(255,255,255,.02);flex-wrap:wrap}
+.gtabs button{background:none;border:1px solid transparent;border-bottom:0;color:var(--faint);border-radius:8px 8px 0 0;padding:7px 14px;font:inherit;font-size:13px;cursor:pointer}
+.gtabs button[aria-selected="true"]{color:var(--text);border-color:var(--line);background:var(--bg)}
+.gtabs .sp{flex:1}
+.gtabs .save{background:linear-gradient(135deg,rgba(138,43,226,.85),rgba(30,144,255,.55));border:1px solid rgba(138,43,226,.5);color:var(--text);border-radius:8px;padding:7px 16px;margin-bottom:6px;font-size:13px}
+.gtabs .save[disabled]{opacity:.45;cursor:default}
+.gtabs .status{font-family:var(--mono);font-size:11px;color:var(--faint);align-self:center;margin:0 10px 6px}
+.gtabs .status b{color:var(--warn);font-weight:500}
+.gt{overflow-x:auto}
+.gt table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums;min-width:760px}
+.gt th{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-weight:400;white-space:nowrap}
+.gt td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:var(--muted);vertical-align:top}
+.gt tr:hover td{background:rgba(255,255,255,.025)}
+.gt td.k{color:var(--text);font-family:var(--mono);font-size:12px;white-space:nowrap}
+.gt td.ed{color:var(--text);background:rgba(30,144,255,.08);border:1px solid rgba(30,144,255,.35);border-radius:4px;outline:none;cursor:text}
+.gt td.ed.dirty{background:rgba(255,184,107,.12);border-color:var(--warn)}
+.gt td .prov{display:block;font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px}
+.gt .pane{display:none} .gt .pane.on{display:block}
+.gate{border:1px solid rgba(255,184,107,.5);border-radius:14px;background:rgba(255,184,107,.05);padding:18px 20px;margin-top:14px;display:none}
+.gate.on{display:block}
+.gate h4{margin:0 0 4px;font-family:var(--serif);font-weight:400;font-size:22px}
+.gate .line{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-bottom:14px}
+.gate .line b{color:var(--text);font-weight:500}
+.gate .line .f{color:#ff8a8a} .gate .line .o{color:var(--warn)} .gate .line .g{color:var(--ok)}
+.gate .item{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:12px;align-items:start;padding:10px 0;border-top:1px solid var(--line)}
+.gate .item .st{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding-top:3px}
+.gate .item .st.f{color:#ff8a8a} .gate .item .st.o{color:var(--warn)}
+.gate .item .b{color:var(--text);font-size:14px}
+.gate .item .b small{display:block;color:var(--faint);font-family:var(--mono);font-size:11px;margin-top:3px}
+.gate .item .acts{display:flex;gap:6px;flex-wrap:wrap}
+.gate .item .acts button{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 9px;font:inherit;font-size:12px;cursor:pointer}
+.gate .item .acts button:hover{color:var(--text)}
+.gate .item.done{opacity:.55} .gate .item.done .acts{display:none}
+.gate .item .res{font-family:var(--mono);font-size:11px;color:var(--ok);padding-top:4px}
+.gate .foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:12px;margin-top:4px;font-family:var(--mono);font-size:11.5px;color:var(--faint)}
+.gate .foot button{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:6px 12px;font:inherit;font-size:12px;cursor:pointer}
+.gate .foot button.commit{color:var(--text);border-color:rgba(138,43,226,.5);background:linear-gradient(135deg,rgba(138,43,226,.85),rgba(30,144,255,.55))}
+.gate .foot button[disabled]{opacity:.4;cursor:default}
+.pinned{margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.pinned div{display:grid;grid-template-columns:auto 1fr auto;gap:12px;padding:6px 0;border-top:1px solid var(--line)}
+.pinned .hd{color:var(--faint);font-size:11px;border:0;display:block}
+.pinned b{color:var(--warn);font-weight:500}
+.committed{margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--ok);display:none}
+.committed.on{display:block}
+/* gap / comparison / limits */
+.gap2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
+@media (max-width:820px){.gap2{grid-template-columns:1fr}}
+.gap2 .col{border:1px solid var(--line);border-radius:14px;background:var(--glass);padding:18px 20px}
+.gap2 .col h4{margin:0 0 10px;font-family:var(--serif);font-weight:400;font-size:21px}
+.gap2 .col.solved h4{color:var(--teal)} .gap2 .col.unsolved h4{color:var(--warn)}
+.gap2 ul{margin:0;padding-left:18px;color:var(--muted);font-size:14px;display:grid;gap:6px}
+.gap2 .col.unsolved ul li{color:var(--faint)}
+.gap2 .empty{font-family:var(--mono);font-size:12px;color:var(--faint);border:1px dashed var(--line);border-radius:8px;padding:14px;text-align:center;margin-top:10px}
+.gap2 .until{font-family:var(--serif);font-size:20px;color:var(--text);margin-top:12px}
+.cmp{overflow-x:auto;margin-top:6px}
+.cmp table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:620px}
+.cmp th{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-weight:400}
+.cmp td{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:var(--muted);vertical-align:top}
+.cmp td:first-child{color:var(--text)}
+.cmp td.y{color:var(--ok)} .cmp td.n{color:var(--faint)} .cmp td.p{color:var(--warn)}
+.cmp tr.us td{color:var(--text);background:rgba(138,43,226,.07)}
+.cmp tr.us td:first-child{color:var(--lav)}
+.lim{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:6px}
+@media (max-width:820px){.lim{grid-template-columns:1fr}}
+.lim .card ul{margin:0;padding-left:18px;color:var(--muted);font-size:14px;display:grid;gap:6px}
+.limline{font-family:var(--mono);font-size:12px;color:var(--faint);border-top:1px solid var(--line);padding-top:12px;margin-top:16px}
+.limline b{color:var(--warn);font-weight:500}
+/* manager: pressure, dashboard trace */
+.press{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:6px}
+@media (max-width:820px){.press{grid-template-columns:1fr}}
+.press .card p{font-size:14px}
+.units{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
+@media (max-width:820px){.units{grid-template-columns:1fr}}
+.unit{border:1px solid var(--line);border-radius:14px;background:var(--glass);padding:14px 16px}
+.unit .uh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}
+.unit .uh h4{margin:0;font-family:var(--serif);font-weight:400;font-size:20px}
+.unit .uh span{font-family:var(--mono);font-size:11px;color:var(--faint)}
+.unit .tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tile2{border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:rgba(255,255,255,.03);cursor:pointer;position:relative;transition:border-color .2s}
+.tile2:hover{border-color:rgba(255,255,255,.35)}
+.tile2 .k{font-size:11px;color:var(--muted)} .tile2 .v{font-size:20px;font-weight:500;font-variant-numeric:tabular-nums;margin:2px 0}
+.tile2 .d{font-size:11px;color:var(--faint)}
+.tile2.g{border-left:3px solid var(--ok)} .tile2.a{border-left:3px solid var(--warn)} .tile2.r{border-left:3px solid #ff6b6b}
+.tile2.sel{border-color:var(--warn);box-shadow:0 0 0 1px rgba(255,184,107,.4) inset}
+.tile2 .hint{position:absolute;right:8px;top:8px;font-family:var(--mono);font-size:10px;color:var(--faint)}
+.trace{border:1px solid rgba(255,184,107,.5);border-radius:14px;background:rgba(255,184,107,.04);padding:16px 18px;margin-top:14px;display:none}
+.trace.on{display:block}
+.trace h4{margin:0 0 10px;font-family:var(--serif);font-weight:400;font-size:21px}
+.trace .step{display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;padding:9px 0;border-top:1px solid var(--line);opacity:.35;transition:opacity .4s}
+.trace .step.on{opacity:1}
+.trace .step .n{font-family:var(--mono);font-size:11px;color:var(--faint);padding-top:3px}
+.trace .step .b{color:var(--text);font-size:14px}
+.trace .step .b small{display:block;font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:3px}
+.trace .step .b .u{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:999px;border:1px solid var(--line);color:var(--muted);margin-left:6px;vertical-align:middle}
+.trace .step .b .u.other{border-color:rgba(255,184,107,.5);color:var(--warn)}
+.trace .end{border-top:1px solid var(--line);padding-top:12px;margin-top:4px;font-family:var(--serif);font-size:19px;color:var(--text);display:none}
+.trace .end.on{display:block}
+.trace .ctl{display:flex;gap:8px;margin-top:12px}
+.trace .ctl button{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:6px 12px;font:inherit;font-size:12px;cursor:pointer}
+.trace .ctl button.go{color:var(--text);border-color:rgba(138,43,226,.5);background:linear-gradient(135deg,rgba(138,43,226,.85),rgba(30,144,255,.55))}
+.leave{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;margin-top:30px;padding-top:18px;border-top:1px solid var(--line)}
+.leave .k{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--faint);text-transform:uppercase;white-space:nowrap}
+.leave .v{font-family:var(--serif);font-size:22px;line-height:1.3}
+.foot{margin-top:40px;font-family:var(--mono);font-size:11px;color:var(--faint);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+@media (prefers-reduced-motion:no-preference){.panel{animation:in .25s ease-out}}
+@keyframes in{from{opacity:.5;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.mini{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:20px}
+@media (max-width:820px){.mini{grid-template-columns:repeat(3,1fr)}}
+.mt{border:1px solid var(--line);border-left:3px solid var(--line);border-radius:8px;padding:8px 10px;background:rgba(255,255,255,.03);transition:all .25s;opacity:.6}
+.mt .k{font-size:10.5px;color:var(--muted)} .mt .v{font-size:17px;font-weight:500;color:var(--text);font-variant-numeric:tabular-nums} .mt .v small{font-size:10px;color:var(--faint);font-weight:400;margin-left:4px}
+.mt.g{border-left-color:var(--ok)} .mt.a{border-left-color:var(--warn)} .mt.r{border-left-color:#ff6b6b}
+.mt.lit{opacity:1;border-color:var(--warn);box-shadow:0 0 0 1px rgba(255,184,107,.4) inset}
+.reg td.mv span{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.03em;border:1px solid #c9c9c3;border-radius:999px;padding:1px 6px;margin:1px 3px 1px 0;color:#444;white-space:nowrap}
+.link{display:grid;grid-template-columns:minmax(0,1fr) 28px minmax(0,1.2fr) 28px minmax(0,1fr);gap:8px;align-items:stretch;margin-top:10px}
+@media (max-width:820px){.link{grid-template-columns:1fr}.link .ar{display:none}}
+.link .bx{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:rgba(255,255,255,.03);font-size:13px;color:var(--text)}
+.link .bx .h{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:5px}
+.link .bx.mid{border-style:dashed;border-color:rgba(255,184,107,.6);background:rgba(255,184,107,.04)}
+.link .bx.mid .h{color:var(--warn)}
+.link .bx.mid ul{margin:0;padding-left:16px;color:var(--muted);font-size:12.5px;display:grid;gap:3px}
+.link .bx.mid ul li b{color:var(--warn);font-weight:500}
+.link .ar{display:flex;align-items:center;justify-content:center;color:var(--faint);font-family:var(--mono)}
+.fd{margin-top:10px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px}
+.fd b{color:var(--text);font-weight:500}
+
+
+.sides{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr);gap:12px;margin-top:12px;align-items:stretch}
+@media (max-width:820px){.sides{grid-template-columns:1fr}}
+.side{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:rgba(255,255,255,.03)}
+.side .h{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:6px;display:flex;justify-content:space-between}
+.side .h b{color:var(--text);font-weight:500;letter-spacing:0;font-size:12px;font-family:var(--sans);text-transform:none}
+.side .num{font-size:22px;font-weight:500;color:var(--text);font-variant-numeric:tabular-nums}
+.side .num small{font-size:12px;color:var(--faint);font-weight:400;margin-left:5px}
+.side p{margin:6px 0 0;font-size:13px;color:var(--muted);line-height:1.45}
+.side p q{color:var(--text);font-style:italic}
+.side.dan{border-left:3px solid var(--teal)} .side.pri{border-left:3px solid var(--warn)}
+.side.diff{border:1px dashed rgba(255,184,107,.6);background:rgba(255,184,107,.05)}
+.side.diff .h{color:var(--warn)}
+.side.diff .d{font-family:var(--serif);font-size:16.5px;line-height:1.35;color:var(--text)}
+.side.diff .w{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:8px;border-top:1px solid rgba(255,184,107,.25);padding-top:6px}
+.side.diff .w b{color:var(--warn);font-weight:500}
+
+</style><style>
+.persona{display:flex;align-items:center;gap:14px;margin-top:22px}
+.persona .av{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,184,107,.5);background:#141424;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;color:var(--warn)}
+.persona .t{font-size:14px;color:var(--muted)} .persona .t b{display:block;font-family:var(--serif);font-weight:400;font-size:20px;color:var(--text)}
+.reg{border:1px solid var(--line);border-radius:12px;background:#f7f7f4;color:#1a1a1a;margin-top:22px;overflow:hidden;font-family:var(--sans)}
+.reg .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:12px 16px;border-bottom:1px solid #d8d8d2;background:#ebebe6;flex-wrap:wrap}
+.reg .top b{font-size:14px;color:#111} .reg .top span{font-size:11px;color:#666;font-family:var(--mono)}
+.reg .scroll{overflow-x:auto}
+.reg table{border-collapse:collapse;width:100%;font-size:12.5px;min-width:900px}
+.reg th{text-align:left;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:#666;padding:8px 10px;border-bottom:1px solid #d0d0c9;background:#f1f1ec;font-weight:600}
+.reg td{padding:8px 10px;border-bottom:1px solid #e6e6e0;vertical-align:top;color:#222}
+.reg tr.r{cursor:pointer} .reg tr.r:hover td{background:#fffbe6}
+.reg tr.r.sel td{background:#fff3c4}
+.reg td.id{font-family:var(--mono);font-size:11px;color:#555;white-space:nowrap}
+.reg td.pr{white-space:nowrap;font-weight:600} .reg td.pr.H{color:#b23b2a} .reg td.pr.M{color:#a66b00} .reg td.pr.L{color:#3b6ea5}
+.reg td.st{white-space:nowrap;font-size:11px;color:#555}
+.reg td.ob{color:#555;font-size:12px}
+.reg .hint{padding:8px 16px;font-family:var(--mono);font-size:10.5px;color:#888;border-top:1px solid #e3e3dd;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.under{border:1px solid rgba(255,184,107,.5);border-radius:12px;background:rgba(255,184,107,.05);padding:16px 18px;margin-top:14px;display:none}
+.under.on{display:block}
+.under h4{margin:0 0 8px;font-family:var(--serif);font-weight:400;font-size:20px;color:var(--text)}
+.under .qs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-top:8px}
+.under .q{border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:rgba(255,255,255,.03);font-size:13.5px;color:var(--text)}
+.under .q small{display:block;font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:4px}
+.under .q.none small{color:var(--warn)}
+.under .foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--faint);border-top:1px solid var(--line);padding-top:10px}
+.under .foot b{color:var(--warn);font-weight:500}
+.cap{font-family:var(--serif);font-size:21px;color:var(--text);margin-top:22px;line-height:1.35}
+.cap em{font-style:normal;color:var(--warn)}
+</style><style>
+.split{border:1px solid var(--line);border-radius:14px;background:var(--glass);padding:18px 20px;margin-top:22px}
+.split .nav{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.split .nav .cnt{font-family:var(--mono);font-size:11px;color:var(--faint)}
+.split .nav .cnt b{color:var(--warn);font-weight:500}
+.split .nav button{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.22);color:var(--text);border-radius:9px;padding:9px 18px;font:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s}
+.split .nav button:hover{background:rgba(255,255,255,.12);border-color:var(--warn)}
+.split .nav button[data-next]{background:var(--warn);border-color:var(--warn);color:#0a0a14}
+.split .nav button[data-next]:hover{filter:brightness(1.1)}
+.split .dots{display:flex;gap:5px}
+.split .dots i{width:8px;height:8px;border-radius:50%;background:var(--line);cursor:pointer} .split .dots i.on{background:var(--warn)}
+.rec{padding-bottom:14px;border-bottom:1px solid var(--line)}
+.rec .id{font-family:var(--mono);font-size:11px;color:var(--faint);margin-bottom:4px} .rec .id b{color:#ff8a8a;font-weight:500}
+.rec .lab{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--warn);margin:10px 0 4px}
+.rec .txt{font-family:var(--serif);font-size:20px;color:var(--text);line-height:1.35}
+.rec .meta{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:6px}
+.p3tl{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.p3tl .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);align-self:center;margin-right:4px}
+.p3mt{border:1px solid var(--line);border-left:3px solid var(--line);border-radius:8px;padding:8px 14px;background:rgba(255,255,255,.03);min-width:210px}
+.p3mt.r{border-left-color:#ff8a8a} .p3mt.a{border-left-color:var(--warn)}
+.p3mt .k{font-size:11px;color:var(--muted);margin-bottom:4px}
+.p3mt .ab{display:flex;gap:18px;font-variant-numeric:tabular-nums;white-space:nowrap} .p3mt .ab em{display:block;font-style:normal;font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-bottom:2px} .p3mt .ab span{font-size:17px;font-weight:500;color:var(--text)} .p3mt .ab span small{font-size:10px;color:var(--faint);margin-left:4px;font-weight:400} .p3mt .ab span.o{color:var(--muted)}
+.sides{margin-top:14px}
+.stepmsg{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:10px}
+</style>
+<style>
+.gap2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px}
+@media (max-width:820px){.gap2{grid-template-columns:1fr}}
+.gap2 .col{border:1px solid var(--line);border-radius:14px;background:var(--glass);padding:18px 20px}
+.gap2 .col h4{margin:0 0 10px;font-family:var(--serif);font-weight:400;font-size:21px}
+.gap2 .col.solved h4{color:var(--teal)} .gap2 .col.unsolved h4{color:var(--warn)}
+.gap2 ul{margin:0;padding-left:18px;color:var(--muted);font-size:14px;display:grid;gap:6px}
+.gap2 .col.unsolved ul li{color:var(--faint)}
+.gap2 .empty{font-family:var(--mono);font-size:12px;color:var(--faint);border:1px dashed var(--line);border-radius:8px;padding:14px;text-align:center;margin-top:10px}
+.gap2 .until{font-family:var(--serif);font-size:20px;color:var(--text);margin-top:12px}
+/* gap screen (as on principiaai.co/demo) */
+.gapscreen{min-height:100svh;display:flex;flex-direction:column;justify-content:center;margin-top:54px;padding-top:34px;border-top:1px solid var(--line)}
+.gapscreen h2{font-family:var(--serif);font-weight:400;font-size:clamp(40px,5.2vw,66px);line-height:1.08;letter-spacing:-.012em;max-width:16ch;margin:8px 0 6px;text-wrap:balance;opacity:0;transform:translateY(12px);transition:opacity 1.1s,transform 1.1s}
+.gapscreen .sub{color:var(--muted);font-size:20px;max-width:720px;margin:22px 0 0;opacity:0;transform:translateY(10px);transition:opacity .9s,transform .9s}
+.gapscreen.in h2,.gapscreen.sub-in .sub{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.gapscreen h2,.gapscreen .sub{opacity:1;transform:none;transition:none}}
+/* app */
+.app{margin-top:22px;border:1px solid var(--line);border-radius:10px;background:#0f0f1c;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.55);font-size:12px;color:var(--text)}
+.app *{box-sizing:border-box}
+.app .top{display:flex;align-items:center;gap:14px;padding:0 14px;height:44px;border-bottom:1px solid var(--line);background:#121222}
+.app .top .logo{font-family:var(--serif);font-size:15px;color:var(--text)} .app .top .logo span{color:var(--warn)}
+.app .top .crumb{font-family:var(--mono);font-size:11px;color:var(--faint)} .app .top .crumb b{color:var(--muted);font-weight:500}
+.app .top .sp{flex:1}
+.app .fl{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-family:var(--mono);font-size:10.5px;color:var(--muted);background:rgba(255,255,255,.03);white-space:nowrap}
+.app .fl i{color:var(--faint);font-style:normal} .app .fl b{font-weight:500;color:var(--text)} .app .fl .ch{color:var(--faint);margin-left:2px}
+.app .fl button{background:none;border:0;color:var(--muted);font:inherit;padding:2px 6px;border-radius:4px;cursor:pointer} .app .fl button.on{background:rgba(255,184,77,.15);color:var(--warn)} .app .fl button.on.x{background:rgba(80,220,200,.15);color:var(--teal)}
+.app .body{display:grid;grid-template-columns:168px minmax(0,1fr);min-height:560px}
+@media (max-width:900px){.app .body{grid-template-columns:1fr} .app .nav{display:none}}
+.app .nav{border-right:1px solid var(--line);background:#111120;padding:10px 0}
+.app .nav .g{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);padding:10px 14px 4px}
+.app .nav a{display:flex;justify-content:space-between;padding:7px 14px;color:var(--muted);text-decoration:none;font-size:12px} .app .nav a.on{color:var(--text);background:rgba(255,255,255,.05);border-left:2px solid var(--warn);padding-left:12px}
+.app .nav a span{font-family:var(--mono);font-size:10px;color:var(--faint)} .app .nav a span.w{color:var(--warn)}
+.app .main{padding:14px;display:grid;gap:12px;align-content:start}
+.app .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+@media (max-width:1100px){.app .kpis{grid-template-columns:repeat(3,1fr)}}
+.app .kt{border:1px solid var(--line);border-radius:8px;padding:9px 10px 8px;background:#141426;cursor:pointer;transition:all .15s;position:relative}
+.app .kt:hover{border-color:rgba(255,255,255,.3)} .app .kt.on{border-color:var(--warn);box-shadow:0 0 0 1px rgba(255,184,77,.35) inset}
+.app .kt .k{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted)} .app .kt .k i{width:7px;height:7px;border-radius:50%;display:inline-block} .app .kt .k i.r{background:#ff6b6b} .app .kt .k i.a{background:var(--warn)} .app .kt .k i.g{background:var(--teal)}
+.app .kt .vals{display:flex;align-items:baseline;gap:8px;margin-top:5px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden} .app .kt .vals .x{font-size:18px;font-weight:500;color:var(--text)} .app .kt .vals .y{font-size:11.5px;color:var(--faint)} .app .kt .vals .y small{font-family:var(--mono);font-size:9px;margin-right:3px}
+.app .kt .sp{margin-top:4px;height:30px} .app .kt .sp svg{width:100%;height:30px;display:block;overflow:visible}
+.app .kt .ft{display:grid;grid-template-columns:1fr auto;gap:2px 6px;margin-top:4px;font-family:var(--mono);font-size:9.5px;color:var(--faint);white-space:nowrap} .app .kt .ft .rs{text-align:right} .app .kt .ft .d.bad{color:#ff8a8a} .app .kt .ft .d.good{color:var(--teal)} .app .kt .ft .rs{color:var(--warn)}
+.app .split2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px;min-height:360px}
+@media (max-width:900px){.app .split2{grid-template-columns:1fr}}
+.app .pane{border:1px solid var(--line);border-radius:8px;background:#121222;display:flex;flex-direction:column;min-height:0;min-width:0}
+.app .pane .ph{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.04em} .app .pane .ph b{color:var(--text);font-weight:500;letter-spacing:0;font-family:var(--sans,inherit);font-size:12px} .app .pane .ph .sp{flex:1} .app .pane .ph .pill{border:1px solid var(--line);border-radius:999px;padding:2px 8px;font-size:9.5px;white-space:nowrap} .app .pane .ph b{white-space:nowrap}
+.app table{width:100%;border-collapse:collapse;font-size:11.5px} .app th{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);font-weight:500;white-space:nowrap} .app td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top;color:var(--muted)}
+.app tr.rw{cursor:pointer} .app tr.rw:hover td{background:rgba(255,255,255,.03)} .app tr.rw.sel td{background:rgba(255,184,77,.07)}
+.app td.f{color:var(--text);max-width:380px} .app td .u{display:block;font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px}
+.app .st{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;border-radius:4px;padding:2px 6px;white-space:nowrap;border:1px solid} .app .det .st{white-space:normal}
+.app .st.ch{color:var(--teal);border-color:rgba(80,220,200,.5);background:rgba(80,220,200,.08)} .app .st.ob{color:var(--warn);border-color:rgba(255,184,77,.5);background:rgba(255,184,77,.08)} .app .st.de{color:#b9a8ff;border-color:rgba(185,168,255,.5);background:rgba(185,168,255,.08)} .app .st.in{color:var(--faint);border-color:var(--line)}
+.app td.site{font-family:var(--mono);font-size:10.5px;white-space:nowrap} .app td.site.A{color:var(--warn)} .app td.site.B{color:var(--teal)} .app td.site.C{color:#b9a8ff}
+.app .det{padding:12px;display:grid;gap:10px;align-content:start;font-size:12px;min-width:0;overflow-wrap:anywhere}
+.app .det .emp{color:var(--faint);font-family:var(--mono);font-size:11px;padding:30px 10px;text-align:center;border:1px dashed var(--line);border-radius:6px}
+.app .det h5{margin:0;font-size:13.5px;font-weight:500;color:var(--text);line-height:1.4}
+.app .det .row{display:grid;grid-template-columns:88px 1fr;gap:8px;font-size:11.5px} .app .det .row i{font-family:var(--mono);font-size:10px;color:var(--faint);font-style:normal;letter-spacing:.04em;text-transform:uppercase;padding-top:2px} .app .det .row span{color:var(--muted)}
+.app .chain{border:1px solid var(--line);border-radius:6px;padding:10px 12px;background:#0f0f1c}
+.app .chain .ch-h{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+.app .chain ol{list-style:none;margin:0;padding:0;display:grid;gap:0} .app .chain li{position:relative;padding:0 0 10px 16px;font-size:11.5px;color:var(--muted)} .app .chain li:before{content:"";position:absolute;left:3px;top:5px;width:6px;height:6px;border-radius:50%;background:var(--line)} .app .chain li:after{content:"";position:absolute;left:5.5px;top:12px;bottom:-2px;width:1px;background:var(--line)} .app .chain li:last-child:after{display:none} .app .chain li b{color:var(--text);font-weight:500} .app .chain li.hot:before{background:var(--warn)} .app .chain li.hot b{color:var(--warn)}
+.app .acts{display:flex;gap:6px;flex-wrap:wrap} .app .acts button{font:inherit;font-size:11px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--text);border-radius:6px;padding:6px 10px;cursor:pointer} .app .acts button.p{background:var(--warn);border-color:var(--warn);color:#0a0a14;font-weight:500}
+.app .sb{display:flex;gap:16px;align-items:center;padding:6px 14px;border-top:1px solid var(--line);background:#121222;font-family:var(--mono);font-size:10px;color:var(--faint);flex-wrap:wrap} .app .sb b{color:var(--muted);font-weight:500} .app .sb .sp{flex:1}
+.app .sb i{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px}
+
+.app .fl.dd{position:relative;cursor:pointer;user-select:none} .app .fl.dd:hover{border-color:rgba(255,255,255,.3)}
+.app .fl.dd .menu{display:none;position:absolute;top:calc(100% + 4px);right:0;min-width:220px;background:#15152a;border:1px solid var(--line);border-radius:8px;padding:4px;z-index:20;box-shadow:0 14px 40px rgba(0,0,0,.5)}
+.app .fl.dd.open .menu{display:block} .app .fl.dd .menu a{display:block;padding:7px 10px;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:10.5px;white-space:nowrap} .app .fl.dd .menu a:hover{background:rgba(255,255,255,.06);color:var(--text)} .app .fl.dd .menu a.on{color:var(--warn)}
+.app .nav a{cursor:pointer}
+.app .banner{border:1px solid rgba(255,184,77,.45);background:rgba(255,184,77,.07);border-radius:8px;padding:8px 12px;font-size:11.5px;color:var(--text)} .app .banner b{color:var(--warn);font-weight:500}
+.app .vh{display:flex;align-items:baseline;gap:10px} .app .vh h4{margin:0;font-size:14px;font-weight:500;color:var(--text)} .app .vh span{font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+.app td.num{font-variant-numeric:tabular-nums;white-space:nowrap} .app td.bad{color:#ff8a8a} .app td.good{color:var(--teal)} .app td.warn{color:var(--warn)}
+.app .flag{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;border-radius:4px;padding:2px 6px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.app .flag.ok{color:var(--teal);border-color:rgba(80,220,200,.5)} .app .flag.no{color:#ff8a8a;border-color:rgba(255,107,107,.5)} .app .flag.w{color:var(--warn);border-color:rgba(255,184,77,.5)}
+.app .log{display:grid;gap:0} .app .log div{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.05);font-size:11.5px;color:var(--muted)} .app .log div i{font-family:var(--mono);font-size:10px;color:var(--faint);font-style:normal} .app .log div.new{background:rgba(255,184,77,.06)} .app .log b{color:var(--text);font-weight:500}
+.leave.big{display:block;margin-top:54px;padding-top:34px} .leave.big .v{display:block;font-size:clamp(40px,5.2vw,66px);line-height:1.08;letter-spacing:-.012em} .leave.big .w{display:block;margin-top:14px;font-size:20px;color:var(--muted)}
+
+/* compact panel 1 */
+.sc2{margin-top:18px;gap:14px} .sc{padding:12px 14px} .sc .ttl{margin-bottom:9px}
+.sc .grid{gap:8px} .sc .kt{padding:8px 10px 7px;cursor:default} .sc .kt .k{font-size:10.5px} .sc .kt .v{font-size:19px;margin:1px 0;white-space:nowrap} .sc .kt .row{white-space:nowrap} .sc .kt .tgt{font-size:9.5px} .sc .kt .d{font-size:10px} .sc .kt svg{height:34px;margin-top:5px} .sc .kt .ax{font-size:9px;margin-top:2px}
+.persona{margin-top:14px}
+/* register pager */
+.reg .pgr{display:flex;align-items:center;gap:12px;padding:7px 12px;border-top:1px solid #e3e3dd;font-family:var(--mono);font-size:10.5px;color:#777;background:#f1f1ec} .reg .pgr a{cursor:pointer;color:#1a1a1a} .reg .pgr a:hover{color:#b8600a} .reg .pgr a.dis{color:#c8c8c0;pointer-events:none} .reg .pgr .dots{display:flex;gap:4px;margin-left:auto} .reg .pgr .dots i{width:6px;height:6px;border-radius:50%;background:#d0d0c9;cursor:pointer} .reg .pgr .dots i.on{background:#b8600a}
+.reg table{min-width:0}
+.app .pgr{display:flex;align-items:center;gap:12px;padding:7px 12px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:auto} .app .pgr a{cursor:pointer;color:var(--text)} .app .pgr a:hover{color:var(--warn)} .app .pgr a.dis{color:var(--line);pointer-events:none} .app .pgr .dots{display:flex;gap:4px;margin-left:auto} .app .pgr .dots i{width:6px;height:6px;border-radius:50%;background:var(--line);cursor:pointer} .app .pgr .dots i.on{background:var(--warn)}
+.app .toast{position:absolute;left:50%;bottom:44px;transform:translate(-50%,10px);background:#15152a;border:1px solid rgba(255,184,77,.5);border-radius:8px;padding:8px 14px;font-size:11.5px;color:var(--text);opacity:0;pointer-events:none;transition:all .3s;z-index:30;white-space:nowrap} .app .toast.on{opacity:1;transform:translate(-50%,0)}
+.app{position:relative}
+.app .glow{box-shadow:0 0 0 2px var(--warn),0 0 24px rgba(255,184,77,.45)!important;border-color:var(--warn)!important;animation:gpulse 1.6s ease-in-out infinite}
+@keyframes gpulse{50%{box-shadow:0 0 0 2px rgba(255,184,77,.4),0 0 8px rgba(255,184,77,.2)}}
+.ghint{position:fixed;left:24px;bottom:24px;z-index:50;max-width:340px;background:rgba(10,10,20,.96);border:1px solid rgba(255,184,107,.55);border-radius:12px;padding:12px 14px;font-size:13.5px;line-height:1.5;color:var(--text);box-shadow:0 14px 40px rgba(0,0,0,.5);transition:opacity .6s,transform .6s}
+.ghint[hidden]{display:none} .ghint.fade{opacity:0;transform:translateY(8px);pointer-events:none}
+.ghint b{display:block;font-weight:500;margin-bottom:4px} .ghint > span{color:var(--muted)}
+.ghint .gh-top{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--faint);margin-bottom:8px;letter-spacing:.06em} .ghint .gh-top a,.ghint .gh-foot a{cursor:pointer;color:var(--faint)} .ghint .gh-top a:hover,.ghint .gh-foot a:hover{color:var(--text)}
+.ghint .gh-foot{margin-top:10px;text-align:right;font-family:var(--mono);font-size:11px} .ghint .gh-foot a{color:var(--warn)}
+.ghint.done{border-color:var(--teal)}
+</style>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<meta name="theme-color" content="#0a0a14">
+
+<style>
+/* the track toggle: links between the two pages */
+.trk{display:flex;justify-content:center;margin:26px 0 4px}
+.trk div{display:inline-flex;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:4px;background:rgba(255,255,255,.04)}
+.trk a{text-decoration:none;color:rgba(255,255,255,.6);font-size:14px;padding:8px 22px;border-radius:999px;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.trk a:hover{color:#fff}
+.trk a.on{color:#fff;background:linear-gradient(135deg,rgba(138,43,226,.85),rgba(30,144,255,.55));box-shadow:0 8px 30px rgba(138,43,226,.25)}
+</style>
+
+<style>
+/* laptop-only gate: phones and tablets get a placeholder instead of the demo */
+#small{display:none;position:fixed;inset:0;z-index:100;overflow:auto;background:#0a0a14;color:rgba(255,255,255,.9);align-items:center;justify-content:center;text-align:center;padding:32px 24px;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+#small .in{width:100%;max-width:420px}
+#small .in *{max-width:100%;overflow-wrap:anywhere}
+#small .glyph{font-size:44px;margin-bottom:14px}
+#small h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:30px;margin:0 0 12px}
+#small p{color:rgba(255,255,255,.6);font-size:16px;line-height:1.5;margin:0 0 22px}
+#small a{display:inline-block;text-decoration:none;color:rgba(255,255,255,.9);border:1px solid rgba(138,43,226,.5);background:linear-gradient(135deg,rgba(138,43,226,.85),rgba(30,144,255,.55));border-radius:12px;padding:11px 18px}
+@media (max-width:1100px), (hover:none) and (pointer:coarse){#small{display:flex}body{overflow:hidden}body>*:not(#small){display:none!important}}
+</style>
+</head>
+<body>
+<div id="small"><div class="in"><div class="glyph">💻</div><h1>Open this on a laptop</h1><p>This demo is a full-width dashboard, a recommendation register and a stepper. It needs a desktop-sized screen and a mouse.</p><a href="../">← Back to Principia AI</a></div></div>
+<header><a class="brand" href="../">Principia AI<span>.</span></a><nav><a href="../">← Back to site</a></nav></header>
+<div class="trk"><div><a href="manager.html" class="on">Manager</a><a href="./" class="">Engineer</a></div></div>
+
+<div class="wrap">
+<section class="opt" style="border:0;margin-top:28px;padding-top:0">
+    <div class="tag">PRINCIPIA MANAGER · 1 OF 4</div>
+    <h1>The problem: two plants, same design, different numbers.</h1>
+    <p class="lede">The scorecard is how a site is run from above: a bunch of numbers, each against a target, each tied to the site's budget, its turnaround plan, its insurance premium, its Solomon ranking, etc. Every month the scorecard is reviewed by management.</p>
+    <div class="persona"><div class="av">D</div><div class="t"><b>Dan, VP Operations</b>owns both scorecards · answers for the gap to the leadership team · about to ask a consultancy why Asset B is six tiles behind</div></div>
+    <div class="sc2">
+      <div class="sc"><div class="ttl"><b>Asset A</b><span>OPERATIONS SCORECARD · SEPTEMBER · SAME DESIGN</span></div><div class="grid"><div class="kt g"><div class="k">Mechanical availability</div><div class="row"><div class="v">97.4 %</div><div class="tgt">target 96.0</div></div><div class="d">+0.3 vs last year · 12-mo rolling</div><svg viewBox="0 0 200 52" preserveAspectRatio="none"><defs><linearGradient id="g9057" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#7fe0a8" stop-opacity=".28"/><stop offset="1" stop-color="#7fe0a8" stop-opacity="0"/></linearGradient></defs><line x1="4" x2="196" y1="33.3" y2="33.3" stroke="rgba(255,255,255,.07)" stroke-width="1"/><line x1="4" x2="196" y1="18.7" y2="18.7" stroke="rgba(255,255,255,.07)" stroke-width="1"/><line x1="4" x2="196" y1="21.6" y2="21.6" stroke="rgba(255,255,255,.35)" stroke-width="1" stroke-dasharray="3 3"/><path d="M4.0,48 L4.0,15.6 L12.3,12.9 L20.7,11.8 L29.0,14.0 L37.4,15.1 L45.7,13.0 L54.1,11.9 L62.4,10.8 L70.8,14.2 L79.1,14.2 L87.5,10.8 L95.8,11.0 L104.2,9.1 L112.5,9.8 L120.9,11.3 L129.2,11.4 L137.6,6.7 L145.9,11.0 L154.3,11.6 L162.6,11.9 L171.0,9.8 L179.3,9.5 L187.7,10.0 L196.0,9.4 L196.0,48 Z" fill="url(#g9057)"/><polyline points="4.0,15.6 12.3,12.9 20.7,11.8 29.0,14.0 37.4,15.1 45.7,13.0 54.1,11.9 62.4,10.8 70.8,14.2 79.1,14.2 87.5,10.8 95.8,11.0 104.2,9.1 112.5,9.8 120.9,11.3 129.2,11.4 137.6,6.7 145.9,11.0 154.3,11.6 162.6,11.9 171.0,9.8 179.3,9.5 187.7,10.0 196.0,9.4" fill="none" stroke="#7fe0a8" stroke-width="1.6" stroke-linejoin="round"/><circle cx="196.0" cy="9.4" r="2.6" fill="#7fe0a8"/></svg><div class="ax"><span>Oct 24</span><span>Sep 25</span></div></div><div class="kt g"><div class="k">Production vs plan</div><div class="row"><div class="v">103 %</div><div class="tgt">plan 100</div></div><div class="d">plan = 100 · monthly</div><svg viewBox="0 0 200 52" preserveAspectRatio="none"><defs><linearGradient id="g4375" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#7fe0a8" stop-opacity=".28"/><stop offset="1" stop-color="#7fe0a8" stop-opacity="0"/></linearGradient></defs><line x1="4" x2="196" y1="33.3" y2="33.3" stroke="rgba(255,255,255,.07)" stroke-width="1"/><line x1="4" x2="196" y1="18.7" y2="18.7" stroke="rgba(255,255,255,.07)" stroke-width="1"/><line x1="4" x2="196" y1="22.1" y2="22.1" stroke="rgba(255,255,255,.35)" stroke-width="1" stroke-dasharray="3 3"/><path d="M4.0,48 L4.0,19.7 L12.3,16.7 L20.7,14.1 L29.0,17.2 L37.4,25.5 L45.7,15.7 L54.1,25.2 L62.4,20.8 L70.8,26.7 L79.1,20.6 L87.5,23.3 L95.8,18.1 L104.2,4.0 L112.5,16.5 L120.9,11.8 L129.2,20.2 L137.6,15.9 L145.9,12.4 L154.3,16.3 L162.6,15.1 L171.0,16.6 L179.3,21.2 L187.7,14.1 L196.0,18.8 L196.0,48 Z" fill="url(#g4375)"/><polyline points="4.0,19.7 12.3,16.7 20.7,14.1 29.0,17.2 37.4,25.5 45.7,15.7 54.1,25.2 62.4,20.8 70.8,26.7 79.1,20.6 87.5,23.3 95.8,18.1 104.2,4.0 112.5,16.5 120.9,11.8 129.2,20.2 137.6,15.9 145.9,12.4 154.3,16.3 162.6,15.1 171.0,16.6 179.3,21.2 187.7,14.1 196.0,18.8" fill="none" stroke="#7fe0a8" stroke-width="1.6" stroke-linejoin="round"/><circle cx="196.0" cy="18.8" r="2.6" fill="#7fe0a8"/></svg><div class="ax"><span>Oct 24</span><span>Sep 25</span></div></div><div class="kt g"><div class="k">Unplanned downtime</div><div class="row"><div class="v">2.1 d</div><div class="tgt">budget 4.0 d</div></div><div class="d">YTD · cumulative</div><svg viewBox="0 0 200 52" preserveAspectRatio="none"><defs><linearGradient id="g7899" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#7fe0a8" stop-opacity=".28"/><stop offset="1" stop-color="#7fe0a8" stop-opacity="0"/></linearGradient></defs><line x1="4" x2="196" y1="33.3" y2="33.3" stroke="rgba(255,255,255,.07)" stroke-width="1"/><line x1="4" x2="196" y1="18.7" y2="18.7" stroke="rgba(255,255,255,.07)" stroke-width="1"/><path d="M4.0,48 L4.0,48.0 L12.3,48.0 L20.7,46.5 L29.0,46.5 L37.4,46.5 L45.7,44.7 L54.1,44.7 L62.4,44.7 L70.8,43.6 L79.1,43.6 L87.5,43.6 L95.8,43.6 L104.2,42.5 L112.5,42.5 L120.9,42.5 L129.2,42.5 L137.6,41.0 L145.9,41.0 L154.3,41.0 L162.6,41.0 L171.0,40.3 L179.3,40.3 L187.7,40.3 L196.0,40.3 L196.0,48 Z" fill="url(#g7899)"/><polyline points="4.0,48.0 12.3,48.0 20.7,46.5 29.0,46.5 37.4,46.5 45.7,44.7 54.1,44.7 62.4,44.7 70.8,43.6 79.1,43.6 87.5,43.6 95.8,43.6 104.2,42.5 112.5,42.5 120.9,42.5 129.2,42.5 137.6,41.0 145.9,41.0 154.3,41.0 162.6,41.0 171.0,40.3 179.3,40.3 187.7,40.3 196.0,40.3" fill="none" stroke="#7fe0a8" stroke-width="1.6" stroke-linejoin="round"/><circle cx="196.0" cy="40.3" r="2.6" fill="#7fe0a8"/></svg><div class="ax"><span>Oct 24</span><span>Sep 25</span></div></div><div class="kt g"><div class="k">Turnaround interval</div><div class="row"><div class="v">6 yr</div><div class="tgt">last 3 cycles</div></div><div class="d">next TA Q2 2029 · RBI cycle 2019</div><svg viewBox="0 0 200 52" preserveAspectRatio="none"><defs><linearGradient id="g9557" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#7fe0a8" stop-opacity=".28"/><stop offset="1" stop-color="#7fe0a8" stop-opacity="0"/></linearGradient></defs><line x1="4" x2="196" y1="33.3" y2="33.3" stroke="rgba(255,255,255,.07)" stroke-width="1"/><line x1="4" x2="196" y1="18.7" y2="18.7" stroke="rgba(255,255,255,.07)" stroke-width="1"/><path d="M4.0,48 L4.0,37.0 L12.3,37.0 L20.7,37.0 L29.0,37.0 L37.4,37.0 L45.7,37.0 L54.1,26.0 L62.4,26.0 L70.8,26.0 L79.1,26.0 L87.5,26.0 L95.8,26.0 L104.2,15.0 L112.5,15.0 L120.9,15.0 L129.2,15.0 L137.6,15.0 L145.9,15.0 L154.3,15.0 L162.6,15.0 L171.0,15.0 L179.3,15.0 L187.7,15.0 L196.0,15.0 L196.0,48 Z" fill="url(#g9557)"/><polyline points="4.0,37.0 12.3,37.0 20.7,37.0 29.0,37.0 37.4,37.0 45.7,37.0 54.1,26.0 62.4,26.0 70.8,26.0 79.1,26.0 87.5,26.0 95.8,26.0 104.2,15.0 112.5,15.0 120.9,15.0 129.2,15.0 137.6,15.0 145.9,15.0 154.3,15.0 162.6,15.0 171.0,15.0 179.3,15.0 187.7,15.0 196.0,15.0" fill="none" stroke="#7fe0a8" stroke-width="1.6" stroke-linejoin="round"/><circle cx="196.0" cy="15.0" r="2.6" fill="#7fe0a8"/></svg><div class="ax"><span>Oct 24</span><span>Sep 25</span></div></div><div class="kt g"><div class="k">SIS proof tests</div><div class="row"><div class="v">40 / yr</div><div class="tgt">2021 → now</div></div><div class="d">partial-stroke in service · full stroke at TA</div><svg viewBox="0 0 200 52" preserveAspectRatio="none"><defs><linearGradient id="g6664" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#7fe0a8" stop-opacity=".28"/><stop offset="1" stop-color="#7fe0a8" stop-opacity="0"/></linearGradient></defs><line x1="4" x2="196" y1="33.3" y2="33.3" stroke="rgba(255,255,255,.07)" stroke-width="1"/><line x1="4" x2="196" y1="18.7" y2="18.7" stroke="rgba(255,255,255,.07)" stroke-width="1"/><path d="M4.0,48 L4.0,8.4 L12.3,8.4 L20.7,9.3 L29.0,12.8 L37.4,19.0 L45.7,22.5 L54.1,26.0 L62.4,28.6 L70.8,32.2 L79.1,34.8 L87.5,36.6 L95.8,38.3 L104.2,40.1 L112.5,41.0 L120.9,41.8 L129.2,42.7 L137.6,42.7 L145.9,43.6 L154.3,43.6 L162.6,43.6 L171.0,43.6 L179.3,43.6 L187.7,43.6 L196.0,43.6 L196.0,48 Z" fill="url(#g6664)"/><polyline points="4.0,8.4 12.3,8.4 20.7,9.3 29.0,12.8 37.4,19.0 45.7,22.5 54.1,26.0 62.4,28.6 70.8,32.2 79.1,34.8 87.5,36.6 95.8,38.3 104.2,40.1 112.5,41.0 120.9,41.8 129.2,42.7 137.6,42.7 145.9,43.6 154.3,43.6 162.6,43.6 171.0,43.6 179.3,43.6 187.7,43.6 196.0,43.6" fill="none" stroke="#7fe0a8" stroke-width="1.6" stroke-linejoin="round"/><circle cx="196.0" cy="43.6" r="2.6" fill="#7fe0a8"/></svg><div class="ax"><span>Oct 24</span><span>Sep 25</span></div></div><div class="kt g"><div class="k">Maintenance, % RAV</div><div class="row"><div class="v">1.9 %</div><div class="tgt">Q1 ≤ 1.5</div></div><div class="d">trailing 12 mo · top quartile 1.5</div><svg viewBox="0 0 200 52" preserveAspectRatio="none"><defs><linearGradient id="g8175" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#7fe0a8" stop-opacity=".28"/><stop offset="1" stop-color="#7fe0a8" stop-opacity="0"/></linearGradient></defs><line x1="4" x2="196" y1="33.3" y2="33.3" stroke="rgba(255,255,255,.07)" stroke-width="1"/><line x1="4" x2="196" y1="18.7" y2="18.7" stroke="rgba(255,255,255,.07)" stroke-width="1"/><line x1="4" x2="196" y1="42.9" y2="42.9" stroke="rgba(255,255,255,.35)" stroke-width="1" stroke-dasharray="3 3"/><path d="M4.0,48 L4.0,27.8 L12.3,30.0 L20.7,29.3 L29.0,30.1 L37.4,29.6 L45.7,31.2 L54.1,30.1 L62.4,31.3 L70.8,30.4 L79.1,31.3 L87.5,32.0 L95.8,33.1 L104.2,32.0 L112.5,32.6 L120.9,31.9 L129.2,33.9 L137.6,33.5 L145.9,33.8 L154.3,34.3 L162.6,34.7 L171.0,35.0 L179.3,36.0 L187.7,36.7 L196.0,36.5 L196.0,48 Z" fill="url(#g8175)"/><polyline points="4.0,27.8 12.3,30.0 20.7,29.3 29.0,30.1 37.4,29.6 45.7,31.2 54.1,30.1 62.4,31.3 70.8,30.4 79.1,31.3 87.5,32.0 95.8,33.1 104.2,32.0 112.5,32.6 120.9,31.9 129.2,33.9 137.6,33.5 145.9,33.8 154.3,34.3 162.6,34.7 171.0,35.0 179.3,36.0 187.7,36.7 196.0,36.5" fill="none" stroke="#7fe0a8" stroke-width="1.6" stroke-linejoin="round"/><circle cx="196.0" cy="36.5" r="2.6" fill="#7fe0a8"/></svg><div class="ax"><span>Oct 24</span><span>Sep 25</span></div></div></div><div class="ft"><span>SAP PM · PI · EHS export 10/01</span><span>Power BI · refreshed nightly</span></div></div>
+      <div class="sc"><div class="ttl"><b>Asset B</b><span>OPERATIONS SCORECARD · SEPTEMBER · SAME CRUDE</span></div><div class="grid"><div class="kt a"><div class="k">Mechanical availability</div><div class="row"><div class="v">93.4 %</div><div class="tgt">target 96.0</div></div><div class="d">−2.9 vs last year · 12-mo rolling</div><svg viewBox="0 0 200 52" preserveAspectRatio="none"><defs><linearGradient id="g6495" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ffb86b" stop-opacity=".28"/><stop offset="1" stop-color="#ffb86b" stop-opacity="0"/></linearGradient></defs><line x1="4" x2="196" y1="33.3" y2="33.3" stroke="rgba(255,255,255,.07)" stroke-width="1"/><line x1="4" x2="196" y1="18.7" y2="18.7" stroke="rgba(255,255,255,.07)" stroke-width="1"/><line x1="4" x2="196" y1="21.6" y2="21.6" stroke="rgba(255,255,255,.35)" stroke-width="1" stroke-dasharray="3 3"/><path d="M4.0,48 L4.0,19.8 L12.3,17.7 L20.7,20.1 L29.0,20.8 L37.4,22.5 L45.7,23.7 L54.1,26.3 L62.4,25.4 L70.8,23.3 L79.1,30.8 L87.5,32.9 L95.8,25.7 L104.2,32.0 L112.5,30.8 L120.9,42.7 L129.2,39.4 L137.6,29.5 L145.9,32.5 L154.3,38.5 L162.6,37.8 L171.0,40.8 L179.3,45.0 L187.7,43.7 L196.0,43.3 L196.0,48 Z" fill="url(#g6495)"/><polyline points="4.0,19.8 12.3,17.7 20.7,20.1 29.0,20.8 37.4,22.5 45.7,23.7 54.1,26.3 62.4,25.4 70.8,23.3 79.1,30.8 87.5,32.9 95.8,25.7 104.2,32.0 112.5,30.8 120.9,42.7 129.2,39.4 137.6,29.5 145.9,32.5 154.3,38.5 162.6,37.8 171.0,40.8 179.3,45.0 187.7,43.7 196.0,43.3" fill="none" stroke="#ffb86b" stroke-width="1.6" stroke-linejoin="round"/><circle cx="196.0" cy="43.3" r="2.6" fill="#ffb86b"/></svg><div class="ax"><span>Oct 24</span><span>Sep 25</span></div></div><div class="kt r"><div class="k">Production vs plan</div><div class="row"><div class="v">94 %</div><div class="tgt">plan 100</div></div><div class="d">plan = 100 · monthly</div><svg viewBox="0 0 200 52" preserveAspectRatio="none"><defs><linearGradient id="g5091" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ff6b6b" stop-opacity=".28"/><stop offset="1" stop-color="#ff6b6b" stop-opacity="0"/></linearGradient></defs><line x1="4" x2="196" y1="33.3" y2="33.3" stroke="rgba(255,255,255,.07)" stroke-width="1"/><line x1="4" x2="196" y1="18.7" y2="18.7" stroke="rgba(255,255,255,.07)" stroke-width="1"/><line x1="4" x2="196" y1="20.5" y2="20.5" stroke="rgba(255,255,255,.35)" stroke-width="1" stroke-dasharray="3 3"/><path d="M4.0,48 L4.0,16.5 L12.3,18.0 L20.7,21.4 L29.0,13.8 L37.4,27.5 L45.7,19.6 L54.1,19.7 L62.4,30.1 L70.8,40.8 L79.1,36.4 L87.5,29.7 L95.8,27.5 L104.2,20.6 L112.5,35.3 L120.9,28.8 L129.2,41.7 L137.6,31.0 L145.9,46.1 L154.3,28.9 L162.6,21.8 L171.0,31.3 L179.3,44.0 L187.7,41.2 L196.0,37.0 L196.0,48 Z" fill="url(#g5091)"/><polyline points="4.0,16.5 12.3,18.0 20.7,21.4 29.0,13.8 37.4,27.5 45.7,19.6 54.1,19.7 62.4,30.1 70.8,40.8 79.1,36.4 87.5,29.7 95.8,27.5 104.2,20.6 112.5,35.3 120.9,28.8 129.2,41.7 137.6,31.0 145.9,46.1 154.3,28.9 162.6,21.8 171.0,31.3 179.3,44.0 187.7,41.2 196.0,37.0" fill="none" stroke="#ff6b6b" stroke-width="1.6" stroke-linejoin="round"/><circle cx="196.0" cy="37.0" r="2.6" fill="#ff6b6b"/></svg><div class="ax"><span>Oct 24</span><span>Sep 25</span></div></div><div class="kt r"><div class="k">Unplanned downtime</div><div class="row"><div class="v">11.2 d</div><div class="tgt">budget 4.0 d</div></div><div class="d">YTD · 7.9 on one unit</div><svg viewBox="0 0 200 52" preserveAspectRatio="none"><defs><linearGradient id="g3398" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ff6b6b" stop-opacity=".28"/><stop offset="1" stop-color="#ff6b6b" stop-opacity="0"/></linearGradient></defs><line x1="4" x2="196" y1="33.3" y2="33.3" stroke="rgba(255,255,255,.07)" stroke-width="1"/><line x1="4" x2="196" y1="18.7" y2="18.7" stroke="rgba(255,255,255,.07)" stroke-width="1"/><path d="M4.0,48 L4.0,48.0 L12.3,45.8 L20.7,45.8 L29.0,42.9 L37.4,39.9 L45.7,39.9 L54.1,36.6 L62.4,33.3 L70.8,33.3 L79.1,28.6 L87.5,28.6 L95.8,25.6 L104.2,25.6 L112.5,20.9 L120.9,20.9 L129.2,18.3 L137.6,15.4 L145.9,15.4 L154.3,12.1 L162.6,12.1 L171.0,9.9 L179.3,9.9 L187.7,6.9 L196.0,6.9 L196.0,48 Z" fill="url(#g3398)"/><polyline points="4.0,48.0 12.3,45.8 20.7,45.8 29.0,42.9 37.4,39.9 45.7,39.9 54.1,36.6 62.4,33.3 70.8,33.3 79.1,28.6 87.5,28.6 95.8,25.6 104.2,25.6 112.5,20.9 120.9,20.9 129.2,18.3 137.6,15.4 145.9,15.4 154.3,12.1 162.6,12.1 171.0,9.9 179.3,9.9 187.7,6.9 196.0,6.9" fill="none" stroke="#ff6b6b" stroke-width="1.6" stroke-linejoin="round"/><circle cx="196.0" cy="6.9" r="2.6" fill="#ff6b6b"/></svg><div class="ax"><span>Oct 24</span><span>Sep 25</span></div></div><div class="kt a"><div class="k">Turnaround interval</div><div class="row"><div class="v">4 yr</div><div class="tgt">last 3 cycles</div></div><div class="d">next TA Q1 2027 · fixed cycle</div><svg viewBox="0 0 200 52" preserveAspectRatio="none"><defs><linearGradient id="g293" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ffb86b" stop-opacity=".28"/><stop offset="1" stop-color="#ffb86b" stop-opacity="0"/></linearGradient></defs><line x1="4" x2="196" y1="33.3" y2="33.3" stroke="rgba(255,255,255,.07)" stroke-width="1"/><line x1="4" x2="196" y1="18.7" y2="18.7" stroke="rgba(255,255,255,.07)" stroke-width="1"/><path d="M4.0,48 L4.0,37.0 L12.3,37.0 L20.7,37.0 L29.0,37.0 L37.4,37.0 L45.7,37.0 L54.1,37.0 L62.4,37.0 L70.8,37.0 L79.1,37.0 L87.5,37.0 L95.8,37.0 L104.2,37.0 L112.5,37.0 L120.9,37.0 L129.2,37.0 L137.6,37.0 L145.9,37.0 L154.3,37.0 L162.6,37.0 L171.0,37.0 L179.3,37.0 L187.7,37.0 L196.0,37.0 L196.0,48 Z" fill="url(#g293)"/><polyline points="4.0,37.0 12.3,37.0 20.7,37.0 29.0,37.0 37.4,37.0 45.7,37.0 54.1,37.0 62.4,37.0 70.8,37.0 79.1,37.0 87.5,37.0 95.8,37.0 104.2,37.0 112.5,37.0 120.9,37.0 129.2,37.0 137.6,37.0 145.9,37.0 154.3,37.0 162.6,37.0 171.0,37.0 179.3,37.0 187.7,37.0 196.0,37.0" fill="none" stroke="#ffb86b" stroke-width="1.6" stroke-linejoin="round"/><circle cx="196.0" cy="37.0" r="2.6" fill="#ffb86b"/></svg><div class="ax"><span>Oct 24</span><span>Sep 25</span></div></div><div class="kt a"><div class="k">SIS proof tests</div><div class="row"><div class="v">120 / yr</div><div class="tgt">2021 → now</div></div><div class="d">full stroke at TA · no partial-stroke</div><svg viewBox="0 0 200 52" preserveAspectRatio="none"><defs><linearGradient id="g4263" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ffb86b" stop-opacity=".28"/><stop offset="1" stop-color="#ffb86b" stop-opacity="0"/></linearGradient></defs><line x1="4" x2="196" y1="33.3" y2="33.3" stroke="rgba(255,255,255,.07)" stroke-width="1"/><line x1="4" x2="196" y1="18.7" y2="18.7" stroke="rgba(255,255,255,.07)" stroke-width="1"/><path d="M4.0,48 L4.0,8.4 L12.3,8.4 L20.7,8.4 L29.0,8.4 L37.4,8.4 L45.7,8.4 L54.1,8.4 L62.4,8.4 L70.8,8.4 L79.1,8.4 L87.5,8.4 L95.8,8.4 L104.2,8.4 L112.5,8.4 L120.9,8.4 L129.2,8.4 L137.6,8.4 L145.9,8.4 L154.3,8.4 L162.6,8.4 L171.0,8.4 L179.3,8.4 L187.7,8.4 L196.0,8.4 L196.0,48 Z" fill="url(#g4263)"/><polyline points="4.0,8.4 12.3,8.4 20.7,8.4 29.0,8.4 37.4,8.4 45.7,8.4 54.1,8.4 62.4,8.4 70.8,8.4 79.1,8.4 87.5,8.4 95.8,8.4 104.2,8.4 112.5,8.4 120.9,8.4 129.2,8.4 137.6,8.4 145.9,8.4 154.3,8.4 162.6,8.4 171.0,8.4 179.3,8.4 187.7,8.4 196.0,8.4" fill="none" stroke="#ffb86b" stroke-width="1.6" stroke-linejoin="round"/><circle cx="196.0" cy="8.4" r="2.6" fill="#ffb86b"/></svg><div class="ax"><span>Oct 24</span><span>Sep 25</span></div></div><div class="kt r"><div class="k">Maintenance, % RAV</div><div class="row"><div class="v">3.4 %</div><div class="tgt">Q1 ≤ 1.5</div></div><div class="d">trailing 12 mo · top quartile 1.5</div><svg viewBox="0 0 200 52" preserveAspectRatio="none"><defs><linearGradient id="g4386" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ff6b6b" stop-opacity=".28"/><stop offset="1" stop-color="#ff6b6b" stop-opacity="0"/></linearGradient></defs><line x1="4" x2="196" y1="33.3" y2="33.3" stroke="rgba(255,255,255,.07)" stroke-width="1"/><line x1="4" x2="196" y1="18.7" y2="18.7" stroke="rgba(255,255,255,.07)" stroke-width="1"/><line x1="4" x2="196" y1="42.9" y2="42.9" stroke="rgba(255,255,255,.35)" stroke-width="1" stroke-dasharray="3 3"/><path d="M4.0,48 L4.0,16.7 L12.3,18.3 L20.7,18.5 L29.0,16.7 L37.4,18.1 L45.7,15.8 L54.1,18.0 L62.4,17.4 L70.8,15.9 L79.1,14.8 L87.5,15.2 L95.8,15.2 L104.2,16.9 L112.5,15.4 L120.9,14.9 L129.2,14.5 L137.6,13.0 L145.9,13.5 L154.3,12.0 L162.6,12.3 L171.0,12.3 L179.3,11.5 L187.7,10.7 L196.0,9.9 L196.0,48 Z" fill="url(#g4386)"/><polyline points="4.0,16.7 12.3,18.3 20.7,18.5 29.0,16.7 37.4,18.1 45.7,15.8 54.1,18.0 62.4,17.4 70.8,15.9 79.1,14.8 87.5,15.2 95.8,15.2 104.2,16.9 112.5,15.4 120.9,14.9 129.2,14.5 137.6,13.0 145.9,13.5 154.3,12.0 162.6,12.3 171.0,12.3 179.3,11.5 187.7,10.7 196.0,9.9" fill="none" stroke="#ff6b6b" stroke-width="1.6" stroke-linejoin="round"/><circle cx="196.0" cy="9.9" r="2.6" fill="#ff6b6b"/></svg><div class="ax"><span>Oct 24</span><span>Sep 25</span></div></div></div><div class="ft"><span>SAP PM · PI · EHS export 10/01</span><span>Power BI · refreshed nightly</span></div></div>
+    </div>
+    <div class="leave"><span class="v">Same design, same crude, same owner. Six tiles apart, and finding out why is somebody else's job.</span></div>
+  </section>
+<section class="opt" >
+    <div class="tag">PRINCIPIA MANAGER · 2 OF 4</div>
+    <h1>Meet Priya, our reliability manager.</h1>
+    <p class="lede">To address the differential, Dan employs a consultancy. Fourteen weeks later its recommendation register arrives on Priya's desk: sixty-two items, eight shown. Every one is well written, and every one says which number it is meant to move. Click one to see which.</p>
+    <div class="persona"><div class="av">P</div><div class="t"><b>Priya, reliability manager, Asset B</b>owner of R-01, R-04 and R-06 · reports to the maintenance director · reviewed monthly by the leadership team</div></div>
+
+    <div class="mini"><div class="mt a" data-t="avail"><div class="k">Mechanical availability</div><div class="v">93.4<small>%</small></div></div><div class="mt r" data-t="prod"><div class="k">Production vs plan</div><div class="v">94<small>%</small></div></div><div class="mt r" data-t="down"><div class="k">Unplanned downtime</div><div class="v">11.2<small>d</small></div></div><div class="mt a" data-t="ta"><div class="k">Turnaround interval</div><div class="v">4<small>yr</small></div></div><div class="mt a" data-t="tests"><div class="k">SIS proof tests</div><div class="v">120<small>/yr</small></div></div><div class="mt r" data-t="rav"><div class="k">Maintenance, % RAV</div><div class="v">3.4<small>%</small></div></div></div>
+    <div class="reg">
+      <div class="top"><b>Reliability &amp; Process Safety Gap Assessment · Asset B · Recommendation Register</b><span>Rev 3 · 62 recommendations · 8 shown · SMART · status per LMA IGRES 2024/001</span></div>
+      <div class="scroll"><table>
+        <tr><th>ID</th><th>Priority</th><th>Area</th><th>Observation</th><th>Recommendation</th><th>Moves</th><th>Owner</th><th>Due · Status</th></tr>
+        <tr class="r" data-i="0"><td class="id">R-01</td><td class="pr H">High</td><td>Reliability</td><td class="ob">Full-stroke proof testing of all SIFs is performed at turnaround only; interval basis not documented.</td><td>Establish and implement a documented proof-test program for safety instrumented functions in accordance with the SRS and IEC 61511-1 §16, including the basis for each test interval and provision for partial-stroke testing in service.</td><td class="mv"><span>SIS proof tests</span><span>Turnaround interval</span><span>Mechanical availability</span></td><td>Reliability manager</td><td class="st">Q2 2027<br>In Progress</td></tr><tr class="r" data-i="1"><td class="id">R-02</td><td class="pr H">High</td><td>Alarm management</td><td class="ob">Alarm rate on console 2 exceeds the site target; several standing alarms observed during the survey.</td><td>Ensure the master alarm database is re-rationalised to the site alarm philosophy and ISA-18.2, and that DCS alarm limits are reconciled to the MADB with a documented change record for each difference.</td><td class="mv"><span>Unplanned downtime</span><span>Mechanical availability</span></td><td>PSM lead · Operations</td><td class="st">Q1 2027<br>No Progress</td></tr><tr class="r" data-i="2"><td class="id">R-03</td><td class="pr H">High</td><td>Management of change</td><td class="ob">MOC impact reviews are limited to the originating unit; downstream units are not routinely assessed.</td><td>Revise the MOC procedure (SP-003) to require assessment of process safety impacts on downstream and interconnected units, and document the units reviewed on the MOC form.</td><td class="mv"><span>Unplanned downtime</span><span>Production vs plan</span></td><td>PSM lead</td><td class="st">Q4 2026<br>Under Review</td></tr><tr class="r" data-i="3"><td class="id">R-04</td><td class="pr M">Medium</td><td>Mechanical integrity</td><td class="ob">Backlog of deferred safety-critical work orders; deferral approvals not consistently recorded.</td><td>Develop an auditable process for all deferred safety-critical maintenance and inspection work items, including risk assessment, approval level and planned completion date, and report deferrals to the refinery leadership team monthly.</td><td class="mv"><span>Maintenance, % RAV</span><span>Mechanical availability</span></td><td>Maintenance director</td><td class="st">Q1 2027<br>In Progress</td></tr><tr class="r" data-i="4"><td class="id">R-05</td><td class="pr M">Medium</td><td>PHA</td><td class="ob">The 2021 PHA for the diesel hydrotreater has not been revalidated against subsequent changes.</td><td>Conduct a revalidation of the PHA for the diesel hydrotreater addressing all changes since February 2021, per the site PHA procedure (P&P 2.0-6), and close out open recommendations 14, 15 and 18.</td><td class="mv"><span>Mechanical availability</span></td><td>PSM lead</td><td class="st">Q3 2027<br>No Progress</td></tr><tr class="r" data-i="5"><td class="id">R-06</td><td class="pr M">Medium</td><td>Turnaround</td><td class="ob">Turnaround interval is fixed at four years without a documented reliability or RBI basis.</td><td>Establish a documented basis for the turnaround interval using RBI results, SIF proof-test requirements and equipment strategies, and evaluate extension to a six-year cycle.</td><td class="mv"><span>Turnaround interval</span><span>SIS proof tests</span></td><td>Turnaround manager · Inspection</td><td class="st">Q2 2027<br>In Progress</td></tr><tr class="r" data-i="6"><td class="id">R-07</td><td class="pr L">Low</td><td>Operations</td><td class="ob">Shift handover records do not consistently capture active bypasses and overrides.</td><td>Ensure the shift handover log captures all active SIS bypasses and alarm overrides with start time, authorisation and compensating measures, per SP-014.</td><td class="mv"><span>Unplanned downtime</span></td><td>Operations manager</td><td class="st">Q4 2026<br>Completed</td></tr><tr class="r" data-i="7"><td class="id">R-08</td><td class="pr L">Low</td><td>Metrics</td><td class="ob">Leading indicators reported to the leadership team are activity-based; no barrier-status indicator is tracked.</td><td>Develop and implement a set of leading process safety indicators including safety-critical equipment availability and time in a degraded state, and review them at the monthly operations review.</td><td class="mv"><span>Mechanical availability</span></td><td>Plant manager · PSM lead</td><td class="st">Q2 2027<br>Under Review</td></tr>
+      </table></div>
+      <div class="hint"><span>Priority: High = close within 12 months · Medium = 24 months · Low = ongoing</span><span>Status: In Progress · No Progress · Under Review · Completed · Superseded · Rejected · Withdrawn</span></div>
+    </div>
+
+
+    <div class="cap">The report from the consultancy connects Dan's numbers to Priya's protocol and gives recommendations to Dan on how to improve protocol to drive the numbers. The result: <em>Dan pushing for changes to an on-site reality he doesn't fully understand, for reasons he does; Priya pushing back on changes to a protocol she does understand, for reasons she doesn't.</em></div>
+  </section>
+<section class="opt" >
+    <div class="tag">PRINCIPIA MANAGER · 3 OF 4</div>
+    <h1>The same recommendation, from both ends.</h1>
+    <p class="lede">Each item in the register is aimed at a number Dan watches and lands on a plant Priya runs. Between what he pushes for and what she pushes back with is the reason the number is what it is. It is written nowhere.</p>
+    <div class="split">
+      <div class="nav"><div class="cnt">recommendation <b data-n>1</b> of 8</div><div class="dots"><i data-i="0" class="on"></i><i data-i="1" class=""></i><i data-i="2" class=""></i><i data-i="3" class=""></i><i data-i="4" class=""></i><i data-i="5" class=""></i><i data-i="6" class=""></i><i data-i="7" class=""></i></div><div><button data-prev>‹ Previous</button> <button data-next>Next ›</button></div></div>
+      <div class="card-s" data-i="0" >
+      <div class="rec"><div><div class="id">R-01 · <b>High</b> · Reliability · owner Reliability manager · due Q2 2027 · In Progress</div><div class="lab">Recommendation</div><div class="txt">Establish and implement a documented proof-test program for safety instrumented functions in accordance with the SRS and IEC 61511-1 §16, including the basis for each test interval and provision for partial-stroke testing in service.</div><div class="meta">observation: Full-stroke proof testing of all SIFs is performed at turnaround only; interval basis not documented.</div></div><div class="p3tl"><span class="lbl">numbers it moves</span><div class="p3mt a"><div class="k">Mechanical availability</div><div class="ab"><span><em>Asset B</em>93.4 %</span><span class="o"><em>Asset A</em>97.4 %</span></div></div><div class="p3mt a"><div class="k">Turnaround interval</div><div class="ab"><span><em>Asset B</em>4 yr</span><span class="o"><em>Asset A</em>6 yr</span></div></div><div class="p3mt a"><div class="k">SIS proof tests</div><div class="ab"><span><em>Asset B</em>120 / yr</span><span class="o"><em>Asset A</em>40 / yr</span></div></div></div></div>
+      <div class="sides">
+        <div class="side dan"><div class="h"><span>Dan's side</span><b>VP Operations</b></div><div class="num">SIS proof tests · 120 / yr</div><p>Asset A does 40 and runs a six-year cycle. <q>Get Asset B to 40 and we get two turnaround days back. Q2.</q></p></div>
+        <div class="side diff"><div class="h"><span>The differential · what neither can say</span></div><div class="d">Asset A tests in service because its alarm and trip read separate transmitters. Asset B cannot, because of a design choice on sheet D-2104. Asset A's practice does not transfer; the target as set will not be met, and the report does not say why.</div><div class="w">lives in: P&ID D-2104 zone C-9 · SRS-101 Rev B · the 2021 PHA row 1.5.2 · Priya's memory · <b>not in the report</b></div></div>
+        <div class="side pri"><div class="h"><span>Priya's side</span><b>Reliability manager, Asset B</b></div><p><q>We can't partial-stroke SIF-101 the way Asset A does. PT-1001A feeds the trip and the alarm; take it out of service and we lose both. That's how the 2021 drawing was done.</q></p></div>
+      </div>
+    </div><div class="card-s" data-i="1" hidden>
+      <div class="rec"><div><div class="id">R-02 · <b>High</b> · Alarm management · owner PSM lead · Operations · due Q1 2027 · No Progress</div><div class="lab">Recommendation</div><div class="txt">Ensure the master alarm database is re-rationalised to the site alarm philosophy and ISA-18.2, and that DCS alarm limits are reconciled to the MADB with a documented change record for each difference.</div><div class="meta">observation: Alarm rate on console 2 exceeds the site target; several standing alarms observed during the survey.</div></div><div class="p3tl"><span class="lbl">numbers it moves</span><div class="p3mt a"><div class="k">Mechanical availability</div><div class="ab"><span><em>Asset B</em>93.4 %</span><span class="o"><em>Asset A</em>97.4 %</span></div></div><div class="p3mt r"><div class="k">Unplanned downtime</div><div class="ab"><span><em>Asset B</em>11.2 d</span><span class="o"><em>Asset A</em>2.1 d</span></div></div></div></div>
+      <div class="sides">
+        <div class="side dan"><div class="h"><span>Dan's side</span><b>VP Operations</b></div><div class="num">Unplanned downtime · 11.2 d</div><p>Asset A had two days. <q>Seven spurious trips on one SIF is an alarm problem. Fix the alarms.</q></p></div>
+        <div class="side diff"><div class="h"><span>The differential · what neither can say</span></div><div class="d">Asset A re-rationalised its alarm setpoints after its 2021 PHA; Asset B's LOPA still credits a 20-minute response that MOC-001 took away. The trips are a consequence of a change on another unit, not of alarm discipline.</div><div class="w">lives in: LOPA Rev 1 row 4 · MADB Rev 3 row 17 · historian Mar–Jun · MOC-001 · <b>not in the report</b></div></div>
+        <div class="side pri"><div class="h"><span>Priya's side</span><b>Reliability manager, Asset B</b></div><p><q>Operators aren't ignoring PAH-1001. Since the tie-in the pressure climbs from alarm to trip in under four minutes. There is nothing to respond to.</q></p></div>
+      </div>
+    </div><div class="card-s" data-i="2" hidden>
+      <div class="rec"><div><div class="id">R-03 · <b>High</b> · Management of change · owner PSM lead · due Q4 2026 · Under Review</div><div class="lab">Recommendation</div><div class="txt">Revise the MOC procedure (SP-003) to require assessment of process safety impacts on downstream and interconnected units, and document the units reviewed on the MOC form.</div><div class="meta">observation: MOC impact reviews are limited to the originating unit; downstream units are not routinely assessed.</div></div><div class="p3tl"><span class="lbl">numbers it moves</span><div class="p3mt r"><div class="k">Production vs plan</div><div class="ab"><span><em>Asset B</em>94 %</span><span class="o"><em>Asset A</em>103 %</span></div></div><div class="p3mt r"><div class="k">Unplanned downtime</div><div class="ab"><span><em>Asset B</em>11.2 d</span><span class="o"><em>Asset A</em>2.1 d</span></div></div></div></div>
+      <div class="sides">
+        <div class="side dan"><div class="h"><span>Dan's side</span><b>VP Operations</b></div><div class="num">Production vs plan · 94 %</div><p>Asset A runs 103. <q>Asset B took the same tie-in and lost nine points. Why is Asset B's hydrotreater the problem?</q></p></div>
+        <div class="side diff"><div class="h"><span>The differential · what neither can say</span></div><div class="d">Asset A's 2021 tie-in MOC listed the hydrotreater as an affected unit and re-opened its PHA; Asset B's listed "none." The hydrocracker's record quarter and the hydrotreater's worst one are the same decision.</div><div class="w">lives in: ChangeFlow MOC-001 · Asset A MOC-2021-087 · the hydrocracker throughput tile · <b>not in the report</b></div></div>
+        <div class="side pri"><div class="h"><span>Priya's side</span><b>Reliability manager, Asset B</b></div><p><q>The hydrocracker got the throughput. We got the pressure. Nobody asked us before MOC-001 was signed.</q></p></div>
+      </div>
+    </div><div class="card-s" data-i="3" hidden>
+      <div class="rec"><div><div class="id">R-04 · <b>Medium</b> · Mechanical integrity · owner Maintenance director · due Q1 2027 · In Progress</div><div class="lab">Recommendation</div><div class="txt">Develop an auditable process for all deferred safety-critical maintenance and inspection work items, including risk assessment, approval level and planned completion date, and report deferrals to the refinery leadership team monthly.</div><div class="meta">observation: Backlog of deferred safety-critical work orders; deferral approvals not consistently recorded.</div></div><div class="p3tl"><span class="lbl">numbers it moves</span><div class="p3mt a"><div class="k">Mechanical availability</div><div class="ab"><span><em>Asset B</em>93.4 %</span><span class="o"><em>Asset A</em>97.4 %</span></div></div><div class="p3mt r"><div class="k">Maintenance, % RAV</div><div class="ab"><span><em>Asset B</em>3.4 %</span><span class="o"><em>Asset A</em>1.9 %</span></div></div></div></div>
+      <div class="sides">
+        <div class="side dan"><div class="h"><span>Dan's side</span><b>VP Operations</b></div><div class="num">Maintenance · 3.4 % RAV</div><p>Asset A is at 1.9. <q>Clear the backlog and stop deferring. The number has to come down by year end.</q></p></div>
+        <div class="side diff"><div class="h"><span>The differential · what neither can say</span></div><div class="d">Asset A's backlog is smaller because its tests are in service and its turnaround is longer, not because it spends less on the same work. Asset B's deferred items are holding up two LOPA credits today; the %RAV figure cannot show which.</div><div class="w">lives in: SAP PM deferral records · SRS-101 test interval · LOPA S-1.5.1, S-1.5.2 · <b>not in the report</b></div></div>
+        <div class="side pri"><div class="h"><span>Priya's side</span><b>Reliability manager, Asset B</b></div><p><q>Half the backlog is safety-critical work we deferred to the turnaround because we can't take the unit down twice. Cutting it is not the same as closing it.</q></p></div>
+      </div>
+    </div><div class="card-s" data-i="4" hidden>
+      <div class="rec"><div><div class="id">R-05 · <b>Medium</b> · PHA · owner PSM lead · due Q3 2027 · No Progress</div><div class="lab">Recommendation</div><div class="txt">Conduct a revalidation of the PHA for the diesel hydrotreater addressing all changes since February 2021, per the site PHA procedure (P&P 2.0-6), and close out open recommendations 14, 15 and 18.</div><div class="meta">observation: The 2021 PHA for the diesel hydrotreater has not been revalidated against subsequent changes.</div></div><div class="p3tl"><span class="lbl">numbers it moves</span><div class="p3mt a"><div class="k">Mechanical availability</div><div class="ab"><span><em>Asset B</em>93.4 %</span><span class="o"><em>Asset A</em>97.4 %</span></div></div></div></div>
+      <div class="sides">
+        <div class="side dan"><div class="h"><span>Dan's side</span><b>VP Operations</b></div><div class="num">Mechanical availability · 93.4 %</div><p><q>If the 2021 study is out of date, revalidate it. That's a compliance item, not a production one.</q></p></div>
+        <div class="side diff"><div class="h"><span>The differential · what neither can say</span></div><div class="d">Asset B's study is still true for the plant as built and false for the plant as run. The gap between the two is the availability gap, and it is visible only by reading the 2021 rows against the 2026 historian.</div><div class="w">lives in: the 2021 PHA ("the old drive") · historian · DCS export · <b>not in the report</b></div></div>
+        <div class="side pri"><div class="h"><span>Priya's side</span><b>Reliability manager, Asset B</b></div><p><q>Three of the documents that study rests on have changed since. Revalidating it is the production item; it's where the four-minute problem gets fixed.</q></p></div>
+      </div>
+    </div><div class="card-s" data-i="5" hidden>
+      <div class="rec"><div><div class="id">R-06 · <b>Medium</b> · Turnaround · owner Turnaround manager · Inspection · due Q2 2027 · In Progress</div><div class="lab">Recommendation</div><div class="txt">Establish a documented basis for the turnaround interval using RBI results, SIF proof-test requirements and equipment strategies, and evaluate extension to a six-year cycle.</div><div class="meta">observation: Turnaround interval is fixed at four years without a documented reliability or RBI basis.</div></div><div class="p3tl"><span class="lbl">numbers it moves</span><div class="p3mt a"><div class="k">Turnaround interval</div><div class="ab"><span><em>Asset B</em>4 yr</span><span class="o"><em>Asset A</em>6 yr</span></div></div><div class="p3mt a"><div class="k">SIS proof tests</div><div class="ab"><span><em>Asset B</em>120 / yr</span><span class="o"><em>Asset A</em>40 / yr</span></div></div></div></div>
+      <div class="sides">
+        <div class="side dan"><div class="h"><span>Dan's side</span><b>VP Operations</b></div><div class="num">Turnaround interval · 4 yr</div><p>Asset A runs six. <q>Same design, same age. Move to six and we bank a year of production.</q></p></div>
+        <div class="side diff"><div class="h"><span>The differential · what neither can say</span></div><div class="d">The binding constraint on the interval is different at each site, and Asset B's is a consequence of the shared transmitter on D-2104. The year of production is available only after a design change the report does not name.</div><div class="w">lives in: SRS-101 · RBI cycle memo (Asset A) · P&ID D-2104 · <b>not in the report</b></div></div>
+        <div class="side pri"><div class="h"><span>Priya's side</span><b>Reliability manager, Asset B</b></div><p><q>Asset A's interval is six because its binding constraint is RBI. Ours is the full-stroke tests we can't do in service. Extend the cycle and we extend past the SRS interval.</q></p></div>
+      </div>
+    </div><div class="card-s" data-i="6" hidden>
+      <div class="rec"><div><div class="id">R-07 · <b>Low</b> · Operations · owner Operations manager · due Q4 2026 · Completed</div><div class="lab">Recommendation</div><div class="txt">Ensure the shift handover log captures all active SIS bypasses and alarm overrides with start time, authorisation and compensating measures, per SP-014.</div><div class="meta">observation: Shift handover records do not consistently capture active bypasses and overrides.</div></div><div class="p3tl"><span class="lbl">numbers it moves</span><div class="p3mt r"><div class="k">Unplanned downtime</div><div class="ab"><span><em>Asset B</em>11.2 d</span><span class="o"><em>Asset A</em>2.1 d</span></div></div></div></div>
+      <div class="sides">
+        <div class="side dan"><div class="h"><span>Dan's side</span><b>VP Operations</b></div><div class="num">Unplanned downtime · 11.2 d</div><p><q>Low priority. Log formatting.</q></p></div>
+        <div class="side diff"><div class="h"><span>The differential · what neither can say</span></div><div class="d">The log format is the only place the bypass hours exist; without them, the LOPA credit that was out during five trips is invisible to both sides.</div><div class="w">lives in: permits · SP-014 · the bypass log · <b>not in the report</b></div></div>
+        <div class="side pri"><div class="h"><span>Priya's side</span><b>Reliability manager, Asset B</b></div><p><q>Five of the seven trips happened with a bypass active. Which compensating measure was in place is on a paper permit.</q></p></div>
+      </div>
+    </div><div class="card-s" data-i="7" hidden>
+      <div class="rec"><div><div class="id">R-08 · <b>Low</b> · Metrics · owner Plant manager · PSM lead · due Q2 2027 · Under Review</div><div class="lab">Recommendation</div><div class="txt">Develop and implement a set of leading process safety indicators including safety-critical equipment availability and time in a degraded state, and review them at the monthly operations review.</div><div class="meta">observation: Leading indicators reported to the leadership team are activity-based; no barrier-status indicator is tracked.</div></div><div class="p3tl"><span class="lbl">numbers it moves</span><div class="p3mt a"><div class="k">Mechanical availability</div><div class="ab"><span><em>Asset B</em>93.4 %</span><span class="o"><em>Asset A</em>97.4 %</span></div></div></div></div>
+      <div class="sides">
+        <div class="side dan"><div class="h"><span>Dan's side</span><b>VP Operations</b></div><div class="num">Mechanical availability · 93.4 %</div><p><q>More indicators. We already have forty.</q></p></div>
+        <div class="side diff"><div class="h"><span>The differential · what neither can say</span></div><div class="d">Time-with-a-safeguard-degraded per scenario is the number that connects Dan's availability to Priya's deferral. It is defined in the industry's own metrics guide and computed at neither site.</div><div class="w">lives in: the bypass log · SAP deferral dates · LOPA credits · CCPS metrics v3.2 · <b>not in the report</b></div></div>
+        <div class="side pri"><div class="h"><span>Priya's side</span><b>Reliability manager, Asset B</b></div><p><q>The indicator we don't have is the one that would have shown SIF-101 degraded for 41 days before the trips started.</q></p></div>
+      </div>
+    </div>
+      <div class="stepmsg">left: what the register says and which numbers it is aimed at · middle: the reason, stated nowhere · each side: what one person knows and the other cannot see</div>
+    </div>
+    <div class="leave"><span class="v">The information is in the opposition. Nobody can read it.</span></div>
+  </section>
+
+
+  <div class="gapscreen" id="gapscreen">
+    <h2>The gap is not data. It is reasoning.</h2>
+    <p class="sub">Everything Dan is shown is real, and every recommendation Priya receives is well written. What does not exist is the capacity to reason across the two sites at once.</p>
+  </div>
+
+  <section class="opt">
+    <div class="tag">PRINCIPIA MANAGER · 4 OF 4</div>
+    <h1>The same scorecard, with the reasoning kept.</h1>
+    <p class="lede">Dan's numbers, in the dashboard he already reads. Under each one: the field reality responsible for the differential between the two sites, where it lives, whether it can be changed, follows from something else, or is already obsolete, and who owns it.</p>
+    <div class="app" id="app">
+      <div class="top"><div class="logo">Principia<span>.</span></div><div class="crumb">Portfolio › Refining › <b id="crumb">Asset B vs Asset A</b></div><div class="sp"></div>
+        <div class="fl dd" id="dd-period"><i>period</i><b data-v>Sep 2025</b><span class="ch">▾</span><div class="menu"><a data-o="Sep 2025">Sep 2025</a><a data-o="Aug 2025">Aug 2025</a><a data-o="Jul 2025">Jul 2025</a><a data-o="Q3 2025">Q3 2025</a></div></div>
+        <div class="fl dd" id="dd-basis"><i>basis</i><b data-v>as operated</b><span class="ch">▾</span><div class="menu"><a data-o="as operated">as operated · the plant as it runs</a><a data-o="as designed">as designed · the plant as the studies describe it</a></div></div>
+        <div class="fl"><i>compare</i><span id="aschips"></span></div>
+      </div>
+      <div class="body">
+        <div class="nav" id="nav">
+          <div class="g">Portfolio</div><a data-view="scorecard" class="on">Scorecard<span>6</span></a><a data-view="sites">Sites<span>3</span></a><a data-view="units">Units<span>11</span></a>
+          <div class="g">Reasoning</div><a data-view="realities">Field realities<span id="nfr">—</span></a><a data-view="obsolete">Obsolete bases<span class="w" id="nob">—</span></a><a data-view="moc">Changes (MOC)<span>6</span></a><a data-view="safeguards">Safeguards<span>9</span></a>
+          <div class="g">Outputs</div><a data-view="register">Register<span>8 of 62</span></a><a data-view="insurer">Insurer pack<span>IGRES</span></a><a data-view="audit">Audit trail<span id="naud">—</span></a>
+        </div>
+        <div class="main" id="main"></div>
+      </div>
+      <div class="sb"><span>ledger as of <b>30 Sep 2025</b></span><span><i style="background:var(--teal)"></i>changeable <b id="c-ch">0</b></span><span><i style="background:var(--warn)"></i>obsolete <b id="c-ob">0</b></span><span><i style="background:#b9a8ff"></i>derived <b id="c-de">0</b></span><span><i style="background:var(--line)"></i>inherent <b id="c-in">0</b></span><div class="sp"></div><span>sources: PI · SAP PM · MADB · ChangeFlow · PHA / LOPA · SRS · P&amp;ID</span></div>
+      <div class="toast" id="toast"></div>
+    </div>
+    <div class="ghint" id="ghint" hidden><div class="gh-top"><span class="gh-n" id="gh-n">1 / 7</span><a id="gh-skip">skip tour</a></div><b id="gh-b"></b><span id="gh-s"></span><div class="gh-foot"><a id="gh-next">next ›</a></div></div>
+    <div class="leave big"><span class="v">Principia Manager. Do business safely.</span><span class="w">The number, the reason, and what it would take, on one dashboard.</span></div>
+  </section>
+
+</div>
+<script>
+window.__recs=[["R-01", "High", "Reliability", "Full-stroke proof testing of all SIFs is performed at turnaround only; interval basis not documented.", "Establish and implement a documented proof-test program for safety instrumented functions in accordance with the SRS and IEC 61511-1 \u00a716, including the basis for each test interval and provision for partial-stroke testing in service.", "Reliability manager", "Q2 2027", "In Progress", ["Which SIFs? There are 14 on the unit and the SRS names two.", "Which intervals does each LOPA actually require, and which are being met?", "Which scenarios lose a credited layer if a test slips past the turnaround?", "Which transmitters are shared between an alarm and a trip?"]], ["R-02", "High", "Alarm management", "Alarm rate on console 2 exceeds the site target; several standing alarms observed during the survey.", "Ensure the master alarm database is re-rationalised to the site alarm philosophy and ISA-18.2, and that DCS alarm limits are reconciled to the MADB with a documented change record for each difference.", "PSM lead \u00b7 Operations", "Q1 2027", "No Progress", ["Which alarms differ between the DCS and the MADB? One does; which?", "Which LOPA credits assume the MADB setpoint rather than the DCS one?", "What operator response time does each credited alarm actually leave at the current rate?"]], ["R-03", "High", "Management of change", "MOC impact reviews are limited to the originating unit; downstream units are not routinely assessed.", "Revise the MOC procedure (SP-003) to require assessment of process safety impacts on downstream and interconnected units, and document the units reviewed on the MOC form.", "PSM lead", "Q4 2026", "Under Review", ["Which approved MOCs in the last three years changed a basis another unit depended on?", "Which PHA rows on the hydrotreater assumed the recycle compressor discharge setpoint before MOC-001?", "Who re-opens those rows, and against what?"]], ["R-04", "Medium", "Mechanical integrity", "Backlog of deferred safety-critical work orders; deferral approvals not consistently recorded.", "Develop an auditable process for all deferred safety-critical maintenance and inspection work items, including risk assessment, approval level and planned completion date, and report deferrals to the refinery leadership team monthly.", "Maintenance director", "Q1 2027", "In Progress", ["Which deferred items protect which scenarios?", "What is the mitigated frequency of those scenarios while the item is open?", "Which deferral is holding up a LOPA credit right now?"]], ["R-05", "Medium", "PHA", "The 2021 PHA for the diesel hydrotreater has not been revalidated against subsequent changes.", "Conduct a revalidation of the PHA for the diesel hydrotreater addressing all changes since February 2021, per the site PHA procedure (P&P 2.0-6), and close out open recommendations 14, 15 and 18.", "PSM lead", "Q3 2027", "No Progress", ["Which of the 2021 rows are still true at the current rate and setpoints?", "Which rows depend on documents that changed after 2021?", "Where is the 2021 study? (\"the old drive\")"]], ["R-06", "Medium", "Turnaround", "Turnaround interval is fixed at four years without a documented reliability or RBI basis.", "Establish a documented basis for the turnaround interval using RBI results, SIF proof-test requirements and equipment strategies, and evaluate extension to a six-year cycle.", "Turnaround manager \u00b7 Inspection", "Q2 2027", "In Progress", ["Which proof tests and inspections are the binding constraint on the interval?", "Which of them could be done in service, and what does each LOPA require?", "What is the production value of each year of extension, against the exposure?"]], ["R-07", "Low", "Operations", "Shift handover records do not consistently capture active bypasses and overrides.", "Ensure the shift handover log captures all active SIS bypasses and alarm overrides with start time, authorisation and compensating measures, per SP-014.", "Operations manager", "Q4 2026", "Completed", ["Which bypasses were active during the five trips that followed a missed alarm?", "Which compensating measures were in place, and were they the ones the LOPA credits?"]], ["R-08", "Low", "Metrics", "Leading indicators reported to the leadership team are activity-based; no barrier-status indicator is tracked.", "Develop and implement a set of leading process safety indicators including safety-critical equipment availability and time in a degraded state, and review them at the monthly operations review.", "Plant manager \u00b7 PSM lead", "Q2 2027", "Under Review", ["Degraded relative to which scenario, for how long, and who signed the deferral?", "Which green tile would turn amber if degraded hours were counted?"]]];
+window.__sides={"R-01": {"num": "SIS proof tests \u00b7 120 / yr", "dan": "Asset A does 40 and runs a six-year cycle. <q>Get Asset B to 40 and we get two turnaround days back. Q2.</q>", "pri": "<q>We can't partial-stroke SIF-101 the way Asset A does. PT-1001A feeds the trip and the alarm; take it out of service and we lose both. That's how the 2021 drawing was done.</q>", "diff": "Asset A tests in service because its alarm and trip read separate transmitters. Asset B cannot, because of a design choice on sheet D-2104. Asset A's practice does not transfer; the target as set will not be met, and the report does not say why.", "where": "lives in: P&ID D-2104 zone C-9 \u00b7 SRS-101 Rev B \u00b7 the 2021 PHA row 1.5.2 \u00b7 Priya's memory \u00b7 <b>not in the report</b>"}, "R-02": {"num": "Unplanned downtime \u00b7 11.2 d", "dan": "Asset A had two days. <q>Seven spurious trips on one SIF is an alarm problem. Fix the alarms.</q>", "pri": "<q>Operators aren't ignoring PAH-1001. Since the tie-in the pressure climbs from alarm to trip in under four minutes. There is nothing to respond to.</q>", "diff": "Asset A re-rationalised its alarm setpoints after its 2021 PHA; Asset B's LOPA still credits a 20-minute response that MOC-001 took away. The trips are a consequence of a change on another unit, not of alarm discipline.", "where": "lives in: LOPA Rev 1 row 4 \u00b7 MADB Rev 3 row 17 \u00b7 historian Mar\u2013Jun \u00b7 MOC-001 \u00b7 <b>not in the report</b>"}, "R-03": {"num": "Production vs plan \u00b7 94 %", "dan": "Asset A runs 103. <q>Asset B took the same tie-in and lost nine points. Why is Asset B's hydrotreater the problem?</q>", "pri": "<q>The hydrocracker got the throughput. We got the pressure. Nobody asked us before MOC-001 was signed.</q>", "diff": "Asset A's 2021 tie-in MOC listed the hydrotreater as an affected unit and re-opened its PHA; Asset B's listed \"none.\" The hydrocracker's record quarter and the hydrotreater's worst one are the same decision.", "where": "lives in: ChangeFlow MOC-001 \u00b7 Asset A MOC-2021-087 \u00b7 the hydrocracker throughput tile \u00b7 <b>not in the report</b>"}, "R-04": {"num": "Maintenance \u00b7 3.4 % RAV", "dan": "Asset A is at 1.9. <q>Clear the backlog and stop deferring. The number has to come down by year end.</q>", "pri": "<q>Half the backlog is safety-critical work we deferred to the turnaround because we can't take the unit down twice. Cutting it is not the same as closing it.</q>", "diff": "Asset A's backlog is smaller because its tests are in service and its turnaround is longer, not because it spends less on the same work. Asset B's deferred items are holding up two LOPA credits today; the %RAV figure cannot show which.", "where": "lives in: SAP PM deferral records \u00b7 SRS-101 test interval \u00b7 LOPA S-1.5.1, S-1.5.2 \u00b7 <b>not in the report</b>"}, "R-05": {"num": "Mechanical availability \u00b7 93.4 %", "dan": "<q>If the 2021 study is out of date, revalidate it. That's a compliance item, not a production one.</q>", "pri": "<q>Three of the documents that study rests on have changed since. Revalidating it is the production item; it's where the four-minute problem gets fixed.</q>", "diff": "Asset B's study is still true for the plant as built and false for the plant as run. The gap between the two is the availability gap, and it is visible only by reading the 2021 rows against the 2026 historian.", "where": "lives in: the 2021 PHA (\"the old drive\") \u00b7 historian \u00b7 DCS export \u00b7 <b>not in the report</b>"}, "R-06": {"num": "Turnaround interval \u00b7 4 yr", "dan": "Asset A runs six. <q>Same design, same age. Move to six and we bank a year of production.</q>", "pri": "<q>Asset A's interval is six because its binding constraint is RBI. Ours is the full-stroke tests we can't do in service. Extend the cycle and we extend past the SRS interval.</q>", "diff": "The binding constraint on the interval is different at each site, and Asset B's is a consequence of the shared transmitter on D-2104. The year of production is available only after a design change the report does not name.", "where": "lives in: SRS-101 \u00b7 RBI cycle memo (Asset A) \u00b7 P&ID D-2104 \u00b7 <b>not in the report</b>"}, "R-07": {"num": "Unplanned downtime \u00b7 11.2 d", "dan": "<q>Low priority. Log formatting.</q>", "pri": "<q>Five of the seven trips happened with a bypass active. Which compensating measure was in place is on a paper permit.</q>", "diff": "The log format is the only place the bypass hours exist; without them, the LOPA credit that was out during five trips is invisible to both sides.", "where": "lives in: permits \u00b7 SP-014 \u00b7 the bypass log \u00b7 <b>not in the report</b>"}, "R-08": {"num": "Mechanical availability \u00b7 93.4 %", "dan": "<q>More indicators. We already have forty.</q>", "pri": "<q>The indicator we don't have is the one that would have shown SIF-101 degraded for 41 days before the trips started.</q>", "diff": "Time-with-a-safeguard-degraded per scenario is the number that connects Dan's availability to Priya's deferral. It is defined in the industry's own metrics guide and computed at neither site.", "where": "lives in: the bypass log \u00b7 SAP deferral dates \u00b7 LOPA credits \u00b7 CCPS metrics v3.2 \u00b7 <b>not in the report</b>"}};
+window.__data={"moves": {"R-01": ["tests", "ta", "avail"], "R-02": ["down", "avail"], "R-03": ["down", "prod"], "R-04": ["rav", "avail"], "R-05": ["avail"], "R-06": ["ta", "tests"], "R-07": ["down"], "R-08": ["avail"]}, "fd": {"R-01": "Written against the design: SRS-101 Rev B, 12-month full-stroke interval. The field: the test was deferred past the turnaround in March, and the unit runs at 13,700 ton/day against a LOPA basis of 12,980. Neither is in the report.", "R-02": "Written against the alarm philosophy. The field: PAH-1001 is 1,180 in the DCS and 1,250 in the MADB, and at the current rate the credited 20-minute response is under four. Neither is in the report.", "R-03": "Written against the procedure. The field: MOC-001 raised the recycle compressor discharge setpoint and reviewed the hydrocracker only; the hydrotreater absorbed the change. Not in the report.", "R-04": "Written against the backlog count. The field: one deferred proof test is holding up a LOPA credit on two scenarios today. The count does not say which.", "R-05": "Written against the five-year rule. The field: three documents the 2021 study rested on have changed since. The report does not say which rows they touch.", "R-06": "Written against the cycle. The field: Asset A runs six years because it tests in service; which of Asset B's 120 tests could, and what each LOPA requires, is not in the report.", "R-07": "Written against the log format. The field: five trips followed a missed alarm; which bypasses were active is on a permit, not in the report.", "R-08": "Written against the indicator list. The field: the degraded hours exist in the bypass log and the deferral record; nobody sums them per scenario."}, "num": {"avail": "Mechanical availability \u00b7 93.4 % (Asset A: 97.4)", "prod": "Production vs plan \u00b7 94 % (Asset A: 103)", "down": "Unplanned downtime \u00b7 11.2 d (Asset A: 2.1)", "ta": "Turnaround interval \u00b7 4 yr (Asset A: 6)", "tests": "SIS proof tests \u00b7 120 / yr (Asset A: 40)", "rav": "Maintenance \u00b7 3.4 % RAV (Asset A: 1.9)"}};
+(function(){
+  var R=window.__recs, rows=[].slice.call(document.querySelectorAll('tr.r'));
+  var PG=4, pg=0, pages=Math.ceil(rows.length/PG), reg=document.querySelector('.reg'), hint=reg.querySelector('.hint'), pgr=document.createElement('div'); pgr.className='pgr'; reg.insertBefore(pgr,hint);
+  function page(){ rows.forEach(function(tr,i){ tr.style.display=(i>=pg*PG&&i<(pg+1)*PG)?'':'none'; }); pgr.innerHTML='<span>'+(pg*PG+1)+'–'+Math.min(rows.length,(pg+1)*PG)+' of '+rows.length+' shown · 62 in the register</span><a data-pg="-1" class="'+(pg===0?'dis':'')+'">‹ prev</a><span class="dots">'+Array.apply(null,{length:pages}).map(function(_,i){return '<i data-pgto="'+i+'" class="'+(i===pg?'on':'')+'"></i>';}).join('')+'</span><a data-pg="1" class="'+(pg>=pages-1?'dis':'')+'">next ›</a>'; }
+  pgr.addEventListener('click',function(e){ var t=e.target.closest('[data-pg]'); if(t&&!t.classList.contains('dis')){ pg+=+t.dataset.pg; page(); return; } var d=e.target.closest('[data-pgto]'); if(d){ pg=+d.dataset.pgto; page(); } });
+  page();
+  rows.forEach(function(tr){ tr.addEventListener('click',function(){
+    rows.forEach(function(x){x.classList.remove('sel');}); tr.classList.add('sel');
+    var r=R[+tr.dataset.i], mv=window.__data.moves[r[0]];
+    [].slice.call(document.querySelectorAll('.mini .mt')).forEach(function(m){m.classList.toggle('lit',mv.indexOf(m.dataset.t)>=0);});
+    if(window.__showRec) window.__showRec(+tr.dataset.i);
+  }); });
+})();
+</script>
+<script>
+(function(){
+  var cards=[].slice.call(document.querySelectorAll('.card-s')), dots=[].slice.call(document.querySelectorAll('.dots i')), n=document.querySelector('[data-n]'), i=0;
+  window.__showRec=show;
+  function show(k){ i=(k+cards.length)%cards.length; cards.forEach(function(c,j){c.hidden=j!==i;}); dots.forEach(function(d,j){d.classList.toggle('on',j===i);}); n.textContent=i+1; }
+  document.querySelector('[data-prev]').addEventListener('click',function(){show(i-1);});
+  document.querySelector('[data-next]').addEventListener('click',function(){show(i+1);});
+  dots.forEach(function(d){ d.addEventListener('click',function(){show(+d.dataset.i);}); });
+  document.addEventListener('keydown',function(e){ if(e.key==='ArrowRight') show(i+1); if(e.key==='ArrowLeft') show(i-1); });
+})();
+</script>
+<script>
+(function(){ var g=document.getElementById('gapscreen'); if(!g) return;
+  if('IntersectionObserver' in window){ var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ g.classList.add('in'); setTimeout(function(){g.classList.add('sub-in');},700); io.disconnect(); } }); },{threshold:.35}); io.observe(g);} else { g.classList.add('in','sub-in'); }
+})();
+window.__dash={"assets": {"A": {"name": "Asset A", "sub": "same design · same crude"}, "B": {"name": "Asset B", "sub": "same design · same crude"}, "C": {"name": "Asset C", "sub": "same design · different crude"}}, "kpis": [["avail", "Mechanical availability", "%", 1, true, 96.0], ["prod", "Production vs plan", "%", 0, true, 100], ["down", "Unplanned downtime", "d", 1, false, 4.0], ["ta", "Turnaround interval", "yr", 0, true, 5], ["tests", "SIS proof tests", "/ yr", 0, false, 60], ["rav", "Maintenance, % RAV", "%", 1, false, 2.5]], "vals": {"A": {"avail": 97.4, "prod": 103, "down": 2.1, "ta": 6, "tests": 40, "rav": 1.9}, "B": {"avail": 93.4, "prod": 94, "down": 11.2, "ta": 4, "tests": 120, "rav": 3.4}, "C": {"avail": 95.1, "prod": 99, "down": 5.6, "ta": 5, "tests": 80, "rav": 2.6}}, "facts": {"tests": {"A": [{"f": "Alarm and trip read separate transmitters (PT-1001A / PT-1001B). Partial-stroke tests run in service; full stroke at turnaround only.", "src": "P&ID A-2104 zone C-9 · SRS-101 Rev C", "st": "in", "how": "Design as built in 2019.", "unit": "Hydrotreater", "owner": "SIS engineer", "chain": ["SIS proof tests · 40 / yr", "Hydrotreater · 14 SIFs", "SIF-101 partial-stroke in service", "SRS-101 Rev C §4.2", "P&ID A-2104: PT-1001A alarm, PT-1001B trip"], "moves": ["tests", "ta"]}], "B": [{"f": "Alarm and trip share PT-1001A. Taking it out of service loses both, so there is no partial-stroke test and every SIF is full-stroked at turnaround: 120 tests a year.", "src": "P&ID D-2104 zone C-9 · SRS-101 Rev B · 2021 PHA row 1.5.2", "st": "ch", "how": "Add a second transmitter under MOC. One turnaround scope item; removes the reason behind R-01 and R-06.", "unit": "Hydrotreater", "owner": "Priya · reliability manager", "chain": ["SIS proof tests · 120 / yr", "Hydrotreater · 14 SIFs", "SIF-101 full-stroke at turnaround only", "SRS-101 Rev B §4.2: interval tied to TA", "P&ID D-2104: PT-1001A feeds alarm and trip"], "moves": ["tests", "ta", "avail"]}], "C": [{"f": "Separate transmitters on 6 of 14 SIFs; the other 8 share a tap with the alarm.", "src": "P&ID C-2104 · SRS-301 Rev A", "st": "ch", "how": "Same change as Asset B, on 8 loops.", "unit": "Hydrotreater", "owner": "SIS engineer", "chain": ["SIS proof tests · 80 / yr", "Hydrotreater · 14 SIFs", "8 SIFs full-stroke at TA", "P&ID C-2104"], "moves": ["tests"]}]}, "ta": {"A": [{"f": "Six-year cycle set by an RBI study; the proof-test interval is not tied to it.", "src": "RBI cycle memo 2019 · SRS-101 Rev C", "st": "in", "how": "Basis documented and current.", "unit": "Site", "owner": "Turnaround manager", "chain": ["Turnaround interval · 6 yr", "RBI cycle memo 2019", "SRS-101 Rev C: test interval independent of TA"], "moves": ["ta"]}], "B": [{"f": "Four-year cycle, because SRS-101 Rev B ties the full-stroke interval to the turnaround and the full stroke cannot be done in service.", "src": "SRS-101 Rev B §4.2", "st": "de", "how": "Follows from the shared transmitter. Changes when that does; the year of production is not available before.", "unit": "Site", "owner": "Turnaround manager", "chain": ["Turnaround interval · 4 yr", "SRS-101 Rev B §4.2: full stroke at TA", "← follows from: PT-1001A shared (D-2104)"], "moves": ["ta", "prod"]}], "C": [{"f": "Five-year cycle limited by hydrotreater fouling on the heavier crude.", "src": "RBI cycle memo 2022", "st": "in", "how": "Crude-driven; not a design choice.", "unit": "Site", "owner": "Turnaround manager", "chain": ["Turnaround interval · 5 yr", "RBI cycle memo 2022", "fouling rate · crude assay"], "moves": ["ta"]}]}, "avail": {"A": [{"f": "2021 tie-in MOC listed the hydrotreater as an affected unit; its PHA was re-opened and alarm setpoints revised.", "src": "MOC-2021-087 · PHA rev 2021-11", "st": "in", "how": "Done; nothing outstanding.", "unit": "Hydrotreater", "owner": "PSM lead", "chain": ["Mechanical availability · 97.4 %", "Hydrotreater · 0 trips YTD", "MOC-2021-087: affected units = hydrocracker, hydrotreater", "PHA rev 2021-11: rows 14, 15, 18 re-derived"], "moves": ["avail", "down"]}], "B": [{"f": "LOPA row 4 still credits a 20-minute operator response that MOC-001 removed when it raised the recycle compressor discharge setpoint.", "src": "LOPA Rev 1 row 4 · MOC-001 · historian Mar–Jun", "st": "ob", "how": "The credit is no longer valid. Re-derive the row; the seven trips since March are its consequence, not an alarm-discipline problem.", "unit": "Hydrotreater", "owner": "PSM lead", "chain": ["Mechanical availability · 93.4 %", "Hydrotreater · 7 trips since March", "PAH-1001 → SIF-101 trip", "LOPA Rev 1 row 4: operator response 20 min (credit 0.1)", "MOC-001: discharge setpoint +12 % · affected units = hydrocracker only", "historian: time-to-trip now 3.8 min"], "moves": ["avail", "down"]}, {"f": "Seven spurious trips since March on PAH-1001.", "src": "historian · trip log", "st": "de", "how": "Follows from the obsolete credit above.", "unit": "Hydrotreater", "owner": "Operations manager", "chain": ["Unplanned downtime · 11.2 d", "7 trips · 9.1 d", "← follows from: LOPA row 4 credit (obsolete)"], "moves": ["down", "avail"]}], "C": [{"f": "No tie-in since the 2019 PHA.", "src": "MOC register", "st": "in", "how": "—", "unit": "Hydrotreater", "owner": "PSM lead", "chain": ["Mechanical availability · 95.1 %", "MOC register: no affected-unit entries since 2019"], "moves": ["avail"]}]}, "prod": {"A": [{"f": "The 2021 tie-in reviewed both units; hydrotreater setpoints were moved with the compressor's.", "src": "MOC-2021-087", "st": "in", "how": "Done.", "unit": "Hydrocracker", "owner": "Operations manager", "chain": ["Production vs plan · 103 %", "MOC-2021-087: setpoints moved on both units"], "moves": ["prod"]}], "B": [{"f": "MOC-001 raised the recycle compressor discharge setpoint and reviewed the hydrocracker only. The hydrotreater absorbed the pressure; its PHA basis is from before the change.", "src": "ChangeFlow MOC-001 · PHA 2021 rows 14, 15, 18", "st": "ob", "how": "The hydrotreater study is superseded by a change on another unit. Re-open three rows; the hydrocracker's record quarter and the hydrotreater's worst one are the same decision.", "unit": "Hydrocracker → Hydrotreater", "owner": "PSM lead", "chain": ["Production vs plan · 94 %", "Hydrocracker +9 % · Hydrotreater −15 %", "MOC-001: affected units = hydrocracker only", "PHA 2021 rows 14, 15, 18: basis = old discharge pressure", "← same decision as: R-03, R-05"], "moves": ["prod", "down"]}], "C": [{"f": "Runs 4 % under plan on the heavier crude by design.", "src": "LP model 2025", "st": "in", "how": "Planned.", "unit": "Site", "owner": "Planning", "chain": ["Production vs plan · 99 %", "LP model 2025: crude assay"], "moves": ["prod"]}]}, "down": {"A": [{"f": "Alarms re-rationalised after the 2021 PHA; PAH setpoints agree between DCS and the alarm database.", "src": "MADB Rev 4", "st": "in", "how": "Done.", "unit": "Hydrotreater", "owner": "Alarm management lead", "chain": ["Unplanned downtime · 2.1 d", "MADB Rev 4 = DCS export"], "moves": ["down"]}], "B": [{"f": "PAH-1001 is 1,180 in the DCS and 1,250 in the alarm database. At the new rate the operator window is under four minutes.", "src": "MADB Rev 3 row 17 · DCS export", "st": "ch", "how": "Reconcile the two; no MOC needed. Does not remove the trips, which come from the obsolete credit.", "unit": "Hydrotreater", "owner": "Alarm management lead", "chain": ["Unplanned downtime · 11.2 d", "PAH-1001: DCS 1,180 · MADB 1,250", "operator window 3.8 min vs 20 credited"], "moves": ["down"]}, {"f": "Nine of the 11.2 days are the seven trips.", "src": "trip log", "st": "de", "how": "Follows from the obsolete LOPA credit.", "unit": "Hydrotreater", "owner": "Operations manager", "chain": ["Unplanned downtime · 11.2 d", "7 trips · 9.1 d", "← follows from: LOPA row 4 credit (obsolete)"], "moves": ["down"]}], "C": [{"f": "Two fouling-related outages.", "src": "outage log", "st": "in", "how": "Crude-driven.", "unit": "Hydrotreater", "owner": "Operations manager", "chain": ["Unplanned downtime · 5.6 d", "2 outages · fouling"], "moves": ["down"]}]}, "rav": {"A": [{"f": "Smaller deferred backlog; spends less on the same work.", "src": "SAP PM", "st": "in", "how": "—", "unit": "Site", "owner": "Maintenance director", "chain": ["Maintenance · 1.9 % RAV", "SAP PM backlog: 41 items · 0 credit-bearing"], "moves": ["rav"]}], "B": [{"f": "The deferred backlog holds three SIS items that currently stand in for LOPA credits. Clearing the backlog is not the same as closing those items.", "src": "SAP PM · LOPA Rev 1", "st": "ch", "how": "Close the three credit-bearing items first; the rest can be deferred without touching a scenario.", "unit": "Site", "owner": "Maintenance director", "chain": ["Maintenance · 3.4 % RAV", "SAP PM backlog: 118 items · 3 credit-bearing", "LOPA Rev 1 rows 4, 9, 11"], "moves": ["rav", "avail"]}], "C": [{"f": "Fouling cleaning adds 0.5 % RAV a year.", "src": "SAP PM", "st": "in", "how": "Crude-driven.", "unit": "Site", "owner": "Maintenance director", "chain": ["Maintenance · 2.6 % RAV", "SAP PM: cleaning orders"], "moves": ["rav"]}]}}};
+window.__dash2={"reg": [["R-01", "High", "Reliability", "Establish and implement a documented proof-test program for safety instrumented functions in accordance with the SRS and IEC 61511-1 §16, including the basis for each test interval and provision for partial-stroke testing in service.", "Reliability manager", "Q2 2027", "In Progress"], ["R-02", "High", "Alarm management", "Ensure the master alarm database is re-rationalised to the site alarm philosophy and ISA-18.2, and that DCS alarm limits are reconciled to the MADB with a documented change record for each difference.", "PSM lead · Operations", "Q1 2027", "No Progress"], ["R-03", "High", "Management of change", "Revise the MOC procedure (SP-003) to require assessment of process safety impacts on downstream and interconnected units, and document the units reviewed on the MOC form.", "PSM lead", "Q4 2026", "Under Review"], ["R-04", "Medium", "Mechanical integrity", "Develop an auditable process for all deferred safety-critical maintenance and inspection work items, including risk assessment, approval level and planned completion date, and report deferrals to the refinery leadership team monthly.", "Maintenance director", "Q1 2027", "In Progress"], ["R-05", "Medium", "PHA", "Conduct a revalidation of the PHA for the diesel hydrotreater addressing all changes since February 2021, per the site PHA procedure (P&P 2.0-6), and close out open recommendations 14, 15 and 18.", "PSM lead", "Q3 2027", "No Progress"], ["R-06", "Medium", "Turnaround", "Establish a documented basis for the turnaround interval using RBI results, SIF proof-test requirements and equipment strategies, and evaluate extension to a six-year cycle.", "Turnaround manager · Inspection", "Q2 2027", "In Progress"], ["R-07", "Low", "Operations", "Ensure the shift handover log captures all active SIS bypasses and alarm overrides with start time, authorisation and compensating measures, per SP-014.", "Operations manager", "Q4 2026", "Completed"], ["R-08", "Low", "Metrics", "Develop and implement a set of leading process safety indicators including safety-critical equipment availability and time in a degraded state, and review them at the monthly operations review.", "Plant manager · PSM lead", "Q2 2027", "Under Review"]], "link": {"R-01": ["B", "tests", 0], "R-02": ["B", "down", 0], "R-03": ["B", "prod", 0], "R-04": ["B", "rav", 0], "R-05": ["B", "prod", 0], "R-06": ["B", "ta", 0], "R-07": ["B", "down", 1], "R-08": ["B", "avail", 0]}, "mocs": [["MOC-001", "B", "Hydrocracker", "Raise recycle compressor discharge setpoint +12 %", "Hydrocracker", "Hydrocracker · Hydrotreater", "gap", "approved Feb 2025", ["MOC-001: discharge setpoint +12 %", "declared affected units: hydrocracker", "found: hydrotreater LOPA row 4 (operator response credit)", "found: hydrotreater PHA rows 14, 15, 18 (pressure basis)", "→ R-03, R-05 · 2 obsolete bases"]], ["MOC-2021-087", "A", "Hydrocracker", "Tie-in and discharge setpoint change", "Hydrocracker · Hydrotreater", "Hydrocracker · Hydrotreater", "ok", "closed Nov 2021", ["MOC-2021-087", "declared affected: both units", "PHA rev 2021-11 re-derived rows 14, 15, 18", "MADB Rev 4 setpoints revised"]], ["MOC-B-2024-019", "B", "Hydrotreater", "PT-1001A like-for-like replacement", "none", "none", "ok", "closed Jun 2024", ["like-for-like · no basis touched"]], ["MOC-B-2025-031", "B", "Hydrotreater", "Defer SIF-101 full-stroke test past turnaround", "Hydrotreater", "Hydrotreater · LOPA row 4", "gap", "open", ["deferral: SIF-101 test interval exceeded", "LOPA row 4 PFD credit assumes interval met", "→ R-01"]], ["MOC-C-2025-003", "C", "CDU", "Crude switch to heavier assay", "all units", "CDU · Hydrotreater", "review", "open", ["crude assay change", "found: hydrotreater fouling rate · RBI cycle memo 2022"]], ["MOC-A-2025-012", "A", "Reformer", "Catalyst change", "Reformer", "Reformer", "ok", "closed Aug 2025", ["no cross-unit basis found"]]], "safeguards": [["SIF-101 high-pressure trip", "Hydrotreater", "B", "SIF · SIL 2", "PFD 0.01", "ob", "interval exceeded · basis assumes 12-mo test", "Mar 2025 (deferred)"], ["PAH-1001 operator response", "Hydrotreater", "B", "Alarm · IPL", "0.1 (20 min)", "ob", "window now 3.8 min after MOC-001", "—"], ["PSV-1001 relief", "Hydrotreater", "B", "Relief", "0.01", "ok", "inspection in date", "May 2025"], ["SIF-101 high-pressure trip", "Hydrotreater", "A", "SIF · SIL 2", "PFD 0.01", "ok", "partial-stroke quarterly", "Sep 2025"], ["PAH-1001 operator response", "Hydrotreater", "A", "Alarm · IPL", "0.1 (20 min)", "ok", "setpoints revised 2021 · window 19 min", "—"], ["SIF-204 compressor surge", "Hydrocracker", "B", "SIF · SIL 1", "PFD 0.1", "ok", "tested at TA 2024", "Mar 2024"], ["BPCS pressure control", "Hydrocracker", "B", "BPCS", "0.1", "ok", "—", "—"], ["SIF-101 high-pressure trip", "Hydrotreater", "C", "SIF · SIL 2", "PFD 0.01", "ok", "shared tap · full stroke at TA", "Jan 2025"], ["PSV-3001 relief", "CDU", "C", "Relief", "0.01", "w", "fouling · inspection due", "Nov 2024"]], "audit": [["30 Sep 2025 02:10", "ledger refreshed · PI · SAP PM · MADB · ChangeFlow · 0 conflicts"], ["28 Sep 2025 16:42", "<b>R-05</b> linked to MOC-001 · hydrotreater PHA rows 14, 15, 18 flagged <b>obsolete</b>"], ["28 Sep 2025 16:41", "<b>LOPA Rev 1 row 4</b> credit marked obsolete · time-to-trip 3.8 min vs 20 credited"], ["14 Sep 2025 09:03", "register Rev 3 received · 62 recommendations · 8 linked to field realities"], ["02 Aug 2025 11:20", "MOC-B-2025-031 opened · SIF-101 test deferral · LOPA row 4 dependency raised"], ["12 Feb 2025 14:05", "MOC-001 approved · affected units declared: hydrocracker"]]};
+(function(){
+  var D=window.__dash, X=window.__dash2, sel=['B','A'], kpi=null, selRow=null, view='scorecard', unitF=null, basis='as operated', period='Sep 2025', rowsCache=[], extraAudit=[], pg=0, PG=4, PT=5;
+  function pager(n,size){ var pages=Math.max(1,Math.ceil(n/size)); if(pg>=pages) pg=pages-1; if(pg<0) pg=0; var a=pg*size, b=Math.min(n,a+size); return '<div class="pgr"><span>'+(n?(a+1)+'–'+b:0)+' of '+n+'</span><a data-pg="-1" class="'+(pg===0?'dis':'')+'">‹ prev</a><span class="dots">'+Array.apply(null,{length:pages}).map(function(_,i){return '<i data-pgto="'+i+'" class="'+(i===pg?'on':'')+'"></i>';}).join('')+'</span><a data-pg="1" class="'+(pg>=pages-1?'dis':'')+'">next ›</a></div>'; }
+  var $=function(id){return document.getElementById(id);};
+  var ST={ch:'changeable',ob:'obsolete',de:'derived',in:'inherent'};
+  var KN=function(id){ return D.kpis.filter(function(q){return q[0]===id;})[0][1]; };
+  function fmt(k,v){ var d=k[3]; var s=(d?v.toFixed(d):String(v)); return k[2]==='%'?s+' %':s+' '+k[2]; }
+  function series(a,k,n){ var end=D.vals[a][k], seed=(a.charCodeAt(0)*31+k.length*7+period.length)%97, out=[], v=end; for(var i=n-1;i>=0;i--){ out[i]=v; seed=(seed*1103515245+12345)%2147483648; var r=(seed/2147483648-.5); v=v+r*Math.abs(end)*0.06+(a==='B'&&i>n/2?Math.abs(end)*0.01*(k==='avail'||k==='prod'?1:-1):0);} return out; }
+  function spark(a,b,k){ var w=200,h=30,n=12, sa=series(a,k,n), sb=series(b,k,n), all=sa.concat(sb), mn=Math.min.apply(null,all), mx=Math.max.apply(null,all), pad=(mx-mn)||1;
+    function path(s){ return s.map(function(v,i){ return (i?'L':'M')+(i/(n-1)*w).toFixed(1)+','+(h-((v-mn)/pad)*(h-4)-2).toFixed(1); }).join(' '); }
+    var col=a==='B'?'var(--teal)':(a==='A'?'var(--warn)':'#b9a8ff');
+    return '<svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none"><path d="'+path(sb)+'" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1.2"/><path d="'+path(sa)+'" fill="none" stroke="'+col+'" stroke-width="1.6"/><circle cx="'+w+'" cy="'+(h-((sa[n-1]-mn)/pad)*(h-4)-2).toFixed(1)+'" r="2.2" fill="'+col+'"/></svg>'; }
+  function toast(t){ var e=$('toast'); e.innerHTML=t; e.classList.add('on'); clearTimeout(e._t); e._t=setTimeout(function(){e.classList.remove('on');},2600); }
+  function log(t){ var d=new Date(); extraAudit.unshift(['just now',t]); }
+  function chips(){ var c=$('aschips'); c.innerHTML=''; Object.keys(D.assets).forEach(function(id){ var b=document.createElement('button'); b.textContent=D.assets[id].name; var i=sel.indexOf(id); b.className=i<0?'':('on'+(i===0?' x':'')); b.title=D.assets[id].sub; b.addEventListener('click',function(){ if(i>=0){ if(sel.length>1) sel.splice(i,1);} else { if(sel.length>=2) sel.pop(); sel.push(id);} selRow=null; render(); tour.check('compare'); }); c.appendChild(b); }); }
+  function allRows(filterKpi, filterSt, siteList){ var x=sel[0], y=sel[1]||sel[0]; var rows=[]; D.kpis.forEach(function(k){ if(filterKpi&&filterKpi!==k[0]) return; (siteList||[x].concat(y!==x?[y]:[])).forEach(function(a){ D.facts[k[0]][a].forEach(function(f,fi){ rows.push({a:a,k:k,f:f,fi:fi}); }); }); });
+    var seen={}; rows=rows.filter(function(r){ var key=r.a+'|'+r.f.f; if(seen[key]) return false; seen[key]=1; return true; });
+    if(filterSt) rows=rows.filter(function(r){return r.f.st===filterSt;});
+    if(unitF) rows=rows.filter(function(r){return r.f.unit.indexOf(unitF)>=0;});
+    return rows; }
+  function hidden(rows){ return basis==='as designed'? rows.filter(function(r){return r.f.st==='ob'||r.f.st==='de';}) : []; }
+  function visible(rows){ var h=hidden(rows); return rows.filter(function(r){return h.indexOf(r)<0;}); }
+  function counts(rows){ var c={ch:0,ob:0,de:0,in:0}; rows.forEach(function(r){c[r.f.st]++;}); return c; }
+  function gridHTML(rows, title, sub){ var hid=hidden(rows), vis=visible(rows);
+    var h='<div class="pane"><div class="ph"><b>'+title+'</b><span class="pill">'+vis.length+' rows</span><div class="sp"></div><span>'+(sub||'click a row for the chain')+'</span></div>';
+    if(hid.length) h+='<div class="banner" style="margin:8px 10px 0"><b>as designed:</b> '+hid.length+' field realit'+(hid.length===1?'y':'ies')+' hidden. '+(hid.length===1?'It exists':'They exist')+' only as operated: the studies do not know about '+(hid.length===1?'it':'them')+'.</div>';
+    h+='<div style="overflow:auto"><table><thead><tr><th>Site</th><th>Field reality</th><th>Status</th><th>Moves</th><th>Owner</th></tr></thead><tbody>';
+    var pages=Math.max(1,Math.ceil(vis.length/PG)); if(pg>=pages) pg=pages-1; var A=pg*PG, B=Math.min(vis.length,A+PG);
+    vis.forEach(function(r,i){ if(i<A||i>=B) return; h+='<tr class="rw'+(selRow===i?' sel':'')+'" data-i="'+i+'"><td class="site '+r.a+'">'+D.assets[r.a].name+'</td><td class="f">'+r.f.f+'<span class="u">'+r.f.unit+' · lives in: '+r.f.src+'</span></td><td><span class="st '+r.f.st+'">'+ST[r.f.st]+'</span></td><td>'+r.f.moves.map(KN).join('<br>')+'</td><td>'+r.f.owner+'</td></tr>'; });
+    if(!vis.length) h+='<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--faint);font-family:var(--mono);font-size:11px">nothing here on this basis</td></tr>';
+    h+='</tbody></table></div>'+pager(vis.length,PG)+'</div>'; rowsCache=vis; return h; }
+  function detailHTML(r){ if(!r) return '<div class="pane"><div class="ph"><b>Why the number is what it is</b><div class="sp"></div><span>no row selected</span></div><div class="det"><div class="emp">select a field reality to see the chain from the number to the document it rests on</div></div></div>';
+    var ST2={ch:'changeable · a scope item removes the reason',ob:'obsolete · the basis no longer holds; re-derive',de:'derived · follows from another reality',in:'inherent · design or feedstock'};
+    var acts={ch:'<button class="p" data-act="moc">Raise MOC scope item</button><button data-act="reg">Add to register</button>',ob:'<button class="p" data-act="rederive">Re-derive basis</button><button data-act="reopen">Re-open PHA rows</button>',de:'<button data-act="root">Go to root reality</button>',in:'<button data-act="reviewed">Mark reviewed</button>'};
+    return '<div class="pane"><div class="ph"><b>Why the number is what it is</b><div class="sp"></div><span>'+D.assets[r.a].name+' · '+r.k[1]+'</span></div><div class="det"><h5>'+r.f.f+'</h5><div class="row"><i>status</i><span><span class="st '+r.f.st+'">'+ST2[r.f.st]+'</span></span></div><div class="row"><i>what it takes</i><span>'+r.f.how+'</span></div><div class="row"><i>owner</i><span>'+r.f.owner+'</span></div><div class="row"><i>moves</i><span>'+r.f.moves.map(KN).join(' · ')+'</span></div><div class="chain"><div class="ch-h">support chain · number → unit → safeguard → document → change</div><ol>'+r.f.chain.map(function(c){ return '<li class="'+(/^←|MOC-001|obsolete|Rev B/.test(c)?'hot':'')+'"><b>'+c+'</b></li>'; }).join('')+'</ol></div><div class="acts">'+acts[r.f.st]+'</div></div></div>'; }
+  function kpisHTML(){ var x=sel[0], y=sel[1]||sel[0]; var h='<div class="kpis" id="kpis">';
+    D.kpis.forEach(function(k){ var id=k[0], vx=D.vals[x][id], vy=D.vals[y][id], hi=k[4], diff=vx-vy, good=hi?diff>0:diff<0, onT=hi?vx>=k[5]:vx<=k[5]; var n=allRows(id).length;
+      h+='<div class="kt'+(kpi===id?' on':'')+'" data-k="'+id+'"><div class="k"><span>'+k[1]+'</span><i class="'+(onT?'g':(Math.abs(vx-k[5])/Math.abs(k[5])>0.03?'r':'a'))+'"></i></div><div class="vals"><span class="x">'+fmt(k,vx)+'</span>'+(y!==x?'<span class="y"><small>'+D.assets[y].name.replace('Asset ','')+'</small>'+fmt(k,vy)+'</span>':'')+'</div><div class="sp">'+spark(x,y,id)+'</div><div class="ft"><span>tgt '+fmt(k,k[5])+'</span>'+(y!==x?'<span class="d '+(good?'good':'bad')+'">'+(diff>0?'+':'')+(k[3]?diff.toFixed(k[3]):diff)+' vs '+D.assets[y].name.replace('Asset ','')+'</span>':'<span></span>')+'<span class="rs">'+n+' reason'+(n===1?'':'s')+'</span></div></div>'; });
+    return h+'</div>'; }
+  function tbl(cols, rows, cls){ var A=pg*PT, B=Math.min(rows.length,A+PT); if(A>=rows.length){ pg=0; A=0; B=Math.min(rows.length,PT);} return '<div class="pane"><div style="overflow:auto"><table><thead><tr>'+cols.map(function(c){return '<th>'+c+'</th>';}).join('')+'</tr></thead><tbody>'+rows.slice(A,B).join('')+'</tbody></table></div>'+(rows.length>PT?pager(rows.length,PT):'')+'</div>'; }
+  function viewHTML(){ var x=sel[0], y=sel[1]||sel[0];
+    if(view==='scorecard'){ var rows=allRows(kpi); return kpisHTML()+(unitF?'<div class="banner">filtered to unit <b>'+unitF+'</b> · <a style="cursor:pointer;color:var(--warn)" data-clearunit>clear</a></div>':'')+'<div class="split2">'+gridHTML(rows, kpi?KN(kpi):'All field realities', 'click a tile to filter · click a row for the chain')+detailHTML(selRow!=null?rowsCache[selRow]:null)+'</div>'; }
+    if(view==='realities'){ var rows=allRows(null,null,['A','B','C']); return '<div class="vh"><h4>Field realities</h4><span>every reason behind a number, all sites · '+rows.length+'</span></div><div class="split2">'+gridHTML(rows,'All sites','click a row for the chain')+detailHTML(selRow!=null?rowsCache[selRow]:null)+'</div>'; }
+    if(view==='obsolete'){ var rows=allRows(null,'ob',['A','B','C']); return '<div class="vh"><h4>Obsolete bases</h4><span>a study, credit or interval that a later change made untrue · nothing in the register says so</span></div><div class="split2">'+gridHTML(rows,'Obsolete bases','a number that rests on one of these is right and unexplained')+detailHTML(selRow!=null?rowsCache[selRow]:null)+'</div>'; }
+    if(view==='sites'){ var rows=Object.keys(D.assets).map(function(a){ var fr=allRows(null,null,[a]); var c=counts(fr); return '<tr class="rw" data-site="'+a+'"><td class="site '+a+'">'+D.assets[a].name+'<span class="u" style="color:var(--faint)">'+D.assets[a].sub+'</span></td>'+D.kpis.map(function(k){ var v=D.vals[a][k[0]], on=k[4]?v>=k[5]:v<=k[5]; return '<td class="num '+(on?'good':'bad')+'">'+fmt(k,v)+'</td>'; }).join('')+'<td class="num">'+fr.length+'</td><td class="num '+(c.ob?'warn':'')+'">'+c.ob+'</td><td class="num">'+c.ch+'</td></tr>'; });
+      return '<div class="vh"><h4>Sites</h4><span>click a site to put it in the comparison</span></div>'+tbl(['Site'].concat(D.kpis.map(function(k){return k[1];})).concat(['Field realities','Obsolete','Changeable']), rows); }
+    if(view==='units'){ var U=[['Hydrotreater','B',91.2,7,14],['Hydrocracker','B',97.8,0,9],['CDU','B',96.1,1,6],['Reformer','B',95.9,0,5],['Hydrotreater','A',98.0,0,14],['Hydrocracker','A',97.6,0,9],['CDU','A',97.1,1,6],['Reformer','A',96.8,0,5],['Hydrotreater','C',94.2,2,14],['Hydrocracker','C',96.9,0,9],['CDU','C',95.0,1,6]];
+      var rows=U.map(function(u){ var fr=allRows(null,null,[u[1]]).filter(function(r){return r.f.unit.indexOf(u[0])>=0;}); var c=counts(fr); return '<tr class="rw" data-unit="'+u[0]+'" data-site="'+u[1]+'"><td>'+u[0]+'</td><td class="site '+u[1]+'">'+D.assets[u[1]].name+'</td><td class="num '+(u[2]<96?'bad':'good')+'">'+u[2].toFixed(1)+' %</td><td class="num '+(u[3]>2?'bad':'')+'">'+u[3]+'</td><td class="num">'+u[4]+'</td><td class="num">'+fr.length+'</td><td class="num '+(c.ob?'warn':'')+'">'+c.ob+'</td></tr>'; });
+      return '<div class="vh"><h4>Units</h4><span>click a unit to filter the scorecard to it</span></div>'+tbl(['Unit','Site','Availability','Trips YTD','SIFs','Field realities','Obsolete'],rows); }
+    if(view==='moc'){ var rows=X.mocs.map(function(m,i){ var fl=m[6]==='gap'?'<span class="flag no">basis gap</span>':(m[6]==='review'?'<span class="flag w">under review</span>':'<span class="flag ok">consistent</span>'); return '<tr class="rw'+(selRow===i?' sel':'')+'" data-moc="'+i+'"><td class="num">'+m[0]+'<span class="u">'+m[7]+'</span></td><td class="site '+m[1]+'">'+D.assets[m[1]].name+'<span class="u">'+m[2]+'</span></td><td class="f">'+m[3]+'</td><td>'+m[4]+'<span class="u '+(m[4]!==m[5]?'warn':'')+'" style="font-family:inherit;font-size:11.5px'+(m[4]!==m[5]?';color:var(--warn)':'')+'">→ '+m[5]+'</span></td><td>'+fl+'</td></tr>'; });
+      var d=selRow!=null&&X.mocs[selRow]?X.mocs[selRow]:null;
+      var det=d?'<div class="pane"><div class="ph"><b>'+d[0]+'</b><div class="sp"></div><span>'+D.assets[d[1]].name+' · '+d[2]+'</span></div><div class="det"><h5>'+d[3]+'</h5><div class="row"><i>declared</i><span>'+d[4]+'</span></div><div class="row"><i>found</i><span>'+d[5]+'</span></div><div class="chain"><div class="ch-h">what the change actually touched</div><ol>'+d[8].map(function(c){return '<li class="'+(/found|→/.test(c)?'hot':'')+'"><b>'+c+'</b></li>';}).join('')+'</ol></div><div class="acts">'+(d[6]==='gap'?'<button class="p" data-act="reopen">Re-open affected studies</button><button data-act="reg">Add to register</button>':'<button data-act="reviewed">Mark reviewed</button>')+'</div></div></div>':'<div class="pane"><div class="ph"><b>What the change touched</b><div class="sp"></div><span>no change selected</span></div><div class="det"><div class="emp">select a change to see the units it declared and the units it actually reached</div></div></div>';
+      return '<div class="vh"><h4>Changes (MOC)</h4><span>declared affected units against the units the ledger finds the change reached</span></div><div class="split2">'+tbl(['MOC','Site','Change','Declared → found affected','Status'],rows)+det+'</div>'; }
+    if(view==='safeguards'){ var rows=X.safeguards.map(function(g){ var fl=g[5]==='ob'?'<span class="st ob">obsolete</span>':(g[5]==='w'?'<span class="flag w">due</span>':'<span class="flag ok">valid</span>'); return '<tr><td class="f">'+g[0]+'</td><td>'+g[1]+'</td><td class="site '+g[2]+'">'+D.assets[g[2]].name+'</td><td>'+g[3]+'</td><td class="num">'+g[4]+'</td><td>'+fl+'</td><td>'+g[6]+'</td><td class="num">'+g[7]+'</td></tr>'; });
+      return '<div class="vh"><h4>Safeguards</h4><span>every credited layer, and whether the basis it was credited on still holds</span></div>'+tbl(['Safeguard','Unit','Site','Type','Credit','Basis','Why','Last test'],rows); }
+    if(view==='register'){ var rows=X.reg.map(function(r){ var L=X.link[r[0]], f=D.facts[L[1]][L[0]][L[2]]; return '<tr><td class="num">'+r[0]+'</td><td class="'+(r[1]==='High'?'bad':(r[1]==='Medium'?'warn':''))+'">'+r[1]+'</td><td class="f">'+r[3]+'<span class="u">'+r[2]+' · owner '+r[4]+' · due '+r[5]+' · '+r[6]+'</span></td><td class="f" style="max-width:300px">'+f.f+'<span class="u">'+f.src+'</span></td><td><span class="st '+f.st+'">'+ST[f.st]+'</span></td><td style="max-width:220px">'+f.how+'</td></tr>'; });
+      return '<div class="vh"><h4>Register</h4><span>the consultancy\'s recommendations, each beside the field reality that decides whether it will work at Asset B</span></div>'+tbl(['ID','Priority','Recommendation','Field reality at Asset B','Status','What it takes'],rows); }
+    if(view==='insurer'){ var F={'In Progress':'w','No Progress':'no','Under Review':'w','Completed':'ok'}; var rows=X.reg.map(function(r){ var L=X.link[r[0]], f=D.facts[L[1]][L[0]][L[2]]; var ok=f.st!=='ob'; return '<tr><td class="num">'+r[0]+'</td><td class="f" style="max-width:360px">'+r[3]+'</td><td><span class="flag '+F[r[6]]+'">'+r[6]+'</span></td><td class="f" style="max-width:260px">'+f.src+'</td><td>'+(ok?'<span class="flag ok">basis holds</span>':'<span class="flag no">basis obsolete</span>')+'</td><td class="num">'+(ok?'30 Sep 2025':'superseded Feb 2025')+'</td></tr>'; });
+      return '<div class="vh"><h4>Insurer pack</h4><span>LMA IGRES 2024/001 status per recommendation, with the basis each status rests on and whether it still holds</span></div><div class="banner">Two statuses in this pack rest on a basis the ledger marks obsolete. A status of <b>In Progress</b> against a superseded study is a flag the insurer cannot see from the register alone.</div>'+tbl(['ID','Recommendation','Status (IGRES)','Basis','Basis valid','Evidence date'],rows); }
+    if(view==='audit'){ var all=extraAudit.concat(X.audit); return '<div class="vh"><h4>Audit trail</h4><span>every change to the ledger, who or what made it, and what it rests on</span></div><div class="pane"><div class="log">'+all.map(function(e,i){return '<div class="'+(i<extraAudit.length?'new':'')+'"><i>'+e[0]+'</i><span>'+e[1]+'</span></div>';}).join('')+'</div></div>'; }
+    return ''; }
+  function render(){ chips(); var x=sel[0], y=sel[1]||sel[0]; $('crumb').textContent=D.assets[x].name+(y!==x?' vs '+D.assets[y].name:'');
+    [].slice.call(document.querySelectorAll('#nav a')).forEach(function(a){ a.classList.toggle('on',a.dataset.view===view); });
+    $('main').innerHTML=viewHTML();
+    var all=allRows(null,null,['A','B','C']), c=counts(all); $('nfr').textContent=all.length; $('nob').textContent=c.ob; $('naud').textContent=extraAudit.length+X.audit.length;
+    var cv=counts(view==='scorecard'?visible(allRows(kpi)):all); ['ch','ob','de','in'].forEach(function(s){ $('c-'+s).textContent=cv[s]; });
+    tour.place(); }
+  // events (delegated)
+  $('main').addEventListener('click',function(e){ var t=e.target;
+    var pp=t.closest('[data-pg]'); if(pp){ if(!pp.classList.contains('dis')){ pg+=+pp.dataset.pg; render(); } return; }
+    var pt=t.closest('[data-pgto]'); if(pt){ pg=+pt.dataset.pgto; render(); return; }
+    var kt=t.closest('.kt'); if(kt){ kpi=(kpi===kt.dataset.k?null:kt.dataset.k); selRow=null; pg=0; render(); tour.check('kpi'); return; }
+    var cu=t.closest('[data-clearunit]'); if(cu){ unitF=null; render(); return; }
+    var act=t.closest('[data-act]'); if(act){ var a=act.dataset.act; var msg={moc:'MOC scope item raised · routed to turnaround planning · linked to R-01, R-06',reg:'added to register as R-63 · owner set',rederive:'LOPA row 4 queued for re-derivation · PSM lead notified · R-02 linked',reopen:'3 PHA rows re-opened · hydrotreater · R-05 moved to In Progress',root:'jumped to the root reality',reviewed:'marked reviewed · 30 Sep 2025'}[a]; toast(msg); log(msg); if(a==='root'){ var r=rowsCache[selRow]; if(r){ var rows=allRows(null,null,['A','B','C']); var idx=-1; rows.forEach(function(q,i){ if(q.a===r.a&&q.f.st==='ob'&&idx<0) idx=i; }); if(idx>=0){ view='realities'; selRow=idx; render(); } } } tour.check('act:'+a); return; }
+    var tr=t.closest('tr'); if(!tr) return;
+    if(tr.dataset.site&&!tr.dataset.unit){ var a=tr.dataset.site; if(sel.indexOf(a)<0){ if(sel.length>=2) sel.pop(); sel.push(a);} view='scorecard'; selRow=null; render(); return; }
+    if(tr.dataset.unit){ unitF=tr.dataset.unit; var a=tr.dataset.site; if(sel.indexOf(a)<0){ if(sel.length>=2) sel.pop(); sel.push(a);} view='scorecard'; kpi=null; selRow=null; render(); return; }
+    if(tr.dataset.moc!=null){ selRow=(selRow===+tr.dataset.moc?null:+tr.dataset.moc); render(); tour.check('mocrow'); return; }
+    if(tr.dataset.i!=null){ selRow=(selRow===+tr.dataset.i?null:+tr.dataset.i); render(); tour.check('row'); return; }
+  });
+  $('nav').addEventListener('click',function(e){ var a=e.target.closest('a'); if(!a) return; view=a.dataset.view; selRow=null; pg=0; render(); tour.check('view:'+view); });
+  [].slice.call(document.querySelectorAll('.fl.dd')).forEach(function(dd){ dd.addEventListener('click',function(e){ var o=e.target.closest('[data-o]'); if(o){ dd.querySelector('[data-v]').textContent=o.dataset.o; [].slice.call(dd.querySelectorAll('[data-o]')).forEach(function(z){z.classList.toggle('on',z===o);}); dd.classList.remove('open'); if(dd.id==='dd-basis'){ basis=o.dataset.o; selRow=null; render(); toast(basis==='as designed'?'showing the plant as the studies describe it':'showing the plant as it runs'); } else { period=o.dataset.o; render(); } e.stopPropagation(); return; } dd.classList.toggle('open'); e.stopPropagation(); }); });
+  document.addEventListener('click',function(){ [].slice.call(document.querySelectorAll('.fl.dd.open')).forEach(function(d){d.classList.remove('open');}); });
+  // ---- guided tour
+  var tour=(function(){ var steps=[
+    {b:'Compare two assets.', s:'Asset B is already against Asset A: same design, same crude, six tiles apart. Add Asset C in the top-right to see what a different crude does to the same design, or carry on with A and B.', target:'#aschips', ev:'compare'},
+    {b:'Which number moved because of a change on another unit?', s:'Click Production vs plan. Dan\'s question in panel 1; the register answered it with a procedure.', target:'.kt[data-k="prod"]', ev:'kpi'},
+    {b:'Read the reason, not the number.', s:'Click the Asset B row. The chain runs from the number, through the unit and the safeguard, down to the change that reviewed one unit and not the other.', target:'#main tr.rw', ev:'row'},
+    {b:'The basis is obsolete, not the procedure.', s:'The status says obsolete: the hydrotreater study is no longer true, because of a decision made on the hydrocracker. Click Re-open PHA rows.', target:'[data-act="reopen"]', ev:'act:reopen'},
+    {b:'Every change, with what it actually reached.', s:'Open Changes (MOC) in the left nav. Declared affected units against the units the ledger finds the change reached. MOC-001 declared one and reached two.', target:'#nav a[data-view="moc"]', ev:'view:moc'},
+    {b:'The register, with the reason beside each line.', s:'Open Register. Each of Priya\'s eight recommendations sits next to the field reality that decides whether it will work at Asset B, and what it would take.', target:'#nav a[data-view="register"]', ev:'view:register'},
+    {b:'What the insurer sees.', s:'Open Insurer pack. The IGRES status per recommendation, with the basis it rests on and whether that basis still holds. Two do not.', target:'#nav a[data-view="insurer"]', ev:'view:insurer'},
+    {b:'The number, the reason, and what it would take.', s:'Dan keeps his dashboard. Priya keeps her plant. The reasoning between them is kept, and can be read back by either.', target:null, ev:null, done:true}];
+    var i=0, on=false, box=$('ghint'), glowEl=null, vis=false;
+    function clearGlow(){ if(glowEl){ glowEl.classList.remove('glow'); glowEl=null; } }
+    function place(){ clearGlow(); if(!on) return; var st=steps[i]; if(st.target){ var el=document.querySelector(st.target); if(el){ el.classList.add('glow'); glowEl=el; } } }
+    function show(){ if(!on) return; var st=steps[i]; $('gh-n').textContent=(i+1)+' / '+steps.length; $('gh-b').textContent=st.b; $('gh-s').textContent=st.s; $('gh-next').textContent=st.done?'close':'next ›'; box.classList.toggle('done',!!st.done); box.hidden=false; requestAnimationFrame(function(){ box.classList.toggle('fade',!vis); }); place(); }
+    function next(){ if(steps[i].done){ stop(); return; } i++; show(); }
+    function stop(){ on=false; clearGlow(); box.classList.add('fade'); setTimeout(function(){box.hidden=true;},600); }
+    function check(ev){ if(!on) return; for(var k=i;k<steps.length;k++){ if(steps[k].ev===ev){ i=k; setTimeout(next,350); return; } } }
+    $('gh-next').addEventListener('click',next); $('gh-skip').addEventListener('click',stop);
+    if('IntersectionObserver' in window){ var io=new IntersectionObserver(function(es){ es.forEach(function(e){ vis=e.isIntersecting; if(vis&&!on&&i===0&&!box._started){ box._started=true; on=true; show(); } else if(on){ box.classList.toggle('fade',!vis); } }); },{threshold:.25}); io.observe($('app')); }
+    return {check:check, place:place};
+  })();
+  render();
+})();
+</script>
+</body></html>

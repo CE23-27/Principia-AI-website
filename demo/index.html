@@ -261,10 +261,11 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,5.2vw,64px);lin
 .ghint.fade{opacity:0}
 .gq{font-family:var(--serif);font-size:19px;color:var(--text);margin:-4px 0 10px}
 .gapscreen{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding-top:0;padding-bottom:0}
-.gapscreen h2{font-size:clamp(40px,5.2vw,66px);line-height:1.08;letter-spacing:-.012em;max-width:16ch;opacity:0;transform:translateY(12px);transition:opacity 1.1s ease,transform 1.1s ease}
-.gapscreen .sub{font-size:20px;max-width:720px;margin-top:22px;opacity:0;transform:translateY(10px);transition:opacity .9s ease,transform .9s ease}
+.gapscreen h2{font-size:clamp(40px,4.65vw,72px);line-height:1.06;letter-spacing:-.016em;max-width:none;white-space:nowrap;opacity:0;transform:translateY(12px);transition:opacity 1.1s ease,transform 1.1s ease}
+.gapscreen .sub{font-size:23px;line-height:1.5;max-width:960px;margin-top:26px;opacity:0;transform:translateY(10px);transition:opacity .9s ease,transform .9s ease}
 .gapscreen.in h2,.gapscreen.sub-in .sub{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){.gapscreen h2,.gapscreen .sub{opacity:1;transform:none;transition:none}}
+@media (max-width:1240px){.gapscreen h2{white-space:normal}}
 .gt .pane[data-pane="lopa"] td:nth-child(3),.gt .pane[data-pane="lopa"] td:nth-child(n+6){white-space:nowrap}
 .gt .pane[data-pane="lopa"] td:nth-child(2){min-width:200px}
 .gate .item .st.h{color:var(--ok)}
@@ -380,6 +381,15 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,5.2vw,64px);lin
 #small a{display:inline-block;text-decoration:none;color:rgba(255,255,255,.9);border:1px solid rgba(138,43,226,.5);background:linear-gradient(135deg,rgba(138,43,226,.85),rgba(30,144,255,.55));border-radius:12px;padding:11px 18px}
 @media (max-width:1100px), (hover:none) and (pointer:coarse){#small{display:flex}body{overflow:hidden}body>*:not(#small){display:none!important}}
 </style>
+
+<style>
+/* the track toggle: links between the two pages */
+.trk{display:flex;justify-content:center;margin:26px 0 4px}
+.trk div{display:inline-flex;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:4px;background:rgba(255,255,255,.04)}
+.trk a{text-decoration:none;color:rgba(255,255,255,.6);font-size:14px;padding:8px 22px;border-radius:999px;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.trk a:hover{color:#fff}
+.trk a.on{color:#fff;background:linear-gradient(135deg,rgba(138,43,226,.85),rgba(30,144,255,.55));box-shadow:0 8px 30px rgba(138,43,226,.25)}
+</style>
 </head>
 <body>
 <div id="small"><div class="in"><div class="glyph">💻</div><h1>Open this on a laptop</h1><p>This demo is two full-width tracks over real P&amp;IDs, document walls and an editable grid. It needs a desktop-sized screen and a mouse.</p><a href="../">← Back to Principia AI</a></div></div>
@@ -387,6 +397,8 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,5.2vw,64px);lin
   <a class="brand" href="../">Principia AI<span>.</span></a>
   <nav><a href="../">← Back to site</a></nav>
 </header>
+<div class="trk"><div><a href="manager.html" class="">Manager</a><a href="./" class="on">Engineer</a></div></div>
+
 
 <div class="wrap">
 
